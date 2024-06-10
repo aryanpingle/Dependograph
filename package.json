@@ -36,6 +36,11 @@
         "command": "import-graph.helloWorld",
         "title": "Hello World",
         "category": "Import Graph"
+      },
+      {
+        "command": "import-graph.pathviz",
+        "title": "Visualize Imports",
+        "category": "Import Graph"
       }
     ]
   },
