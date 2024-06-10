@@ -13,10 +13,29 @@
   "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "import-graph-view",
+          "title": "Import Graph",
+          "icon": "$(coffee)"
+        }
+      ]
+    },
+    "views": {
+      "import-graph-view": [{
+        "type": "webview",
+        "id": "import-graph-sidebar",
+        "name": "Import Graph",
+        "icon": "$(coffee)",
+        "contextualTitle": "Import Graph"
+      }]
+    },
     "commands": [
       {
         "command": "import-graph.helloWorld",
-        "title": "Hello World"
+        "title": "Hello World",
+        "category": "Import Graph"
       }
     ]
   },
