@@ -1,16 +1,47 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
+// TODO: Analyse dependencies in a child process
+
 import * as vscode from 'vscode';
+import dependencyTree from 'dependency-tree';
+import path from 'path';
 
 export function activate(context: vscode.ExtensionContext) {
-	// Custom editor window that opens a path visualization
 	context.subscriptions.push(
-		vscode.commands.registerCommand('import-graph.pathviz', () => {
+		vscode.commands.registerCommand('import-graph.pathviz', async () => {
+			const currentWorkspace = vscode.workspace?.workspaceFolders?.[0].uri.fsPath;
+			if(!currentWorkspace) {
+				vscode.window.showErrorMessage(`No workspace found.`);
+				return;
+			}
+
+			const selectedFiles = await vscode.window.showOpenDialog({
+				canSelectMany: false,
+				title: "Select an entry file",
+				openLabel: "Use as entry file"
+			})
+			if(selectedFiles === undefined) {
+				// Cancelled
+				return;
+			}
+
+			const entryFileURI = selectedFiles[0];
+
+			if(path.dirname(entryFileURI.fsPath) !== currentWorkspace) {
+				vscode.window.showErrorMessage("Entry file must be contained within the current workspace.");
+				return;
+			}
+
+			const dependencyGraph = dependencyTree({
+				directory: currentWorkspace,
+				filename: entryFileURI.fsPath,
+			});
+			// Log the dependency graph for now
+			console.log(dependencyGraph);
+
 			const panel = vscode.window.createWebviewPanel(
-				'customType', // Identifies the type of the webview. Used internally
-				'Import Graph', // Title of the panel displayed to the user
-				vscode.ViewColumn.One, // Editor column to show the new webview panel in.
-				{} // Webview options. More on these later.
+				'customType',
+				'Import Graph',
+				vscode.ViewColumn.One,
+				{} 
 			);
 		})
 	);
@@ -23,5 +54,4 @@ export function activate(context: vscode.ExtensionContext) {
 	);
 }
 
-// This method is called when your extension is deactivated
 export function deactivate() {}
