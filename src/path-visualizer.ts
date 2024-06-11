@@ -21,7 +21,7 @@ export async function onPathVisualization() {
 
     const entryFileURI = selectedFiles[0];
 
-    if (path.dirname(entryFileURI.fsPath) !== currentWorkspace) {
+    if (!path.dirname(entryFileURI.fsPath).startsWith(currentWorkspace)) {
         vscode.window.showErrorMessage(
             "Entry file must be contained within the current workspace.",
         );
