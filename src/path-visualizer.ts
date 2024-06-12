@@ -4,7 +4,23 @@ import path from "path";
 
 let currentPanel: vscode.WebviewPanel | null = null;
 
-export async function createPathVisualization() {
+/**
+ * Get a URI for the given resource within the context of the extension's panel.
+ */
+function getWebviewURI(
+    context: vscode.ExtensionContext,
+    ...pathSegments: string[]
+) {
+    return currentPanel!.webview.asWebviewUri(
+        vscode.Uri.joinPath(context.extensionUri, ...pathSegments),
+    );
+}
+
+export async function createPathVisualization(
+    context: vscode.ExtensionContext,
+) {
+    console.log(context.extensionPath);
+
     // Check if a panel already exists
     if (currentPanel !== null) {
         currentPanel.reveal(undefined);
@@ -49,8 +65,6 @@ export async function createPathVisualization() {
             return true;
         },
     });
-    // Log the dependency graph for now
-    // console.log(dependencyGraph);
 
     currentPanel = vscode.window.createWebviewPanel(
         "customType",
@@ -60,6 +74,8 @@ export async function createPathVisualization() {
     );
     const params: WebviewParams = {
         dependencyGraph: dependencyGraph,
+        cssURIs: [getWebviewURI(context, "assets", "css", "vscode.css")],
+        jsURIs: [],
     };
     currentPanel.webview.html = getWebviewContent(params);
 
@@ -73,6 +89,8 @@ export async function createPathVisualization() {
  */
 interface WebviewParams {
     dependencyGraph: Object;
+    cssURIs: vscode.Uri[];
+    jsURIs: vscode.Uri[];
 }
 
 function getWebviewContent(params: WebviewParams): string {
@@ -83,6 +101,15 @@ function getWebviewContent(params: WebviewParams): string {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+
+    <!-- CSS Stylesheets -->
+    ${params.cssURIs
+        .map((cssURI) => `<link rel="stylesheet" href="${cssURI}">`)
+        .join("")}
+    <!-- JS Scripts -->
+    ${params.jsURIs
+        .map((jsURI) => `<script src="${jsURI}" defer></script>`)
+        .join("")}
 </head>
 <body>
     <input type="text">

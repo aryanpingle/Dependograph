@@ -7,7 +7,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand(
             "import-graph.pathviz",
-            createPathVisualization,
+            createPathVisualization.bind(undefined, context),
         ),
     );
 
