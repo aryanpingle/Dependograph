@@ -94,7 +94,7 @@ interface WebviewParams {
 }
 
 function getWebviewContent(params: WebviewParams): string {
-    return `
+    return /* html */ `
 <!DOCTYPE html>
 <html lang="en">
 <head>
