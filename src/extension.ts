@@ -1,13 +1,13 @@
 // TODO: Analyse dependencies in a child process
 
 import * as vscode from "vscode";
-import { onPathVisualization } from "./path-visualizer";
+import { createPathVisualization } from "./path-visualizer";
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand(
             "import-graph.pathviz",
-            onPathVisualization,
+            createPathVisualization,
         ),
     );
 
