@@ -1,4 +1,5 @@
 // TODO: Analyse dependencies in a child process
+// TODO: Save state on focus loss
 
 import * as vscode from "vscode";
 import { createPathVisualizationWebview } from "./default-webview";
