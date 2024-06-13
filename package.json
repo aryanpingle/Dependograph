@@ -1,7 +1,7 @@
 {
-  "publisher": "sprinklr-aryan-pingle",
-  "name": "import-graph",
-  "displayName": "import-graph",
+  "publisher": "aryanpingle",
+  "name": "dependograph",
+  "displayName": "Dependograph",
   "description": "",
   "version": "0.0.4",
   "engines": {
@@ -16,33 +16,33 @@
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "import-graph-view",
-          "title": "Import Graph",
-          "icon": "$(coffee)"
+          "id": "dependograph-view",
+          "title": "Dependograph",
+          "icon": "assets/images/activity-bar-icon.svg"
         }
       ]
     },
     "views": {
-      "import-graph-view": [
+      "dependograph-view": [
         {
           "type": "webview",
-          "id": "import-graph-sidebar",
-          "name": "Import Graph",
-          "icon": "$(coffee)",
-          "contextualTitle": "Import Graph"
+          "id": "dependograph-sidebar",
+          "name": "Dependograph",
+          "icon": "assets/images/activity-bar-icon.svg",
+          "contextualTitle": "Dependograph"
         }
       ]
     },
     "commands": [
       {
-        "command": "import-graph.helloWorld",
+        "command": "dependograph.helloWorld",
         "title": "Hello World",
-        "category": "Import Graph"
+        "category": "Dependograph"
       },
       {
-        "command": "import-graph.pathviz",
+        "command": "dependograph.pathviz",
         "title": "Visualize Imports",
-        "category": "Import Graph"
+        "category": "Dependograph"
       }
     ]
   },

@@ -7,14 +7,14 @@ import { createPathVisualizationWebview } from "./default-webview";
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand(
-            "import-graph.pathviz",
+            "dependograph.pathviz",
             createPathVisualizationWebview.bind(undefined, context),
         ),
     );
 
     // Simple notification command for debugging
     context.subscriptions.push(
-        vscode.commands.registerCommand("import-graph.helloWorld", () => {
+        vscode.commands.registerCommand("dependograph.helloWorld", () => {
             vscode.window.showInformationMessage("Hello, world!");
         }),
     );

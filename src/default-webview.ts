@@ -31,7 +31,7 @@ export async function createPathVisualizationWebview(
 
     currentPanel = vscode.window.createWebviewPanel(
         "customType",
-        "Import Graph",
+        "Dependograph",
         vscode.window.activeTextEditor?.viewColumn || vscode.ViewColumn.One,
         {
             enableScripts: true,

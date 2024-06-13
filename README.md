@@ -1,4 +1,4 @@
-# import-graph README
+# Dependograph README
 
 Sample description here.
 
