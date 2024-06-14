@@ -2,13 +2,13 @@
 // TODO: Save state on focus loss
 
 import * as vscode from "vscode";
-import { createPathVisualizationWebview } from "./default-webview";
+import { createVisualizationEditor } from "./visualization-editor";
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.commands.registerCommand(
             "dependograph.pathviz",
-            createPathVisualizationWebview.bind(undefined, context),
+            createVisualizationEditor.bind(undefined, context),
         ),
     );
 

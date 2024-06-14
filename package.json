@@ -52,16 +52,19 @@
     ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "vscode-test"
+    "clean": "rm -rf out/*",
+    "compile": "npm run check-types && node esbuild.js",
+    "check-types": "tsc --noEmit",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "vscode:prepublish": "npm run package",
+    "package": "npm run check-types && node esbuild.js --production"
   },
   "devDependencies": {
     "@types/babel__generator": "^7.6.8",
     "@types/babel__traverse": "^7.20.6",
+    "@types/d3": "^7.4.3",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@types/vscode": "^1.80.0",
@@ -69,9 +72,11 @@
     "@typescript-eslint/parser": "^7.11.0",
     "@vscode/test-cli": "^0.0.9",
     "@vscode/test-electron": "^2.4.0",
+    "esbuild": "^0.21.5",
     "eslint": "^8.57.0",
     "git-format-staged": "^3.1.1",
     "husky": "^9.0.11",
+    "npm-run-all": "^4.1.5",
     "prettier": "^3.3.2",
     "typescript": "^5.4.5"
   },
@@ -80,6 +85,7 @@
     "@babel/parser": "^7.24.7",
     "@babel/traverse": "^7.24.7",
     "@babel/types": "^7.24.7",
+    "d3": "^7.9.0",
     "dependency-tree": "^11.0.1"
   }
 }

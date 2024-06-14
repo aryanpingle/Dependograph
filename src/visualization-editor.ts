@@ -15,7 +15,7 @@ function getWebviewURI(
     );
 }
 
-export async function createPathVisualizationWebview(
+export async function createVisualizationEditor(
     context: vscode.ExtensionContext,
 ) {
     // Check if a panel already exists
@@ -58,10 +58,7 @@ export async function createPathVisualizationWebview(
     // Render the webview
     const params: WebviewParams = {
         cssURIs: [getWebviewURI(context, "assets", "css", "vscode.css")],
-        jsURIs: [
-            getWebviewURI(context, "assets", "js", "d3.js"),
-            getWebviewURI(context, "assets", "js", "default-webview.js"),
-        ],
+        jsURIs: [getWebviewURI(context, "out", "webviews", "visualization.js")],
     };
     currentPanel.webview.html = getWebviewContent(params);
 }
