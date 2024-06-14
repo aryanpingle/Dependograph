@@ -13,7 +13,7 @@ async function main() {
     sourcesContent: false,
     platform: 'node',
     outdir: 'out',
-    external: ['vscode'],
+    external: ['vscode', 'dependency-tree'],
     logLevel: 'silent',
     plugins: [
       /* add to the end of plugins array */

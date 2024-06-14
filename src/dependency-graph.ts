@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-// import dependencyTree from "dependency-tree";
+import dependencyTree from "dependency-tree";
 
 /**
  * Create a dependency graph (if possible) from the entry files and send it to the webview.
@@ -30,63 +30,20 @@ export function sendDependencyGraph(
         );
     }
 
-    // const dependencyGraph = dependencyTree({
-    //     directory: currentWorkspace,
-    //     filename: filePaths[0],
-    //     // TODO: Inefficient. Custom parser should ignore by default.
-    //     filter: (path: string): boolean => {
-    //         if (path.includes("node_modules")) return false;
-    //         return true;
-    //     },
-    // });
-    const dependencyGraph = {
-        "A.js": { "B.js": {} },
-    };
-
-    // function isEmpty(obj: Object) {
-    //     for (var prop in obj) {
-    //         if (Object.prototype.hasOwnProperty.call(obj, prop)) {
-    //             return false;
-    //         }
-    //     }
-
-    //     return true;
-    // }
-
-    // interface RecObj {
-    //     [key: string]: RecObj;
-    // }
-
-    // // BAD CODE, REMOVE THIS. All of the processing should be done by the traversal function.
-    // function dfsReplacer(obj: RecObj) {
-    //     if (isEmpty(obj)) return;
-    //     for (const key of Object.keys(obj)) {
-    //         dfsReplacer(obj[key]);
-    //         obj[key.replace(currentWorkspace, "")] = obj[key];
-    //         delete obj[key];
-    //     }
-    // }
-    // // @ts-ignore
-    // dfsReplacer(dependencyGraph);
-
-    // const adjList: Record<string, Set<string>> = {};
-    // function traverse(obj: RecObj) {
-    //     for (const key of Object.keys(obj)) {
-    //         if (!(key in adjList)) adjList[key] = new Set();
-
-    //         for (const dep of Object.keys(obj[key])) {
-    //             adjList[key].add(dep);
-    //         }
-
-    //         traverse(obj[key]);
-    //     }
-    // }
-    // // @ts-ignore
-    // traverse(dependencyGraph);
+    const dependencyGraph = dependencyTree({
+        directory: currentWorkspace,
+        filename: filePaths[0],
+        // TODO: Inefficient. Custom parser should ignore by default.
+        filter: (path: string): boolean => {
+            if (path.includes("node_modules")) return false;
+            return true;
+        },
+    });
 
     // Send the dependency graph
     panel.webview.postMessage({
         command: "takeYourDependencyGraph",
         data: dependencyGraph,
+        workspace: currentWorkspace,
     });
 }

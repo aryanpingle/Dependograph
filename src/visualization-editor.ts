@@ -88,11 +88,26 @@ function getWebviewContent(params: WebviewParams): string {
     ${params.jsURIs
         .map((jsURI) => `<script src="${jsURI}" defer></script>`)
         .join("")}
+
+    <style>
+        .svg-container {
+            height: 100%;
+            width: 100%;
+        }
+
+        svg {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
 </head>
 <body>
     <input type="file" name="input-entry_file" id="input-entry_file" multiple>
     <div id="viz">
         <!-- Visualization goes here -->
+    </div>
+    <div class="svg-container">
+        <svg></svg>
     </div>
 </body>
 </html>

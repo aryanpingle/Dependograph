@@ -1,13 +1,13 @@
-import d3 from "d3";
+import * as d3 from "d3";
 
 function randInt(start: number, end: number) {
     return start + Math.floor(Math.random() * (end - start + 1));
 }
 
-interface SimNode extends d3.SimulationNodeDatum {
+export interface SimNode extends d3.SimulationNodeDatum {
     name: string;
 }
-interface SimLink extends d3.SimulationLinkDatum<SimNode> {
+export interface SimLink extends d3.SimulationLinkDatum<SimNode> {
     cyclic?: boolean;
 }
 type SVGSelection = d3.Selection<SVGElement, unknown, HTMLElement, any>;
@@ -33,7 +33,7 @@ var color: d3.ScaleOrdinal<string, string, unknown>;
 /**
  * Initializes the svg with the given data
  */
-function setupVisualization(nodes: any[], links: any[]) {
+export function setupVisualization(nodes: SimNode[], links: SimLink[]) {
     simulationNodes = nodes;
     simulationLinks = links;
 
@@ -45,9 +45,11 @@ function initialize() {
         .forceSimulation(simulationNodes)
         .force(
             "link",
-            d3.forceLink(simulationLinks), //.id((d) => d.id)
+            d3
+                .forceLink<SimNode, SimLink>(simulationLinks)
+                .id((node) => node.name),
         )
-        .force("charge", d3.forceManyBody().strength(-300))
+        .force("charge", d3.forceManyBody().strength(-800))
         .force("x", d3.forceX())
         .force("y", d3.forceY());
 
@@ -83,7 +85,7 @@ function initialize() {
         .attr("markerHeight", 6)
         .attr("orient", "auto")
         .append("path")
-        .attr("fill", "greenyellow")
+        .attr("fill", "currentColor")
         .attr("d", "M0,-5 L10,0 L0,5");
 
     // Create links
@@ -95,7 +97,7 @@ function initialize() {
         .data(simulationLinks)
         .enter()
         .append("line")
-        .attr("stroke", "greenyellow")
+        .attr("stroke", "currentColor")
         .style("marker-end", (d) => `url(#arrow-${d.cyclic ?? false})`);
 
     createD3Nodes();
@@ -105,7 +107,7 @@ function createD3Nodes() {
     d3Nodes = zoom_container
         .append("g")
         .classed("node-g", true)
-        .attr("fill", "currentColor")
+        .attr("fill", "var(--vscode-textLink-foreground)")
         .attr("stroke-linecap", "round")
         .attr("stroke-linejoin", "round")
         .selectAll("g")
@@ -133,9 +135,9 @@ function createD3Nodes() {
         .text((d) => d.name)
         .clone(true)
         .lower()
-        .attr("fill", "none")
-        .attr("stroke", "white")
-        .attr("stroke-width", 3);
+        .attr("fill", "none");
+    // .attr("stroke", "white")
+    // .attr("stroke-width", 3);
 }
 
 function resizeSVG(width: number, height: number) {
@@ -175,11 +177,11 @@ function dragended(d: any) {
     if (!d.active) simulation.alphaTarget(0);
 }
 
-function test() {
+export function test() {
     const N = 20;
     const nodes = new Array(N).fill(0).map((value, index) => {
         return {
-            id: String.fromCharCode(65 + index),
+            name: String.fromCharCode(65 + index),
         };
     });
     // const nodes = [{ id: "A" }, { id: "B" }, { id: "C" }, { id: "D" }, { id: "E" }];
@@ -202,18 +204,12 @@ function test() {
         const targetIdx = +target;
 
         return {
-            source: nodes[sourceIdx].id,
-            target: nodes[targetIdx].id,
+            source: nodes[sourceIdx].name,
+            target: nodes[targetIdx].name,
             type: randInt(1, 10).toString(),
         };
     });
-    // const links = [
-    //   { source: "A", target: "B", type: "1" },
-    //   { source: "C", target: "D", type: "2" },
-    //   { source: "D", target: "C", type: "3" },
-    // ];
+    console.log(nodes, links);
 
     setupVisualization(nodes, links);
 }
-
-test();
