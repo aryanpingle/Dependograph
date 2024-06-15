@@ -103,6 +103,10 @@ function getWebviewContent(params: WebviewParams): string {
 </head>
 <body>
     <input type="file" name="input-entry_file" id="input-entry_file" multiple>
+    <label>
+        <input type="checkbox" name="input-hide_names" id="input-hide_names">
+        Hide filenames
+    </label>
     <div id="viz">
         <!-- Visualization goes here -->
     </div>

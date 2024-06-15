@@ -1,18 +1,18 @@
-import * as d3 from "d3";
+/**
+ * References:
+ * https://observablehq.com/@d3/mobile-patent-suits
+ */
 
-function randInt(start: number, end: number) {
-    return start + Math.floor(Math.random() * (end - start + 1));
-}
+import * as d3 from "d3";
 
 export interface SimNode extends d3.SimulationNodeDatum {
     name: string;
 }
 export interface SimLink extends d3.SimulationLinkDatum<SimNode> {
-    cyclic?: boolean;
+    cyclic: boolean;
 }
 type SVGSelection = d3.Selection<SVGElement, unknown, HTMLElement, any>;
 type SVGGSelection<T> = d3.Selection<SVGGElement, T, SVGElement, any>;
-type SVGLineSelection<T> = d3.Selection<SVGLineElement, T, SVGElement, any>;
 
 // Declare the chart dimensions and margins.
 const width = 640;
@@ -25,10 +25,24 @@ var simulationLinks: SimLink[];
 
 // D3 selected and generated variables
 var d3Nodes: SVGGSelection<SimNode>;
-var d3Links: SVGLineSelection<SimLink>;
+var d3Links: SVGGSelection<SimLink>;
 var svg: d3.Selection<SVGElement, unknown, HTMLElement, any>;
 var zoom_container: d3.Selection<SVGGElement, unknown, HTMLElement, any>;
-var color: d3.ScaleOrdinal<string, string, unknown>;
+
+// Colors
+const colors = {
+    cyclic: "var(--vscode-editorError-foreground)",
+    acyclic: "var(--vscode-editorWarning-foreground)",
+    node: "currentColor",
+};
+
+(
+    document.querySelector("#input-hide_names") as HTMLInputElement
+).addEventListener("change", function () {
+    d3Nodes
+        .selectAll("text")
+        .attr("visibility", this.checked ? "hidden" : "visible");
+});
 
 /**
  * Initializes the svg with the given data
@@ -49,16 +63,27 @@ function initialize() {
                 .forceLink<SimNode, SimLink>(simulationLinks)
                 .id((node) => node.name),
         )
-        .force("charge", d3.forceManyBody().strength(-800))
+        .force("charge", d3.forceManyBody().strength(-600))
         .force("x", d3.forceX())
         .force("y", d3.forceY());
 
     simulation.on("tick", () => {
         d3Links
-            .attr("x1", (d) => (d.source as SimNode).x!)
-            .attr("y1", (d) => (d.source as SimNode).y!)
-            .attr("x2", (d) => (d.target as SimNode).x!)
-            .attr("y2", (d) => (d.target as SimNode).y!);
+            .filter("g.acyclic")
+            .select("path")
+            .attr("d", (link) => {
+                const source = link.source as SimNode;
+                const target = link.target as SimNode;
+                return `M ${source.x} ${source.y} L ${target.x} ${target.y}`;
+            });
+        d3Links
+            .filter("g.cyclic")
+            .select("path.fromSource")
+            .attr("d", (link) => getLinkArc(link, true));
+        d3Links
+            .filter("g.cyclic")
+            .select("path.toSource")
+            .attr("d", (link) => getLinkArc(link, false));
         d3Nodes.attr("transform", (d) => `translate(${d.x},${d.y})`);
     });
 
@@ -77,7 +102,7 @@ function initialize() {
         .data(simulationLinks)
         .enter()
         .append("marker")
-        .attr("id", (d) => `arrow-${d.cyclic ?? false}`)
+        .attr("id", (d) => `arrow-${d.cyclic}`)
         .attr("viewBox", "0 -5 10 10")
         .attr("refX", 15)
         .attr("refY", -0.5)
@@ -85,29 +110,47 @@ function initialize() {
         .attr("markerHeight", 6)
         .attr("orient", "auto")
         .append("path")
-        .attr("fill", "currentColor")
+        .attr("fill", (link) => (link.cyclic ? colors.cyclic : colors.acyclic))
         .attr("d", "M0,-5 L10,0 L0,5");
 
+    createD3Links();
+    createD3Nodes();
+}
+
+function createD3Links() {
     // Create links
     d3Links = zoom_container
         .append("g")
+        .classed("link-container", true)
         .attr("fill", "none")
         .attr("stroke-width", 1.5)
-        .selectAll("path")
+        .selectAll("g")
         .data(simulationLinks)
         .enter()
-        .append("line")
-        .attr("stroke", "currentColor")
-        .style("marker-end", (d) => `url(#arrow-${d.cyclic ?? false})`);
+        .append("g")
+        .classed("cyclic", (link) => link.cyclic)
+        .classed("acyclic", (link) => !link.cyclic);
 
-    createD3Nodes();
+    // Add cyclic paths
+    d3Links.filter("g.cyclic").append("path").classed("fromSource", true);
+    d3Links.filter("g.cyclic").append("path").classed("toSource", true);
+
+    // Add acyclic path
+    d3Links.filter("g.acyclic").append("path");
+
+    d3Links
+        .selectAll("path")
+        .attr("stroke", (link: SimLink) =>
+            link.cyclic ? colors.cyclic : colors.acyclic,
+        )
+        .style("marker-end", (link: SimLink) => `url(#arrow-${link.cyclic})`);
 }
 
 function createD3Nodes() {
     d3Nodes = zoom_container
         .append("g")
         .classed("node-g", true)
-        .attr("fill", "var(--vscode-textLink-foreground)")
+        .attr("fill", colors.node)
         .attr("stroke-linecap", "round")
         .attr("stroke-linejoin", "round")
         .selectAll("g")
@@ -150,11 +193,13 @@ function zoomed(event: any) {
     zoom_container.attr("transform", event.transform);
 }
 
-function linkArc(d: any) {
-    const r = Math.hypot(d.target.x - d.source.x, d.target.y - d.source.y);
+function getLinkArc(link: SimLink, fromSource: boolean) {
+    const source = (fromSource ? link.source : link.target) as SimNode;
+    const target = (fromSource ? link.target : link.source) as SimNode;
+    const r = Math.hypot(target.x - source.x, target.y - source.y);
     return `
-      M${d.source.x},${d.source.y}
-      A${r},${r} 0 0,1 ${d.target.x},${d.target.y}
+      M${source.x},${source.y}
+      A${r},${r} 0 0,1 ${target.x},${target.y}
     `;
 }
 
@@ -175,41 +220,4 @@ function dragended(d: any) {
     d.subject.fx = null;
     d.subject.fy = null;
     if (!d.active) simulation.alphaTarget(0);
-}
-
-export function test() {
-    const N = 20;
-    const nodes = new Array(N).fill(0).map((value, index) => {
-        return {
-            name: String.fromCharCode(65 + index),
-        };
-    });
-    // const nodes = [{ id: "A" }, { id: "B" }, { id: "C" }, { id: "D" }, { id: "E" }];
-    const E = 20;
-    const edgeSet = new Set<string>();
-    while (edgeSet.size < E) {
-        const source = randInt(0, N - 1);
-        const target = randInt(0, N - 1);
-        if (source === target) continue;
-        const hash = `${source},${target}`;
-        if (hash in edgeSet) {
-            continue;
-        }
-        edgeSet.add(hash);
-    }
-
-    const links = Array.from(edgeSet).map((hash: string) => {
-        let [source, target] = hash.split(",");
-        const sourceIdx = +source;
-        const targetIdx = +target;
-
-        return {
-            source: nodes[sourceIdx].name,
-            target: nodes[targetIdx].name,
-            type: randInt(1, 10).toString(),
-        };
-    });
-    console.log(nodes, links);
-
-    setupVisualization(nodes, links);
 }
