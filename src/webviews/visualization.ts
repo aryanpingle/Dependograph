@@ -1,7 +1,12 @@
 // This file is run within the webview
 
 import * as vscode from "vscode";
-import { SimLink, SimNode, setupVisualization } from "./d3-simulation";
+import {
+    SimLink,
+    SimNode,
+    setupVisualization,
+    resizeSVG,
+} from "./d3-simulation";
 
 // @ts-ignore
 const vscodeAPI = acquireVsCodeApi() as {
@@ -9,20 +14,29 @@ const vscodeAPI = acquireVsCodeApi() as {
     getState(): any;
 };
 
-const input_entry_file = document.querySelector(
-    "#input-entry_file",
-) as HTMLInputElement;
-input_entry_file.addEventListener("change", function (event) {
-    // this.files does not have a map function
-    const filePaths: string[] = [];
-    for (let i = 0; i < input_entry_file.files!.length; ++i) {
-        filePaths.push((input_entry_file.files![i] as any).path);
-    }
-    vscodeAPI.postMessage({
-        command: "getDependencyGraph",
-        data: filePaths,
+function setup() {
+    const input_entry_file = document.querySelector(
+        "#input-entry_file",
+    ) as HTMLInputElement;
+    input_entry_file.addEventListener("change", function (event) {
+        // this.files does not have a map function
+        const filePaths: string[] = [];
+        for (let i = 0; i < input_entry_file.files!.length; ++i) {
+            filePaths.push((input_entry_file.files![i] as any).path);
+        }
+        vscodeAPI.postMessage({
+            command: "getDependencyGraph",
+            data: filePaths,
+        });
     });
-});
+
+    // Add resize listener
+    window.addEventListener("resize", (event) => {
+        const y = document.querySelector(".svg-container");
+        resizeSVG(y.clientWidth, y.clientHeight);
+    });
+}
+setup();
 
 // TODO: Set some global extension-level variables at the top
 let workspace: string;

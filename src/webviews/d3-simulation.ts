@@ -183,7 +183,7 @@ function createD3Nodes() {
     // .attr("stroke-width", 3);
 }
 
-function resizeSVG(width: number, height: number) {
+export function resizeSVG(width: number, height: number) {
     svg.attr("width", width)
         .attr("height", height)
         .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`);

@@ -30,11 +30,9 @@
     "views": {
       "dependograph-view": [
         {
-          "type": "webview",
           "id": "dependograph-sidebar",
           "name": "Dependograph",
-          "icon": "assets/images/activity-bar-icon.svg",
-          "contextualTitle": "Dependograph"
+          "type": "webview"
         }
       ]
     },

@@ -59,7 +59,10 @@ export async function createVisualizationEditor(
 
     // Render the webview
     const params: WebviewParams = {
-        cssURIs: [getWebviewURI(context, "assets", "css", "vscode.css")],
+        cssURIs: [
+            getWebviewURI(context, "assets", "css", "vscode.css"),
+            getWebviewURI(context, "assets", "css", "visualization.css"),
+        ],
         jsURIs: [getWebviewURI(context, "out", "webviews", "visualization.js")],
     };
     currentPanel.webview.html = getWebviewContent(params);
@@ -90,27 +93,14 @@ function getWebviewContent(params: WebviewParams): string {
     ${params.jsURIs
         .map((jsURI) => `<script src="${jsURI}" defer></script>`)
         .join("")}
-
-    <style>
-        .svg-container {
-            height: 100%;
-            width: 100%;
-        }
-
-        svg {
-            width: 100%;
-            height: 100%;
-        }
-    </style>
 </head>
 <body>
-    <input type="file" name="input-entry_file" id="input-entry_file" multiple>
-    <label>
-        <input type="checkbox" name="input-hide_names" id="input-hide_names">
-        Hide filenames
-    </label>
-    <div id="viz">
-        <!-- Visualization goes here -->
+    <div class="abs">
+        <input type="file" name="input-entry_file" id="input-entry_file" multiple>
+        <label>
+            <input type="checkbox" name="input-hide_names" id="input-hide_names">
+            Hide filenames
+        </label>
     </div>
     <div class="svg-container">
         <svg></svg>
