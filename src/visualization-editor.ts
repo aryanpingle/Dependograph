@@ -35,6 +35,8 @@ export async function createVisualizationEditor(
         vscode.window.activeTextEditor?.viewColumn || vscode.ViewColumn.One,
         {
             enableScripts: true,
+            // TODO: Use get/setState() to improve memory utilization
+            retainContextWhenHidden: true,
         },
     );
 
