@@ -1,18 +1,14 @@
 import * as vscode from "vscode";
 import { sendDependencyGraph } from "./dependency-graph";
+import { getWebviewURI } from "./utils";
 
 let currentPanel: vscode.WebviewPanel | null = null;
 
-/**
- * Get a URI for the given resource within the context of the extension's panel.
- */
-function getWebviewURI(
+function getURI(
     context: vscode.ExtensionContext,
     ...pathSegments: string[]
-) {
-    return currentPanel!.webview.asWebviewUri(
-        vscode.Uri.joinPath(context.extensionUri, ...pathSegments),
-    );
+): vscode.Uri {
+    return getWebviewURI(currentPanel.webview, context, ...pathSegments);
 }
 
 export async function createVisualizationEditor(
@@ -60,10 +56,10 @@ export async function createVisualizationEditor(
     // Render the webview
     const params: WebviewParams = {
         cssURIs: [
-            getWebviewURI(context, "assets", "css", "vscode.css"),
-            getWebviewURI(context, "assets", "css", "visualization.css"),
+            getURI(context, "assets", "css", "vscode.css"),
+            getURI(context, "assets", "css", "visualization.css"),
         ],
-        jsURIs: [getWebviewURI(context, "out", "webviews", "visualization.js")],
+        jsURIs: [getURI(context, "out", "webviews", "visualization.js")],
     };
     currentPanel.webview.html = getWebviewContent(params);
 }

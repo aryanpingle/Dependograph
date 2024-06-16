@@ -3,6 +3,7 @@
 
 import * as vscode from "vscode";
 import { createVisualizationEditor } from "./visualization-editor";
+import { SidebarProvider } from "./sidebar";
 
 export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
@@ -17,6 +18,19 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.commands.registerCommand("dependograph.helloWorld", () => {
             vscode.window.showInformationMessage("Hello, world!");
         }),
+    );
+
+    const sidebarProvider = new SidebarProvider(context);
+    context.subscriptions.push(
+        vscode.window.registerWebviewViewProvider(
+            "dependograph-sidebar",
+            sidebarProvider,
+            {
+                webviewOptions: {
+                    retainContextWhenHidden: true,
+                },
+            },
+        ),
     );
 }
 

@@ -15,20 +15,19 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
   "main": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
         {
-          "id": "dependograph-view",
+          "id": "dependograph-sidebar",
           "title": "Dependograph",
           "icon": "assets/images/activity-bar-icon.svg"
         }
       ]
     },
     "views": {
-      "dependograph-view": [
+      "dependograph-sidebar": [
         {
           "id": "dependograph-sidebar",
           "name": "Dependograph",
