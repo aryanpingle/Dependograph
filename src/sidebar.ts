@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { getWebviewURI } from "./utils";
+import { ExtensionGlobals } from "./extension";
 
 /**
  * Definition of the parameters object passed to the webview
@@ -10,7 +11,10 @@ interface WebviewParams {
 }
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
-    constructor(private readonly context: vscode.ExtensionContext) {}
+    constructor(
+        private readonly context: vscode.ExtensionContext,
+        private readonly globals: ExtensionGlobals,
+    ) {}
 
     public resolveWebviewView(webviewView: vscode.WebviewView) {
         webviewView.webview.options = {

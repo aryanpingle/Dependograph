@@ -1,68 +1,7 @@
 import * as vscode from "vscode";
 import { sendDependencyGraph } from "./dependency-graph";
 import { getWebviewURI } from "./utils";
-
-let currentPanel: vscode.WebviewPanel | null = null;
-
-function getURI(
-    context: vscode.ExtensionContext,
-    ...pathSegments: string[]
-): vscode.Uri {
-    return getWebviewURI(currentPanel.webview, context, ...pathSegments);
-}
-
-export async function createVisualizationEditor(
-    context: vscode.ExtensionContext,
-) {
-    // Check if a panel already exists
-    if (currentPanel !== null) {
-        currentPanel.reveal(undefined);
-        return;
-    }
-
-    if (!vscode.workspace?.workspaceFolders?.[0]) {
-        vscode.window.showErrorMessage(`No workspace found.`);
-        return;
-    }
-
-    currentPanel = vscode.window.createWebviewPanel(
-        "customType",
-        "Dependograph",
-        vscode.window.activeTextEditor?.viewColumn || vscode.ViewColumn.One,
-        {
-            enableScripts: true,
-            // TODO: Use get/setState() to improve memory utilization
-            retainContextWhenHidden: true,
-        },
-    );
-
-    // Add listeners to the panel
-    currentPanel.webview.onDidReceiveMessage((message) => {
-        switch (message.command) {
-            case "alert":
-                vscode.window.showInformationMessage(
-                    `${JSON.stringify(message.data)}`,
-                );
-                break;
-            case "getDependencyGraph":
-                sendDependencyGraph(currentPanel!, message.data);
-                break;
-        }
-    });
-    currentPanel.onDidDispose(() => {
-        currentPanel = null;
-    });
-
-    // Render the webview
-    const params: WebviewParams = {
-        cssURIs: [
-            getURI(context, "assets", "css", "vscode.css"),
-            getURI(context, "assets", "css", "visualization.css"),
-        ],
-        jsURIs: [getURI(context, "out", "webviews", "visualization.js")],
-    };
-    currentPanel.webview.html = getWebviewContent(params);
-}
+import { ExtensionGlobals } from "./extension";
 
 /**
  * Definition of the parameters object passed to the webview
@@ -72,8 +11,87 @@ interface WebviewParams {
     jsURIs: vscode.Uri[];
 }
 
-function getWebviewContent(params: WebviewParams): string {
-    return /* html */ `
+export class VisualizationEditorProvider {
+    private currentPanel: vscode.WebviewPanel | null = null;
+
+    constructor(
+        private readonly context: vscode.ExtensionContext,
+        private readonly globals: ExtensionGlobals,
+    ) {}
+
+    createPanel() {
+        // Check if a panel already exists
+        if (this.currentPanel !== null) {
+            this.currentPanel.reveal(undefined);
+            return;
+        }
+
+        if (!vscode.workspace?.workspaceFolders?.[0]) {
+            vscode.window.showErrorMessage(`No workspace found.`);
+            return;
+        }
+
+        this.currentPanel = vscode.window.createWebviewPanel(
+            "customType",
+            "Dependograph",
+            vscode.window.activeTextEditor?.viewColumn || vscode.ViewColumn.One,
+            {
+                enableScripts: true,
+                // TODO: Use get/setState() to improve memory utilization
+                retainContextWhenHidden: true,
+            },
+        );
+
+        // Add listeners to the panel
+        this.currentPanel.webview.onDidReceiveMessage((message) => {
+            switch (message.command) {
+                case "alert":
+                    vscode.window.showInformationMessage(
+                        `${JSON.stringify(message.data)}`,
+                    );
+                    break;
+                case "getDependencyGraph":
+                    sendDependencyGraph(this.currentPanel!, message.data);
+                    break;
+            }
+        });
+        this.currentPanel.onDidDispose(() => {
+            this.currentPanel = null;
+        });
+
+        // Render the webview
+        const params: WebviewParams = {
+            cssURIs: [
+                getWebviewURI(
+                    this.currentPanel.webview,
+                    this.context,
+                    "assets",
+                    "css",
+                    "vscode.css",
+                ),
+                getWebviewURI(
+                    this.currentPanel.webview,
+                    this.context,
+                    "assets",
+                    "css",
+                    "visualization.css",
+                ),
+            ],
+            jsURIs: [
+                getWebviewURI(
+                    this.currentPanel.webview,
+                    this.context,
+                    "out",
+                    "webviews",
+                    "visualization.js",
+                ),
+            ],
+        };
+        this.currentPanel.webview.html = this._getWebviewContent(params);
+    }
+
+    _getWebviewContent(params: WebviewParams): string {
+        return /* html */ `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -103,5 +121,6 @@ function getWebviewContent(params: WebviewParams): string {
     </div>
 </body>
 </html>
-    `;
+        `;
+    }
 }
