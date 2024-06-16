@@ -7,34 +7,19 @@ import {
     setupVisualization,
     resizeSVG,
 } from "./d3-simulation";
+import { AcquiredVsCodeApi } from "../utils";
 
 // @ts-ignore
-const vscodeAPI = acquireVsCodeApi() as {
-    postMessage(message: any): void;
-    getState(): any;
-};
+const vscodeAPI: AcquiredVsCodeApi = acquireVsCodeApi();
 
 function setup() {
-    const input_entry_file = document.querySelector(
-        "#input-entry_file",
-    ) as HTMLInputElement;
-    input_entry_file.addEventListener("change", function (event) {
-        // this.files does not have a map function
-        const filePaths: string[] = [];
-        for (let i = 0; i < input_entry_file.files!.length; ++i) {
-            filePaths.push((input_entry_file.files![i] as any).path);
-        }
-        vscodeAPI.postMessage({
-            command: "getDependencyGraph",
-            data: filePaths,
-        });
-    });
-
     // Add resize listener
     window.addEventListener("resize", (event) => {
-        const y = document.querySelector(".svg-container");
-        resizeSVG(y.clientWidth, y.clientHeight);
+        const container = document.querySelector(".svg-container");
+        resizeSVG(container.clientWidth, container.clientHeight);
     });
+    const container = document.querySelector(".svg-container");
+    resizeSVG(container.clientWidth, container.clientHeight);
 }
 setup();
 
@@ -80,8 +65,6 @@ function onReceivedDependencyGraph(dependencyGraph: DependencyObject) {
      * }
      */
     const graph: DirectedGraphObject = {};
-
-    console.log(workspace);
 
     // TODO: Check efficiency
     function dfs(obj: DependencyObject) {

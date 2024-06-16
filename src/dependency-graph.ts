@@ -6,7 +6,7 @@ import dependencyTree from "dependency-tree";
  * @param filePaths A list of file paths for each entry file
  */
 export function sendDependencyGraph(
-    panel: vscode.WebviewPanel,
+    webview: vscode.Webview,
     filePaths: string[],
 ) {
     const currentWorkspace = vscode.workspace!.workspaceFolders![0].uri.fsPath;
@@ -41,7 +41,7 @@ export function sendDependencyGraph(
     });
 
     // Send the dependency graph
-    panel.webview.postMessage({
+    webview.postMessage({
         command: "takeYourDependencyGraph",
         data: dependencyGraph,
         workspace: currentWorkspace,

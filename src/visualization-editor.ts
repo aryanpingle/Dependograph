@@ -19,10 +19,11 @@ export class VisualizationEditorProvider {
         private readonly globals: ExtensionGlobals,
     ) {}
 
-    createPanel() {
+    createPanel(filePaths: string[]) {
         // Check if a panel already exists
         if (this.currentPanel !== null) {
             this.currentPanel.reveal(undefined);
+            sendDependencyGraph(this.currentPanel.webview, filePaths);
             return;
         }
 
@@ -49,9 +50,6 @@ export class VisualizationEditorProvider {
                     vscode.window.showInformationMessage(
                         `${JSON.stringify(message.data)}`,
                     );
-                    break;
-                case "getDependencyGraph":
-                    sendDependencyGraph(this.currentPanel!, message.data);
                     break;
             }
         });
@@ -88,6 +86,8 @@ export class VisualizationEditorProvider {
             ],
         };
         this.currentPanel.webview.html = this._getWebviewContent(params);
+
+        sendDependencyGraph(this.currentPanel.webview, filePaths);
     }
 
     _getWebviewContent(params: WebviewParams): string {
@@ -109,13 +109,6 @@ export class VisualizationEditorProvider {
         .join("")}
 </head>
 <body>
-    <div class="abs">
-        <input type="file" name="input-entry_file" id="input-entry_file" multiple>
-        <label>
-            <input type="checkbox" name="input-hide_names" id="input-hide_names">
-            Hide filenames
-        </label>
-    </div>
     <div class="svg-container">
         <svg></svg>
     </div>

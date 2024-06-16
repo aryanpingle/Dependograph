@@ -3,6 +3,10 @@
  * https://github.com/microsoft/vscode-extension-samples/blob/main/webview-view-sample/media/vscode.css
  */
 
+* {
+	box-sizing: border-box;
+}
+
 :root {
 	--container-paddding: 20px;
 	--input-padding-vertical: 6px;

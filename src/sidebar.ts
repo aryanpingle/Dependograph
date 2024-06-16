@@ -21,7 +21,13 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             // Allow scripts in the webview
             enableScripts: true,
         };
-        webviewView.webview.onDidReceiveMessage(async (data) => {});
+        webviewView.webview.onDidReceiveMessage((message) => {
+            switch (message.command) {
+                case "showDependencyGraph":
+                    this.globals.visualizationEditor.createPanel(message.data);
+                    break;
+            }
+        });
 
         const params: WebviewParams = {
             cssURIs: [
@@ -30,10 +36,18 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
                     this.context,
                     "assets",
                     "css",
-                    "vscode",
+                    "vscode.css",
                 ),
             ],
-            jsURIs: [],
+            jsURIs: [
+                getWebviewURI(
+                    webviewView.webview,
+                    this.context,
+                    "out",
+                    "webviews",
+                    "sidebar.js",
+                ),
+            ],
         };
         webviewView.webview.html = this.getWebviewHTML(params);
     }
@@ -57,7 +71,11 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         .join("")}
 </head>
 <body>
-        <h1>Hi XD</h1>
+    <input type="file" name="input-entry_file" id="input-entry_file" multiple>
+    <label>
+        <input type="checkbox" name="input-hide_names" id="input-hide_names">
+        Hide filenames
+    </label>
 </body>
 </html>
 `;

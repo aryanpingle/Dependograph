@@ -36,14 +36,6 @@ const colors = {
     node: "currentColor",
 };
 
-(
-    document.querySelector("#input-hide_names") as HTMLInputElement
-).addEventListener("change", function () {
-    d3Nodes
-        .selectAll("text")
-        .attr("visibility", this.checked ? "hidden" : "visible");
-});
-
 /**
  * Initializes the svg with the given data
  */
@@ -90,7 +82,6 @@ function initialize() {
     svg = (d3.select("svg") as SVGSelection)
         .attr("style", "max-width: 100%; height: auto; font: 12px sans-serif;")
         .call(d3.zoom<SVGElement, unknown>().on("zoom", zoomed));
-    resizeSVG(width, height);
 
     // Create the container for everything inside the svg that should be zoomable / pannable
     zoom_container = d3.select("svg").append("g").classed("svg_inner", true);
@@ -184,9 +175,16 @@ function createD3Nodes() {
 }
 
 export function resizeSVG(width: number, height: number) {
-    svg.attr("width", width)
-        .attr("height", height)
-        .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`);
+    width = Math.floor(width);
+    height = Math.floor(height);
+    const svgElement = document.querySelector("svg") as SVGElement;
+    console.log(svgElement);
+    svgElement.setAttribute("width", "" + width);
+    svgElement.setAttribute("height", "" + height);
+    svgElement.setAttribute(
+        "viewBox",
+        `-${width / 2} -${height / 2} ${width} ${height}`,
+    );
 }
 
 function zoomed(event: any) {
