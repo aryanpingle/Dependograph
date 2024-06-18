@@ -1,11 +1,32 @@
 import * as vscode from "vscode";
-import dependencyTree from "dependency-tree";
+// import dependencyTree from "dependency-tree";
+import { getDependencyObject } from "./code-analyser";
+import path from "path";
+
+interface FilesMapping {
+    exportedVariables: Object; // TODO
+    fileLocation: string;
+    importedFilesMapping: Object; // TODO
+    isEntryFile: boolean;
+    name: string;
+    staticImportFilesMapping: Object; // TODO
+    type: "FILE";
+    webpackChunkConfiguration: Object; // TODO
+}
+
+interface DependencyInfo {
+    filesMapping: FilesMapping;
+    excludedFilesRegex: RegExp;
+    // Not a typo
+    unparsableVistedFiles: number;
+    visitedFilesMapping: Record<string, boolean>;
+}
 
 /**
  * Create a dependency graph (if possible) from the entry files and send it to the webview.
  * @param filePaths A list of file paths for each entry file
  */
-export function sendDependencyGraph(
+export async function sendDependencyGraph(
     webview: vscode.Webview,
     filePaths: string[],
 ) {
@@ -30,15 +51,10 @@ export function sendDependencyGraph(
         );
     }
 
-    const dependencyGraph = dependencyTree({
-        directory: currentWorkspace,
-        filename: filePaths[0],
-        // TODO: Inefficient. Custom parser should ignore by default.
-        filter: (path: string): boolean => {
-            if (path.includes("node_modules")) return false;
-            return true;
-        },
-    });
+    const dependencyGraph = (await getDependencyObject(filePaths, [
+        path.dirname(filePaths[0]),
+    ])) as DependencyInfo;
+    // console.log(dependencyGraph);
 
     // Send the dependency graph
     webview.postMessage({
