@@ -1,10 +1,5 @@
 import * as vscode from "vscode";
 
-export interface AcquiredVsCodeApi {
-    postMessage(message: any): void;
-    getState(): any;
-}
-
 export function getNonce() {
     let text = "";
     const possible =

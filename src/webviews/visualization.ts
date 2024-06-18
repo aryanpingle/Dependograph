@@ -7,7 +7,8 @@ import {
     setupVisualization,
     resizeSVG,
 } from "./d3-simulation";
-import { AcquiredVsCodeApi } from "../utils";
+import { AcquiredVsCodeApi, longestCommonPrefix } from "./utils";
+import { DependencyInfo } from "../code-analyser";
 
 // @ts-ignore
 const vscodeAPI: AcquiredVsCodeApi = acquireVsCodeApi();
@@ -35,62 +36,48 @@ window.addEventListener("message", ({ data: message }) => {
     }
 });
 
-interface DependencyObject {
-    [key: string]: DependencyObject;
+interface GraphRepresentation {
+    [key: string]: Record<string, boolean>;
 }
 
-type DirectedGraphObject = Record<string, Record<string, boolean>>;
+// TODO: Maybe the graph should be its own class?
 
-function longestCommonPrefix(strings: string[]) {
-    if (strings.length === 0) return "";
-    let prefix = strings[0];
-    for (let i = 1; i < strings.length; i++)
-        while (strings[i].indexOf(prefix) != 0) {
-            prefix = prefix.slice(0, prefix.length - 1);
-            if (prefix === "") return "";
+function addEdge(graph: GraphRepresentation, source: string, target: string) {
+    if (source in graph[target]) {
+        // Circular dependency
+        graph[target][source] = true;
+    } else {
+        // Unidirectional dependency
+        graph[source][target] = false;
+    }
+}
+
+function addNode(graph: GraphRepresentation, node: string) {
+    if (!(node in graph)) {
+        graph[node] = {};
+    }
+}
+
+function initGraph(graph: GraphRepresentation, dependencyInfo: DependencyInfo) {
+    for (const file in dependencyInfo.filesMapping) {
+        addNode(graph, file);
+
+        const importedFilesMapping =
+            dependencyInfo.filesMapping[file].importedFilesMapping;
+        for (const dep in importedFilesMapping) {
+            addNode(graph, dep);
+            addEdge(graph, file, dep);
         }
-    return prefix;
+    }
 }
 
 /**
  * Handles visualizing the dependency graph.
- * @param {Object} dependencyGraph
+ * @param {Object} dependencyInfo
  */
-function onReceivedDependencyGraph(dependencyGraph: DependencyObject) {
-    /**
-     * {
-     *   file: {
-     *     dep: isCircular
-     *   }
-     * }
-     */
-    const graph: DirectedGraphObject = {};
-
-    // TODO: Check efficiency
-    function dfs(obj: DependencyObject) {
-        // Add files to nodes array
-        for (const file in obj) {
-            if (!(file in graph)) {
-                graph[file] = {};
-            }
-
-            // Add direct dependencies
-            for (const dep in obj[file]) {
-                // Try to add an edge from file to dep
-
-                // Check if dep is actually a parent of file
-                if (dep in graph && file in graph[dep]) {
-                    // Circular dependency
-                    graph[dep][file] = true;
-                } else {
-                    // Normal dependency
-                    graph[file][dep] = false;
-                }
-            }
-            dfs(obj[file]);
-        }
-    }
-    dfs(dependencyGraph);
+function onReceivedDependencyGraph(dependencyInfo: DependencyInfo) {
+    const graph: GraphRepresentation = {};
+    initGraph(graph, dependencyInfo);
 
     // Create nodes and links (and trim their common workspace)
     const nodes: SimNode[] = [];
