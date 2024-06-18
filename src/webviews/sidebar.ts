@@ -14,7 +14,7 @@ function setup() {
             filePaths.push((input_entry_file.files![i] as any).path);
         }
         console.log(filePaths);
-        
+
         vscodeAPI.postMessage({
             command: "showDependencyGraph",
             data: filePaths,
