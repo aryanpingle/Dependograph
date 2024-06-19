@@ -2,7 +2,7 @@ export const DEFAULT_ENTRY_ARRAY = [/.[jt]sx?$/];
 export const DEFAULT_REGEX_STRING = "!^()";
 export const DEFAULT_TRUE_REGEX_STRING = "^()";
 export const IGNORED_FILES_REGEX =
-  /(\.git)|(\.spec\.(.*))|(\.mock\.(.*))|(\.fixtures?\.(.*))|(\.test\.(.*))|\.json$|\.md$|\.jpe?g$|\.png$|\.woff2$|\.hdr$|\.mp[0-9]$|\.svg$|\.glb$|\.mdx$|\.webp$|\.jade$|\.coffee$|\.styl$|\.story\.(.*)|\.babelrc$|\.env$|\.config\.(.*)|\.DS_Store$/;
+  /(\.git)|(\.spec\.(.*))|(\.mock\.(.*))|(\.fixtures?\.(.*))|(\.test\.(.*))|\.md$|\.woff2$|\.hdr$|\.mp[0-9]$|\.glb$|\.mdx$|\.jade$|\.coffee$|\.styl$|\.story\.(.*)|\.babelrc$|\.env$|\.config\.(.*)|\.DS_Store$/;
 export const IGNORED_FOLDERS_REGEX =
   /node_modules|__spec__|__mocks?__|__tests?__|__fixtures?__|\/spec\/|\/tests?\/|\/mocks?\/|\/fixtures?\/|__generated__|storybook|stories/;
 export const JSCONFIG_FILE = "jsconfig.json";
