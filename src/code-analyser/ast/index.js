@@ -1,4 +1,4 @@
-import traverse from "@babel/traverse";
+import _traverse from "@babel/traverse";
 import { parse } from "@babel/parser";
 import fs from "fs";
 import { astParserPlugins, astOtherSettings } from "./astSettings.js";
@@ -44,6 +44,8 @@ import {
   CHECK_USAGE,
   JSX,
 } from "../utility/constants/index.js";
+
+const traverse = typeof(_traverse) === "function" ? _traverse : _traverse.default;
 
 /**
  * Builds the AST of the file, by first getting the file's code
