@@ -7,8 +7,11 @@ import {
     setupVisualization,
     resizeSVG,
 } from "./d3-simulation";
-import { AcquiredVsCodeApi, longestCommonPrefix } from "./utils";
+import { AcquiredVsCodeApi, WebviewEmbeddedMetadata, longestCommonPrefix } from "./utils";
 import { DependencyInfo } from "../code-analyser";
+import { getFileType } from "./utils";
+
+declare const webviewMetadata: WebviewEmbeddedMetadata;
 
 // @ts-ignore
 const vscodeAPI: AcquiredVsCodeApi = acquireVsCodeApi();
@@ -24,11 +27,7 @@ function setup() {
 }
 setup();
 
-// TODO: Set some global extension-level variables at the top
-let workspace: string;
-
 window.addEventListener("message", ({ data: message }) => {
-    workspace = message.workspace;
     switch (message.command) {
         case "takeYourDependencyGraph":
             onReceivedDependencyGraph(message.data);
@@ -79,17 +78,22 @@ function onReceivedDependencyGraph(dependencyInfo: DependencyInfo) {
     const graph: GraphRepresentation = {};
     initGraph(graph, dependencyInfo);
 
-    // Create nodes and links (and trim their common workspace)
+    // Create nodes and links (and trim their common workspace path)
+    const workspacePath = webviewMetadata.workspaceURI.fsPath;
     const nodes: SimNode[] = [];
     const links: SimLink[] = [];
     for (const file in graph) {
-        nodes.push({
-            name: file.replace(workspace, ""),
-        });
+        const nodeObj: SimNode = {
+            name: file.replace(workspacePath, ""),
+            fileType: "file",
+        }
+        nodeObj.fileType = getFileType(nodeObj.name);
+        nodes.push(nodeObj);
+
         for (const dep in graph[file]) {
             links.push({
-                source: file.replace(workspace, ""),
-                target: dep.replace(workspace, ""),
+                source: file.replace(workspacePath, ""),
+                target: dep.replace(workspacePath, ""),
                 cyclic: graph[file][dep],
             });
         }
@@ -100,7 +104,7 @@ function onReceivedDependencyGraph(dependencyInfo: DependencyInfo) {
         let commonPrefix = longestCommonPrefix(nodes.map((node) => node.name));
 
         // Hacky way to get the path separator without using the path module
-        const pathSep = workspace.startsWith("/") ? "/" : "\\";
+        const pathSep = workspacePath.startsWith("/") ? "/" : "\\";
         const lastSepIndex = commonPrefix.lastIndexOf(pathSep);
         if (lastSepIndex !== -1) {
             commonPrefix = commonPrefix.substring(0, lastSepIndex + 1);

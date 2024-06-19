@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import { sendDependencyGraph } from "./dependency-graph";
 import { getWebviewURI } from "./utils";
 import { ExtensionGlobals } from "./extension";
+import { WebviewEmbeddedMetadata } from "./webviews/utils";
+import path from "path";
 
 /**
  * Definition of the parameters object passed to the webview
@@ -9,6 +11,7 @@ import { ExtensionGlobals } from "./extension";
 interface WebviewParams {
     cssURIs: vscode.Uri[];
     jsURIs: vscode.Uri[];
+    webviewMetadata: WebviewEmbeddedMetadata;
 }
 
 export class VisualizationEditorProvider {
@@ -84,6 +87,11 @@ export class VisualizationEditorProvider {
                     "visualization.js",
                 ),
             ],
+            webviewMetadata: {
+                pathSep: path.sep,
+                workspaceURI: vscode.workspace.workspaceFolders[0].uri,
+                extensionWebviewURI: this.currentPanel.webview.asWebviewUri(this.context.extensionUri).toString(),
+            }
         };
         this.currentPanel.webview.html = this._getWebviewContent(params);
 
@@ -98,6 +106,11 @@ export class VisualizationEditorProvider {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
+
+    <!-- Embed webview metadata -->
+    <script>
+        const webviewMetadata = ${JSON.stringify(params.webviewMetadata)};
+    </script>
 
     <!-- CSS Stylesheets -->
     ${params.cssURIs

@@ -4,19 +4,19 @@
  */
 
 import * as d3 from "d3";
+import { FileType, WebviewEmbeddedMetadata } from "./utils";
+
+declare const webviewMetadata: WebviewEmbeddedMetadata;
 
 export interface SimNode extends d3.SimulationNodeDatum {
     name: string;
+    fileType: FileType;
 }
 export interface SimLink extends d3.SimulationLinkDatum<SimNode> {
     cyclic: boolean;
 }
 type SVGSelection = d3.Selection<SVGElement, unknown, HTMLElement, any>;
 type SVGGSelection<T> = d3.Selection<SVGGElement, T, SVGElement, any>;
-
-// Declare the chart dimensions and margins.
-const width = 640;
-const height = 400;
 
 // Simulation variables (logical)
 var simulation: d3.Simulation<SimNode, SimLink>;
@@ -33,7 +33,7 @@ var zoom_container: d3.Selection<SVGGElement, unknown, HTMLElement, any>;
 const colors = {
     cyclic: "var(--vscode-editorError-foreground)",
     acyclic: "var(--vscode-editorWarning-foreground)",
-    node: "currentColor",
+    node_modules: "var(--vscode-gitDecoration-untrackedResourceForeground)",
 };
 
 /**
@@ -141,13 +141,16 @@ function createD3Nodes() {
     d3Nodes = zoom_container
         .append("g")
         .classed("node-g", true)
-        .attr("fill", colors.node)
+        .attr("fill", "currentColor")
         .attr("stroke-linecap", "round")
         .attr("stroke-linejoin", "round")
         .selectAll("g")
         .data(simulationNodes)
         .enter()
         .append("g")
+        .attr("fill", (node) =>
+            node.fileType === "nodejs" ? colors.node_modules : "currentColor",
+        )
         .call(
             d3
                 .drag<SVGGElement, SimNode>()
@@ -156,11 +159,26 @@ function createD3Nodes() {
                 .on("end", dragended),
         );
 
+    // d3Nodes
+    //     .append("circle")
+    //     // .attr("stroke", "red")
+    //     .attr("stroke-width", 1.5)
+    //     .attr("r", 4);
+
     d3Nodes
-        .append("circle")
-        // .attr("stroke", "red")
-        .attr("stroke-width", 1.5)
-        .attr("r", 4);
+        .append("image")
+        .attr("href", (node) =>
+            [
+                webviewMetadata.extensionWebviewURI,
+                "assets",
+                "icons",
+                node.fileType + ".svg",
+            ].join(webviewMetadata.pathSep),
+        )
+        .attr("x", -8)
+        .attr("y", -8)
+        .attr("width", 16)
+        .attr("height", 16);
 
     d3Nodes
         .append("text")
@@ -178,7 +196,6 @@ export function resizeSVG(width: number, height: number) {
     width = Math.floor(width);
     height = Math.floor(height);
     const svgElement = document.querySelector("svg") as SVGElement;
-    console.log(svgElement);
     svgElement.setAttribute("width", "" + width);
     svgElement.setAttribute("height", "" + height);
     svgElement.setAttribute(
@@ -203,7 +220,7 @@ function getLinkArc(link: SimLink, fromSource: boolean) {
 
 // Functionality for node-dragging
 
-function dragstarted(d: any) {
+function dragstarted(d: any, node: SimNode) {
     d.subject.fx = d.x;
     d.subject.fy = d.y;
     if (!d.active) simulation.alphaTarget(0.3).restart();
