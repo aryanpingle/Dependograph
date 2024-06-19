@@ -7,7 +7,11 @@ import {
     setupVisualization,
     resizeSVG,
 } from "./d3-simulation";
-import { AcquiredVsCodeApi, WebviewEmbeddedMetadata, longestCommonPrefix } from "./utils";
+import {
+    AcquiredVsCodeApi,
+    WebviewEmbeddedMetadata,
+    longestCommonPrefix,
+} from "./utils";
 import { DependencyInfo } from "../code-analyser";
 import { getFileType } from "./utils";
 
@@ -75,6 +79,7 @@ function initGraph(graph: GraphRepresentation, dependencyInfo: DependencyInfo) {
  * @param {Object} dependencyInfo
  */
 function onReceivedDependencyGraph(dependencyInfo: DependencyInfo) {
+    console.log(dependencyInfo);
     const graph: GraphRepresentation = {};
     initGraph(graph, dependencyInfo);
 
@@ -86,7 +91,7 @@ function onReceivedDependencyGraph(dependencyInfo: DependencyInfo) {
         const nodeObj: SimNode = {
             name: file.replace(workspacePath, ""),
             fileType: "file",
-        }
+        };
         nodeObj.fileType = getFileType(nodeObj.name);
         nodes.push(nodeObj);
 

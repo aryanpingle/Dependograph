@@ -90,8 +90,10 @@ export class VisualizationEditorProvider {
             webviewMetadata: {
                 pathSep: path.sep,
                 workspaceURI: vscode.workspace.workspaceFolders[0].uri,
-                extensionWebviewURI: this.currentPanel.webview.asWebviewUri(this.context.extensionUri).toString(),
-            }
+                extensionWebviewURI: this.currentPanel.webview
+                    .asWebviewUri(this.context.extensionUri)
+                    .toString(),
+            },
         };
         this.currentPanel.webview.html = this._getWebviewContent(params);
 

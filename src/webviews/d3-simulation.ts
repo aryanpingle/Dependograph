@@ -43,6 +43,9 @@ export function setupVisualization(nodes: SimNode[], links: SimLink[]) {
     simulationNodes = nodes;
     simulationLinks = links;
 
+    // Reset the svg
+    document.querySelector("svg").innerHTML = "";
+
     initialize();
 }
 
@@ -158,12 +161,6 @@ function createD3Nodes() {
                 .on("drag", dragged)
                 .on("end", dragended),
         );
-
-    // d3Nodes
-    //     .append("circle")
-    //     // .attr("stroke", "red")
-    //     .attr("stroke-width", 1.5)
-    //     .attr("r", 4);
 
     d3Nodes
         .append("image")
