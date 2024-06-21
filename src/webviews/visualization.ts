@@ -7,10 +7,7 @@ import {
     setupVisualization,
     resizeSVG,
 } from "./force-directed-graph";
-import {
-    AcquiredVsCodeApi,
-    WebviewEmbeddedMetadata,
-} from "./utils";
+import { AcquiredVsCodeApi, WebviewEmbeddedMetadata } from "./utils";
 import { DependencyInfo } from "../code-analyser";
 import { getFileType } from "./utils";
 

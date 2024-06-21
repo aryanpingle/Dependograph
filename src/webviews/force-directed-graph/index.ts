@@ -4,7 +4,7 @@
  */
 
 import * as d3 from "d3";
-import { FileType, WebviewEmbeddedMetadata } from "./utils";
+import { FileType, WebviewEmbeddedMetadata } from "../utils";
 
 declare const webviewMetadata: WebviewEmbeddedMetadata;
 
