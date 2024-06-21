@@ -6,11 +6,10 @@ import {
     SimNode,
     setupVisualization,
     resizeSVG,
-} from "./d3-simulation";
+} from "./force-directed-graph";
 import {
     AcquiredVsCodeApi,
     WebviewEmbeddedMetadata,
-    longestCommonPrefix,
 } from "./utils";
 import { DependencyInfo } from "../code-analyser";
 import { getFileType } from "./utils";
@@ -75,56 +74,71 @@ function initGraph(graph: GraphRepresentation, dependencyInfo: DependencyInfo) {
 }
 
 /**
+ * Process the filename into a name suitable for node objects.
+ * Node modules are given single-phrase names.
+ * @example "/node_modules/lodash/index.js" -> "lodash"
+ */
+function getProcessedFilename(filename: string): string {
+    const pathSep = webviewMetadata.pathSep;
+
+    const nodeModulesPrefix = pathSep + "node_modules" + pathSep;
+    if (filename.startsWith(nodeModulesPrefix)) {
+        const moduleEndIndex = filename.indexOf(
+            pathSep,
+            nodeModulesPrefix.length,
+        );
+        filename = filename.substring(nodeModulesPrefix.length, moduleEndIndex);
+    }
+
+    return filename;
+}
+
+/**
+ * Remove the leading workspace directory from the given filename.
+ */
+function removeWorkspaceFromFilename(filename: string): string {
+    const workspacePath = webviewMetadata.workspaceURI.fsPath;
+    return filename.replace(workspacePath, "");
+}
+
+/**
  * Handles visualizing the dependency graph.
  * @param {Object} dependencyInfo
  */
 function onReceivedDependencyGraph(dependencyInfo: DependencyInfo) {
-    console.log(dependencyInfo);
     const graph: GraphRepresentation = {};
     initGraph(graph, dependencyInfo);
 
     // Create nodes and links (and trim their common workspace path)
-    const workspacePath = webviewMetadata.workspaceURI.fsPath;
+
     const nodes: SimNode[] = [];
+    const FilenameToNodeIdx: Map<string, number> = new Map<string, number>();
+
+    // Create all nodes
+    for (const file in graph) {
+        const nodeIndex = nodes.length;
+        let filenameWithoutWorkspace = removeWorkspaceFromFilename(file);
+        const fileType = getFileType(filenameWithoutWorkspace);
+        const nodeName = getProcessedFilename(filenameWithoutWorkspace);
+        nodes.push({
+            name: nodeName,
+            fileType: fileType,
+            index: nodeIndex,
+        });
+
+        FilenameToNodeIdx[file] = nodeIndex;
+    }
+    // Create all links
     const links: SimLink[] = [];
     for (const file in graph) {
-        const nodeObj: SimNode = {
-            name: file.replace(workspacePath, ""),
-            fileType: "file",
-        };
-        nodeObj.fileType = getFileType(nodeObj.name);
-        nodes.push(nodeObj);
-
         for (const dep in graph[file]) {
             links.push({
-                source: file.replace(workspacePath, ""),
-                target: dep.replace(workspacePath, ""),
+                source: FilenameToNodeIdx[file],
+                target: FilenameToNodeIdx[dep],
                 cyclic: graph[file][dep],
             });
         }
     }
-
-    // Remove common prefixes (optional, disabled right now)
-    if (false) {
-        let commonPrefix = longestCommonPrefix(nodes.map((node) => node.name));
-
-        // Hacky way to get the path separator without using the path module
-        const pathSep = workspacePath.startsWith("/") ? "/" : "\\";
-        const lastSepIndex = commonPrefix.lastIndexOf(pathSep);
-        if (lastSepIndex !== -1) {
-            commonPrefix = commonPrefix.substring(0, lastSepIndex + 1);
-
-            for (const node of nodes) {
-                node.name = node.name.replace(commonPrefix, "");
-            }
-            for (const link of links) {
-                link.source = (link.source as string).replace(commonPrefix, "");
-                link.target = (link.target as string).replace(commonPrefix, "");
-            }
-        }
-    }
-
-    // console.log(nodes, links);
 
     setupVisualization(nodes, links);
 }

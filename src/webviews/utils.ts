@@ -27,6 +27,7 @@ export type FileType =
 export function getFileType(filepath: string, pathSep: string = "/"): FileType {
     // NodeJS
     if (/^@/.test(filepath)) return "nodejs";
+    if (/^[^\\\/]/.test(filepath)) return "nodejs";
     if (filepath.indexOf(":") != -1 && filepath.indexOf(":\\") == -1)
         return "nodejs";
     if (/(?:\\|\/)node_modules(?:\\|\/)/.test(filepath)) return "nodejs";
