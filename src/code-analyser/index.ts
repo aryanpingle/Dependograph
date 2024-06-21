@@ -5,10 +5,18 @@ import {
 import objectFactory from "./utility/factory.js";
 import { analyseCodeAndDetectDeadfiles } from "./features/index.js";
 
+export interface ExportedVariablesObject {
+    firstReferencedAt: string;
+    individualFileReferencesMapping: Object; // TODO
+    isEntryFileObject: boolean;
+    localName: string;
+    referenceCount: number;
+}
+
 export interface FilesMapping {
-    exportedVariables: Object; // TODO
+    exportedVariables: Record<string, ExportedVariablesObject>;
     fileLocation: string;
-    importedFilesMapping: Record<string, boolean>; // TODO
+    importedFilesMapping: Record<string, boolean>;
     isEntryFile: boolean;
     name: string;
     staticImportFilesMapping: Object; // TODO
