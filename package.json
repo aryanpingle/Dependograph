@@ -16,6 +16,7 @@
     "Other"
   ],
   "main": "./out/extension.js",
+  "browser": "./out/extension.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
