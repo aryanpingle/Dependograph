@@ -3,6 +3,7 @@
 import * as vscode from "vscode";
 import { VisualizationEditorProvider } from "./visualization-editor";
 import { SidebarProvider } from "./sidebar";
+import { FileItemsProvider } from "./filepicker";
 
 export interface ExtensionGlobals {
     visualizationEditor: VisualizationEditorProvider;
@@ -44,6 +45,14 @@ export function activate(context: vscode.ExtensionContext) {
         ),
     );
     globals.sidebar = sidebarProvider;
+
+    const workspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    context.subscriptions.push(
+        vscode.window.registerTreeDataProvider(
+            "dependograph-explorer",
+            new FileItemsProvider(workspace),
+        ),
+    );
 }
 
 export function deactivate() {}

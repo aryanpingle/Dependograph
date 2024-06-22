@@ -29,6 +29,11 @@
     "views": {
       "dependograph-sidebar": [
         {
+          "id": "dependograph-explorer",
+          "name": "Entry Files",
+          "type": "tree"
+        },
+        {
           "id": "dependograph-sidebar",
           "name": "Dependograph",
           "type": "webview"
