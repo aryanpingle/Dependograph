@@ -5,44 +5,112 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 
-export class FileItemsProvider implements vscode.TreeDataProvider<FileItem> {
-    constructor(private readonly workspace: string) {}
+export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
+    private chosenFilesSet: Set<string> = new Set<string>();
+    private chosenFilesTreeItem: TreeItem;
 
-    // TODO: Implement this to sync this view with the file system
-    // onDidChangeTreeData?: vscode.Event<void | FileItem | FileItem[]>;
-
-    getTreeItem(element: FileItem): FileItem {
-        return element;
-    }
-
-    getChildren(element?: FileItem): vscode.ProviderResult<FileItem[]> {
-        const rootDir = element ? element.filepath : this.workspace;
-
-        const dirEntries = fs.readdirSync(rootDir, {
-            withFileTypes: true,
-        });
-        return Promise.resolve(
-            dirEntries.map(
-                (entry) =>
-                    new FileItem(
-                        path.join(rootDir, entry.name),
-                        entry.isFile(),
-                        element,
-                    ),
+    constructor(
+        private readonly workspace: string,
+        context: vscode.ExtensionContext,
+    ) {
+        // Add commands
+        context.subscriptions.push(
+            vscode.commands.registerCommand(
+                "dependograph.chooseEntryFile",
+                (element: TreeItem) => {
+                    this.chosenFilesSet.add(element.filepath);
+                    this.refresh();
+                },
+            ),
+        );
+        context.subscriptions.push(
+            vscode.commands.registerCommand(
+                "dependograph.dropEntryFile",
+                (element: TreeItem) => {
+                    this.chosenFilesSet.delete(element.filepath);
+                    this.refresh();
+                },
             ),
         );
     }
 
-    getParent(element: FileItem): vscode.ProviderResult<FileItem> {
+    getTreeItem(element: TreeItem): TreeItem {
+        return element;
+    }
+
+    getChildren(element?: TreeItem): vscode.ProviderResult<TreeItem[]> {
+        if (!element) {
+            this.chosenFilesTreeItem = new TreeItem("", false, undefined);
+            this.chosenFilesTreeItem.label = "Chosen";
+            this.chosenFilesTreeItem.description = "Entry Files";
+            this.chosenFilesTreeItem.collapsibleState =
+                vscode.TreeItemCollapsibleState.Expanded;
+
+            const workspaceFilesTreeItem = new TreeItem(
+                this.workspace,
+                false,
+                undefined,
+            );
+            workspaceFilesTreeItem.label = "Workspace Files";
+            workspaceFilesTreeItem.collapsibleState =
+                vscode.TreeItemCollapsibleState.Expanded;
+
+            return [this.chosenFilesTreeItem, workspaceFilesTreeItem];
+        } else if (element == this.chosenFilesTreeItem) {
+            // Get all chosen entry files
+            const chosenTreeItems = Array.from(this.chosenFilesSet).map(
+                (filepath) => new EntryFileTreeItem(filepath, element),
+            );
+
+            return chosenTreeItems;
+        } else {
+            // Get all files in the folder pointed to by this element
+            return this.getChildrenFromWorkspace(element);
+        }
+    }
+
+    getChildrenFromWorkspace(
+        element: TreeItem,
+    ): vscode.ProviderResult<TreeItem[]> {
+        const rootDir = element.filepath;
+
+        const dirEntries = fs.readdirSync(rootDir, {
+            withFileTypes: true,
+        });
+        return dirEntries.map(
+            (entry) =>
+                new TreeItem(
+                    path.join(rootDir, entry.name),
+                    entry.isFile(),
+                    element,
+                ),
+        );
+    }
+
+    getParent(element: TreeItem): vscode.ProviderResult<TreeItem> {
         return element.parent;
+    }
+
+    // Boilerplate code to refresh the TreeView
+
+    private _onDidChangeTreeData: vscode.EventEmitter<
+        TreeItem | undefined | null | void
+    > = new vscode.EventEmitter<TreeItem | undefined | null | void>();
+
+    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+
+    refresh(): void {
+        this._onDidChangeTreeData.fire();
     }
 }
 
-class FileItem extends vscode.TreeItem {
+class TreeItem extends vscode.TreeItem {
+    public isEntryFile: boolean = false;
+
     constructor(
         public readonly filepath: string,
         public readonly isFile: boolean,
-        public readonly parent: FileItem | undefined,
+        public readonly parent: TreeItem | undefined,
     ) {
         super(
             path.basename(filepath),
@@ -51,5 +119,16 @@ class FileItem extends vscode.TreeItem {
                 : vscode.TreeItemCollapsibleState.Collapsed,
         );
         this.resourceUri = vscode.Uri.file(filepath);
+        this.contextValue = isFile ? "file" : "folder";
+    }
+}
+
+class EntryFileTreeItem extends TreeItem {
+    constructor(
+        public filepath: string,
+        public readonly parent: TreeItem,
+    ) {
+        super(filepath, true, parent);
+        this.contextValue = "file--entry";
     }
 }

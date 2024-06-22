@@ -40,6 +40,20 @@
         }
       ]
     },
+    "menus": {
+      "view/item/context": [
+        {
+          "command": "dependograph.chooseEntryFile",
+          "group": "inline",
+          "when": "view == 'dependograph-explorer' && viewItem == 'file'"
+        },
+        {
+          "command": "dependograph.dropEntryFile",
+          "group": "inline",
+          "when": "view == 'dependograph-explorer' && viewItem == 'file--entry'"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "dependograph.helloWorld",
@@ -50,6 +64,16 @@
         "command": "dependograph.pathviz",
         "title": "Visualize Imports",
         "category": "Dependograph"
+      },
+      {
+        "command": "dependograph.chooseEntryFile",
+        "title": "Add to entry files",
+        "icon": "$(add)"
+      },
+      {
+        "command": "dependograph.dropEntryFile",
+        "title": "Remove from entry files",
+        "icon": "$(remove)"
       }
     ]
   },

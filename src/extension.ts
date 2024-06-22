@@ -50,7 +50,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.window.registerTreeDataProvider(
             "dependograph-explorer",
-            new FileItemsProvider(workspace),
+            new FileItemsProvider(workspace, context),
         ),
     );
 }
