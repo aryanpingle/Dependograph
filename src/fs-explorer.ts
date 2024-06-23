@@ -4,6 +4,7 @@
 import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
+import { binarySort } from "./utils";
 
 export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
     private chosenFilesSet: Set<string> = new Set<string>();
@@ -100,7 +101,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
         const dirEntries = fs.readdirSync(rootDir, {
             withFileTypes: true,
         });
-        return dirEntries.map(
+        const treeItems = dirEntries.map(
             (entry) =>
                 new TreeItem(
                     path.join(rootDir, entry.name),
@@ -108,6 +109,13 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
                     element,
                 ),
         );
+
+        // Sort alphabetically
+        treeItems.sort((a, b) => a.filepath.localeCompare(b.filepath));
+        // Sort folders before files
+        binarySort(treeItems, (element) => (element.isFile ? 1 : 0));
+
+        return treeItems;
     }
 
     getParent(element: TreeItem): vscode.ProviderResult<TreeItem> {
