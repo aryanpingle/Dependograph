@@ -35,7 +35,7 @@ function addSettingsListeners() {
     checkboxHideModules.addEventListener("change", function () {
         let { nodes, links } = new Graph(dependencyInfo).getNodesAndLinks();
 
-        if(this.checked) {
+        if (this.checked) {
             // Remove node modules
             const NodeModuleNodeIds = new Set<string>();
             nodes.forEach((node) => {

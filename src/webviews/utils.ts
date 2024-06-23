@@ -101,10 +101,7 @@ export class Graph {
         const nodes: SimNode[] = [];
 
         const NodeIdSet = new Set<string>();
-        const FilepathToNodeId: Map<string, number> = new Map<
-            string,
-            number
-        >();
+        const FilepathToNodeId: Map<string, number> = new Map<string, number>();
 
         function createNodeId(): string {
             return Math.random().toFixed(10 + 2);
@@ -113,7 +110,7 @@ export class Graph {
         // Create all nodes
         for (const file in this.graph) {
             let nodeId = createNodeId();
-            while(NodeIdSet.has(nodeId)) nodeId = createNodeId();
+            while (NodeIdSet.has(nodeId)) nodeId = createNodeId();
 
             NodeIdSet.add(nodeId);
 

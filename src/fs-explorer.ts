@@ -61,7 +61,10 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
             vscode.commands.registerCommand(
                 "dependograph.openFile",
                 (element: TreeItem) => {
-                    vscode.commands.executeCommand("vscode.open", element.resourceUri)
+                    vscode.commands.executeCommand(
+                        "vscode.open",
+                        element.resourceUri,
+                    );
                 },
             ),
         );

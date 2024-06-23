@@ -34,7 +34,8 @@ var zoom_container: d3.Selection<SVGGElement, unknown, HTMLElement, any>;
 const colors = {
     cyclic: "var(--vscode-editorError-foreground, red)",
     acyclic: "var(--vscode-editorWarning-foreground, orange)",
-    node_modules: "var(--vscode-gitDecoration-untrackedResourceForeground, green)",
+    node_modules:
+        "var(--vscode-gitDecoration-untrackedResourceForeground, green)",
 };
 
 /**
