@@ -3,7 +3,7 @@
   "name": "dependograph",
   "displayName": "Dependograph",
   "description": "Get interactive visualizations of your project dependencies.",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "icon": "./assets/images/extension-logo.png",
   "repository": {
     "type": "git",
@@ -38,16 +38,16 @@
     },
     "menus": {
       "view/title": [
-      {
-        "command": "dependograph.refreshFSExplorer",
-        "group": "navigation@1",
-        "when": "view == dependograph-fs-explorer"
-      },
-      {
-        "command": "dependograph.openVisualization",
-        "group": "navigation@2",
-        "when": "view == dependograph-fs-explorer"
-      }
+        {
+          "command": "dependograph.refreshFSExplorer",
+          "group": "navigation@1",
+          "when": "view == dependograph-fs-explorer"
+        },
+        {
+          "command": "dependograph.openVisualization",
+          "group": "navigation@2",
+          "when": "view == dependograph-fs-explorer"
+        }
       ],
       "view/item/context": [
         {
