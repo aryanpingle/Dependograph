@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
 import { sendDependencyGraph } from "./dependency-graph";
 import { getWebviewURI } from "./utils";
-import { ExtensionGlobals } from "./extension";
 import { WebviewEmbeddedMetadata } from "./webviews/utils";
 import path from "path";
 
@@ -17,10 +16,7 @@ interface WebviewParams {
 export class VisualizationEditorProvider {
     private currentPanel: vscode.WebviewPanel | null = null;
 
-    constructor(
-        private readonly context: vscode.ExtensionContext,
-        private readonly globals: ExtensionGlobals,
-    ) {
+    constructor(private readonly context: vscode.ExtensionContext) {
         context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.sendEntryFiles",

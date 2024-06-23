@@ -22,10 +22,7 @@ async function main() {
         allowOverwrite: true,
     });
     const ctxWebviews = await esbuild.context({
-        entryPoints: [
-            "src/webviews/visualization.ts",
-            "src/webviews/sidebar.ts",
-        ],
+        entryPoints: ["src/webviews/visualization.ts"],
         bundle: true,
         format: "esm",
         target: "es2020",
