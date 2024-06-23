@@ -51,13 +51,18 @@
       ],
       "view/item/context": [
         {
+          "command": "dependograph.openFile",
+          "group": "inline@1",
+          "when": "view == 'dependograph-fs-explorer' && viewItem != 'folder'"
+        },
+        {
           "command": "dependograph.chooseEntryFile",
-          "group": "inline",
+          "group": "inline@2",
           "when": "view == 'dependograph-fs-explorer' && viewItem == 'file'"
         },
         {
           "command": "dependograph.dropEntryFile",
-          "group": "inline",
+          "group": "inline@2",
           "when": "view == 'dependograph-fs-explorer' && viewItem == 'file--entry'"
         }
       ]
@@ -87,6 +92,11 @@
         "command": "dependograph.openVisualization",
         "icon": "$(window)",
         "title": "Create Visualization"
+      },
+      {
+        "command": "dependograph.openFile",
+        "icon": "$(go-to-file)",
+        "title": "Open File"
       }
     ]
   },

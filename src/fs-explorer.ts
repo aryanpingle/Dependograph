@@ -56,6 +56,15 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
                 },
             ),
         );
+        // TreeItem button that removes this from entry files
+        context.subscriptions.push(
+            vscode.commands.registerCommand(
+                "dependograph.openFile",
+                (element: TreeItem) => {
+                    vscode.commands.executeCommand("vscode.open", element.resourceUri)
+                },
+            ),
+        );
     }
 
     getTreeItem(element: TreeItem): TreeItem {
@@ -101,14 +110,16 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
         const dirEntries = fs.readdirSync(rootDir, {
             withFileTypes: true,
         });
-        const treeItems = dirEntries.map(
-            (entry) =>
-                new TreeItem(
-                    path.join(rootDir, entry.name),
-                    entry.isFile(),
-                    element,
-                ),
-        );
+        const treeItems = dirEntries
+            .map(
+                (entry) =>
+                    new TreeItem(
+                        path.join(rootDir, entry.name),
+                        entry.isFile(),
+                        element,
+                    ),
+            )
+            .filter((element) => !this.chosenFilesSet.has(element.filepath));
 
         // Sort alphabetically
         treeItems.sort((a, b) => a.filepath.localeCompare(b.filepath));
