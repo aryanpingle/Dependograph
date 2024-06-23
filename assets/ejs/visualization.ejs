@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <!-- Embed webview metadata -->
+    <%- "<script>const webviewMetadata = " + JSON.stringify(webviewMetadata) + ";</script>" %>
+    <%- "<script>const dependencyInfo = " + JSON.stringify(dependencyInfo) + ";</script>" %>
+
+    <!-- CSS Stylesheets -->
+    <% cssURIs.forEach(cssURI => { %>
+        <link rel="stylesheet" href="<%- cssURI %>">
+    <% }) %>
+    <!-- JS Scripts -->
+    <% jsURIs.forEach(jsURI => { %>
+        <script src="<%- jsURI %>" defer></script>
+    <% }) %>
+</head>
+<body>
+    <div class="svg-container">
+        <svg></svg>
+    </div>
+</body>
+</html>
+        

@@ -2,6 +2,8 @@ import * as vscode from "vscode";
 import { WebviewEmbeddedMetadata } from "./webviews/utils";
 import path from "path";
 import { DependencyInfo, getDependencyObject } from "./code-analyser";
+import * as ejs from "ejs";
+import * as fs from "fs";
 
 /**
  * Definition of the parameters object passed to the webview
@@ -116,44 +118,16 @@ export class VisualizationEditorProvider {
             workspacePath,
         ]);
 
-        const html = this.getWebviewContent(params);
-
-        // Print the html for testing purposes
-        // console.log(html);
-
-        this.currentEditor.webview.html = html;
-    }
-
-    private getWebviewContent(params: WebviewParams): string {
-        return /* html */ `
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-
-    <!-- Embed webview metadata -->
-    <script>
-        const webviewMetadata = ${JSON.stringify(params.webviewMetadata)};
-        const dependencyInfo = ${JSON.stringify(params.dependencyInfo)};
-    </script>
-
-    <!-- CSS Stylesheets -->
-    ${params.cssURIs
-        .map((cssURI) => `<link rel="stylesheet" href="${cssURI}">`)
-        .join("")}
-    <!-- JS Scripts -->
-    ${params.jsURIs
-        .map((jsURI) => `<script src="${jsURI}" defer></script>`)
-        .join("")}
-</head>
-<body>
-    <div class="svg-container">
-        <svg></svg>
-    </div>
-</body>
-</html>
-        `;
+        const ejsContent = fs
+            .readFileSync(
+                path.join(
+                    this.context.extensionUri.fsPath,
+                    "assets",
+                    "ejs",
+                    "visualization.ejs",
+                ),
+            )
+            .toString();
+        this.currentEditor.webview.html = ejs.render(ejsContent, params);
     }
 }
