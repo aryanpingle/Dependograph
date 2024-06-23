@@ -60,13 +60,19 @@ export class VisualizationEditorProvider {
 
         this.currentEditor = vscode.window.createWebviewPanel(
             "customType",
-            "Dependograph",
+            "Dependency Visualization",
             vscode.window.activeTextEditor?.viewColumn || vscode.ViewColumn.One,
             {
                 enableScripts: true,
                 // TODO: Use get/setState() to improve memory utilization
                 retainContextWhenHidden: true,
             },
+        );
+        this.currentEditor.iconPath = vscode.Uri.joinPath(
+            this.context.extensionUri,
+            "assets",
+            "images",
+            "extension-logo.png",
         );
 
         // Add listeners to the editor webview
