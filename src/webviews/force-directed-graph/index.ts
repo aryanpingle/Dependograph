@@ -11,7 +11,7 @@ declare const webviewMetadata: WebviewEmbeddedMetadata;
 export interface SimNode extends d3.SimulationNodeDatum {
     name: string;
     fileType: FileType;
-    index: number;
+    id: string;
 }
 export interface SimLink extends d3.SimulationLinkDatum<SimNode> {
     cyclic: boolean;
@@ -57,7 +57,7 @@ function initialize() {
             "link",
             d3
                 .forceLink<SimNode, SimLink>(simulationLinks)
-                .id((node) => node.index),
+                .id((node) => node.id),
         )
         .force("charge", d3.forceManyBody().strength(-600))
         .force("x", d3.forceX())

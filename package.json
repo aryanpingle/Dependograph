@@ -105,7 +105,7 @@
     "compile": "npm run check-types && node esbuild.js --production",
     "check-types": "tsc --noEmit",
     "watch": "tsc --watch -p ./",
-    "watch:esbuild": "node esbuild.js --watch",
+    "watch:esbuild": "node esbuild.js --production --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
     "vscode:prepublish": "npm run compile"
   },
@@ -133,6 +133,7 @@
     "@babel/generator": "7.18.2",
     "@babel/parser": "7.18.3",
     "@babel/traverse": "7.18.2",
+    "@vscode/webview-ui-toolkit": "^1.4.0",
     "cli-table3": "0.6.2",
     "d3": "7.9.0",
     "ejs": "^3.1.10",

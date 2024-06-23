@@ -77,6 +77,6 @@ svg {
     opacity: 0;
 }
 
-.settings_panel--expanded .settings_content {
+.settings_content--shown {
     opacity: 1;
 }
