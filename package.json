@@ -30,37 +30,39 @@
     "views": {
       "dependograph-sidebar": [
         {
-          "id": "dependograph-explorer",
+          "id": "dependograph-fs-explorer",
           "name": "Entry Files",
           "type": "tree"
-        },
-        {
-          "id": "dependograph-sidebar",
-          "name": "Dependograph",
-          "type": "webview"
         }
       ]
     },
     "menus": {
+      "view/title": [
+      {
+        "command": "dependograph.refreshFSExplorer",
+        "group": "navigation@1",
+        "when": "view == dependograph-fs-explorer"
+      },
+      {
+        "command": "dependograph.openVisualization",
+        "group": "navigation@2",
+        "when": "view == dependograph-fs-explorer"
+      }
+      ],
       "view/item/context": [
         {
           "command": "dependograph.chooseEntryFile",
           "group": "inline",
-          "when": "view == 'dependograph-explorer' && viewItem == 'file'"
+          "when": "view == 'dependograph-fs-explorer' && viewItem == 'file'"
         },
         {
           "command": "dependograph.dropEntryFile",
           "group": "inline",
-          "when": "view == 'dependograph-explorer' && viewItem == 'file--entry'"
+          "when": "view == 'dependograph-fs-explorer' && viewItem == 'file--entry'"
         }
       ]
     },
     "commands": [
-      {
-        "command": "dependograph.helloWorld",
-        "title": "Hello World",
-        "category": "Dependograph"
-      },
       {
         "command": "dependograph.pathviz",
         "title": "Visualize Imports",
@@ -75,6 +77,16 @@
         "command": "dependograph.dropEntryFile",
         "title": "Remove from entry files",
         "icon": "$(remove)"
+      },
+      {
+        "command": "dependograph.refreshFSExplorer",
+        "icon": "$(refresh)",
+        "title": "Refresh"
+      },
+      {
+        "command": "dependograph.openVisualization",
+        "icon": "$(window)",
+        "title": "Create Visualization"
       }
     ]
   },

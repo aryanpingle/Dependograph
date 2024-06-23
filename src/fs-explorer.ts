@@ -13,7 +13,29 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
         private readonly workspace: string,
         context: vscode.ExtensionContext,
     ) {
-        // Add commands
+        // Navigation button that refreshes the TreeView
+        context.subscriptions.push(
+            vscode.commands.registerCommand(
+                "dependograph.refreshFSExplorer",
+                () => {
+                    this.refresh();
+                },
+            ),
+        );
+        // Navigation button that uses the selected entry files
+        // to open a visualization window
+        context.subscriptions.push(
+            vscode.commands.registerCommand(
+                "dependograph.openVisualization",
+                () => {
+                    vscode.commands.executeCommand(
+                        "dependograph.sendEntryFiles",
+                        JSON.stringify(Array.from(this.chosenFilesSet)),
+                    );
+                },
+            ),
+        );
+        // TreeItem button that adds this to entry files
         context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.chooseEntryFile",
@@ -23,6 +45,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
                 },
             ),
         );
+        // TreeItem button that removes this from entry files
         context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.dropEntryFile",

@@ -20,7 +20,17 @@ export class VisualizationEditorProvider {
     constructor(
         private readonly context: vscode.ExtensionContext,
         private readonly globals: ExtensionGlobals,
-    ) {}
+    ) {
+        context.subscriptions.push(
+            vscode.commands.registerCommand(
+                "dependograph.sendEntryFiles",
+                (stringifiedEntryFiles: string) => {
+                    const entryFiles = JSON.parse(stringifiedEntryFiles);
+                    this.createPanel(entryFiles);
+                },
+            ),
+        );
+    }
 
     createPanel(filePaths: string[]) {
         // Check if a panel already exists
