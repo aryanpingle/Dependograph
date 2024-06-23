@@ -1,0 +1,6 @@
+[ ] Create settings panel within visualization webview
+[ ] Create preview panel within visualization webview
+[ ] Some way to select two nodes and find all paths between them
+    - Idea: Select one node and ctrl+click on the other?
+[ ] Track variables / references across files
+[ ] Support online URIs
