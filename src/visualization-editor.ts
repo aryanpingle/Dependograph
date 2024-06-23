@@ -1,8 +1,7 @@
 import * as vscode from "vscode";
-import { sendDependencyGraph } from "./dependency-graph";
-import { getWebviewURI } from "./utils";
 import { WebviewEmbeddedMetadata } from "./webviews/utils";
 import path from "path";
+import { DependencyInfo, getDependencyObject } from "./code-analyser";
 
 /**
  * Definition of the parameters object passed to the webview
@@ -11,37 +10,55 @@ interface WebviewParams {
     cssURIs: vscode.Uri[];
     jsURIs: vscode.Uri[];
     webviewMetadata: WebviewEmbeddedMetadata;
+    dependencyInfo: DependencyInfo;
 }
 
 export class VisualizationEditorProvider {
-    private currentPanel: vscode.WebviewPanel | null = null;
+    private currentEditor: vscode.WebviewPanel | null = null;
 
-    constructor(private readonly context: vscode.ExtensionContext) {
+    public constructor(private readonly context: vscode.ExtensionContext) {
         context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.sendEntryFiles",
                 (stringifiedEntryFiles: string) => {
                     const entryFiles = JSON.parse(stringifiedEntryFiles);
-                    this.createPanel(entryFiles);
+                    this.createOrShowEditor(entryFiles);
                 },
             ),
         );
     }
 
-    createPanel(filePaths: string[]) {
-        // Check if a panel already exists
-        if (this.currentPanel !== null) {
-            this.currentPanel.reveal(undefined);
-            sendDependencyGraph(this.currentPanel.webview, filePaths);
-            return;
+    /**
+     * Get a URI of a path relative to the extension's data.
+     */
+    private getWebviewURI(...pathSegments: string[]): vscode.Uri {
+        return this.currentEditor.webview.asWebviewUri(
+            vscode.Uri.joinPath(this.context.extensionUri, ...pathSegments),
+        );
+    }
+
+    public async createOrShowEditor(filepaths: string[]) {
+        // Check if the editor already exists
+        if (this.currentEditor !== null) {
+            this.currentEditor.reveal(undefined);
+        } else {
+            this.createEditor();
         }
 
-        if (!vscode.workspace?.workspaceFolders?.[0]) {
+        await this.setEditorWebview(filepaths);
+    }
+
+    /**
+     * Creates a new editor tab in the window and sets its event listeners.
+     */
+    private createEditor() {
+        const workspace = vscode.workspace?.workspaceFolders?.[0];
+        if (!workspace) {
             vscode.window.showErrorMessage(`No workspace found.`);
             return;
         }
 
-        this.currentPanel = vscode.window.createWebviewPanel(
+        this.currentEditor = vscode.window.createWebviewPanel(
             "customType",
             "Dependograph",
             vscode.window.activeTextEditor?.viewColumn || vscode.ViewColumn.One,
@@ -52,8 +69,8 @@ export class VisualizationEditorProvider {
             },
         );
 
-        // Add listeners to the panel
-        this.currentPanel.webview.onDidReceiveMessage((message) => {
+        // Add listeners to the editor webview
+        this.currentEditor.webview.onDidReceiveMessage((message) => {
             switch (message.command) {
                 case "alert":
                     vscode.window.showInformationMessage(
@@ -62,55 +79,46 @@ export class VisualizationEditorProvider {
                     break;
             }
         });
-        this.currentPanel.onDidDispose(() => {
-            this.currentPanel = null;
+        this.currentEditor.onDidDispose(() => {
+            this.currentEditor = null;
         });
-
-        // Render the webview
-        const params: WebviewParams = {
-            cssURIs: [
-                getWebviewURI(
-                    this.currentPanel.webview,
-                    this.context,
-                    "assets",
-                    "css",
-                    "vscode.css",
-                ),
-                getWebviewURI(
-                    this.currentPanel.webview,
-                    this.context,
-                    "assets",
-                    "css",
-                    "visualization.css",
-                ),
-            ],
-            jsURIs: [
-                getWebviewURI(
-                    this.currentPanel.webview,
-                    this.context,
-                    "out",
-                    "webviews",
-                    "visualization.js",
-                ),
-            ],
-            webviewMetadata: {
-                pathSep: path.sep,
-                workspaceURI: vscode.workspace.workspaceFolders[0].uri,
-                extensionWebviewURI: this.currentPanel.webview
-                    .asWebviewUri(this.context.extensionUri)
-                    .toString(),
-            },
-        };
-
-        const html = this._getWebviewContent(params);
-        // Print the html for testing purposes
-        console.log(html);
-        this.currentPanel.webview.html = html;
-
-        sendDependencyGraph(this.currentPanel.webview, filePaths);
     }
 
-    _getWebviewContent(params: WebviewParams): string {
+    /**
+     * Set the webview of the editor after getting the dependency graph
+     * using the given files.
+     */
+    private async setEditorWebview(filepaths: string[]) {
+        const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
+
+        let params: WebviewParams = {} as WebviewParams;
+        params["cssURIs"] = [
+            this.getWebviewURI("assets", "css", "vscode.css"),
+            this.getWebviewURI("assets", "css", "visualization.css"),
+        ];
+        params["jsURIs"] = [
+            this.getWebviewURI("out", "webviews", "visualization.js"),
+        ];
+        params["webviewMetadata"] = {
+            pathSep: path.sep,
+            workspaceURI: vscode.workspace.workspaceFolders[0].uri,
+            extensionWebviewURI: this.currentEditor.webview
+                .asWebviewUri(this.context.extensionUri)
+                .toString(),
+        };
+        params["dependencyInfo"] = await getDependencyObject(filepaths, [
+            workspacePath,
+        ]);
+
+        const html = this.getWebviewContent(params);
+
+        // Print the html for testing purposes
+        // console.log(html);
+
+        this.currentEditor.webview.html = html;
+    }
+
+    private getWebviewContent(params: WebviewParams): string {
         return /* html */ `
 <!DOCTYPE html>
 <html lang="en">
@@ -122,6 +130,7 @@ export class VisualizationEditorProvider {
     <!-- Embed webview metadata -->
     <script>
         const webviewMetadata = ${JSON.stringify(params.webviewMetadata)};
+        const dependencyInfo = ${JSON.stringify(params.dependencyInfo)};
     </script>
 
     <!-- CSS Stylesheets -->

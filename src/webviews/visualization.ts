@@ -1,20 +1,17 @@
 // This file is run within the webview
 
-import * as vscode from "vscode";
 import {
     SimLink,
     SimNode,
     setupVisualization,
     resizeSVG,
 } from "./force-directed-graph";
-import { AcquiredVsCodeApi, WebviewEmbeddedMetadata } from "./utils";
+import { WebviewEmbeddedMetadata } from "./utils";
 import { DependencyInfo } from "../code-analyser";
 import { getFileType } from "./utils";
 
 declare const webviewMetadata: WebviewEmbeddedMetadata;
-
-// @ts-ignore
-const vscodeAPI: AcquiredVsCodeApi = acquireVsCodeApi();
+declare const dependencyInfo: DependencyInfo;
 
 function setup() {
     // Add resize listener
@@ -24,16 +21,10 @@ function setup() {
     });
     const container = document.querySelector(".svg-container");
     resizeSVG(container.clientWidth, container.clientHeight);
+
+    onReceivedDependencyGraph(dependencyInfo);
 }
 setup();
-
-window.addEventListener("message", ({ data: message }) => {
-    switch (message.command) {
-        case "takeYourDependencyGraph":
-            onReceivedDependencyGraph(message.data);
-            break;
-    }
-});
 
 interface GraphRepresentation {
     [key: string]: Record<string, boolean>;

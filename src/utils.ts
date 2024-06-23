@@ -32,16 +32,3 @@ export function binarySort<T>(array: T[], key: (element: T) => 0 | 1) {
         }
     }
 }
-
-/**
- * Get a URI for a resource in a webview within the context of an extension.
- */
-export function getWebviewURI(
-    webview: vscode.Webview,
-    context: vscode.ExtensionContext,
-    ...pathSegments: string[]
-) {
-    return webview.asWebviewUri(
-        vscode.Uri.joinPath(context.extensionUri, ...pathSegments),
-    );
-}
