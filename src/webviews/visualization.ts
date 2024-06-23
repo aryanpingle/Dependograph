@@ -9,6 +9,7 @@ import {
 import { WebviewEmbeddedMetadata } from "./utils";
 import { DependencyInfo } from "../code-analyser";
 import { getFileType } from "./utils";
+import { setupSettingsPanel } from "./settings-panel";
 
 declare const webviewMetadata: WebviewEmbeddedMetadata;
 declare const dependencyInfo: DependencyInfo;
@@ -21,6 +22,8 @@ function setup() {
     });
     const container = document.querySelector(".svg-container");
     resizeSVG(container.clientWidth, container.clientHeight);
+
+    setupSettingsPanel();
 
     onReceivedDependencyGraph(dependencyInfo);
 }
