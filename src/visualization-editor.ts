@@ -101,7 +101,11 @@ export class VisualizationEditorProvider {
                     .toString(),
             },
         };
-        this.currentPanel.webview.html = this._getWebviewContent(params);
+
+        const html = this._getWebviewContent(params);
+        // Print the html for testing purposes
+        console.log(html);
+        this.currentPanel.webview.html = html;
 
         sendDependencyGraph(this.currentPanel.webview, filePaths);
     }
