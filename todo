@@ -1,6 +1,13 @@
-[ ] Create settings panel within visualization webview
+-- BUGS / FIXES / REFACTORS --
+[ ] Show "add entry file" button only on valid files
+[ ] Refactor settings to be a configuration instead of unique event listeners
+
+-- FEATURES --
 [ ] Create preview panel within visualization webview
 [ ] Some way to select two nodes and find all paths between them
     - Idea: Select one node and ctrl+click on the other?
 [ ] Track variables / references across files
 [ ] Support online URIs
+
+-- COMPLETED --
+[X] Create settings panel within visualization webview
