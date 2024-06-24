@@ -69,11 +69,6 @@
     },
     "commands": [
       {
-        "command": "dependograph.pathviz",
-        "title": "Visualize Imports",
-        "category": "Dependograph"
-      },
-      {
         "command": "dependograph.chooseEntryFile",
         "title": "Add to entry files",
         "icon": "$(add)"
