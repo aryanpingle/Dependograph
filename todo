@@ -1,13 +1,18 @@
 -- BUGS / FIXES / REFACTORS --
 [ ] Show "add entry file" button only on valid files
 [ ] Refactor settings to be a configuration instead of unique event listeners
+[ ] Files aren't always sorted correctly (especially on adding / removing)
 
 -- FEATURES --
+[ ] Download visualization button
+[ ] Find imports / exports within file (git diff)
 [ ] Create preview panel within visualization webview
 [ ] Some way to select two nodes and find all paths between them
     - Idea: Select one node and ctrl+click on the other?
-[ ] Track variables / references across files
 [ ] Support online URIs
+[ ] ⭐️ Visualization of variable utilization
+    - Track how a variable is referenced across files
 
 -- COMPLETED --
 [X] Create settings panel within visualization webview
+[X] Settings panel should have the background AND border of the editor hover widget
