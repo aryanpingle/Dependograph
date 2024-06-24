@@ -19,6 +19,7 @@ body {
 svg {
     width: 100%;
     height: 100%;
+    user-select: none;
 }
 
 /* Settings Panel */
@@ -35,13 +36,15 @@ svg {
     display: flex;
     flex-direction: column;
     gap: 1em;
+
+    pointer-events: none;
 }
 
 .settings_panel > * {
     padding: 0.5rem;
-    background: var(--vscode-editor-background, black);
+    background: var(--vscode-editorHoverWidget-background, black);
 
-    border-radius: 4px;
+    border-radius: 3px;
     border: 1px solid var(--vscode-editorHoverWidget-border, red);
 }
 
@@ -56,6 +59,7 @@ svg {
     font-weight: bolder;
     user-select: none;
     cursor: pointer;
+    pointer-events: all;
 }
 
 .settings_title {
@@ -75,8 +79,12 @@ svg {
 .settings_content {
     flex: 1 0 0;
     opacity: 0;
+    pointer-events: none;
+    user-select: none;
 }
 
 .settings_content--shown {
     opacity: 1;
+    pointer-events: auto;
+    user-select: auto;
 }
