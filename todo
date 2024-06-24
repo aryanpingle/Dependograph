@@ -4,6 +4,8 @@
 [ ] Files aren't always sorted correctly (especially on adding / removing)
 
 -- FEATURES --
+[ ] importing types (type, interface, etc) should be counted differently
+    - The visualization should have an option to exclude imports which are only types
 [ ] Download visualization button
 [ ] Find imports / exports within file (git diff)
 [ ] Create preview panel within visualization webview
