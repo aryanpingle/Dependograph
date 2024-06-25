@@ -1,6 +1,6 @@
 import { Uri } from "vscode";
 import { DependencyInfo } from "../code-analyser";
-import { SimLink, SimNode } from "./force-directed-graph";
+import { SimLink, SimNode } from "./force-directed";
 
 declare const webviewMetadata: WebviewEmbeddedMetadata;
 export interface AcquiredVsCodeApi {
@@ -169,4 +169,29 @@ function processNodeModulesFilename(filename: string): string {
 function removeWorkspaceFromFilename(filename: string): string {
     const workspacePath = webviewMetadata.workspaceURI.fsPath;
     return filename.replace(workspacePath, "");
+}
+
+/**
+ * Check if two objects have the same value for every common property.
+ * @param object1
+ * @param object2
+ * @returns
+ */
+export function areObjectsSynced(object1: Object, object2: Object) {
+    for (const property in object1) {
+        if (!object2.hasOwnProperty(property)) continue;
+        if (object2[property] !== object1[property]) return false;
+    }
+    return true;
+}
+
+/**
+ * Assign values from the source object to the target object
+ * for all common properties.
+ */
+export function syncObjects(target: Object, source: Object) {
+    for (const property in target) {
+        if (!source.hasOwnProperty(property)) continue;
+        target[property] = source[property];
+    }
 }
