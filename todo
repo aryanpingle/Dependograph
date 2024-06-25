@@ -1,3 +1,23 @@
+-- CODE REVIEW --
+[ ] feat: Show warning/error messages if no entry files are chosen
+    - entry files ELSE package.json->"main" ELSE package.json-> "browser"
+[ ] feat: Auto-update FS Explorer, and debounce updates
+[ ] feat: Debounce resize listener (visualization.ts)
+[ ] refactor: Improve TreeView getChildren logic
+[ ] refactor: Use enums and put strings in a constants file
+[ ] refactor: Remove unnecessary comments (force-layout)
+[ ] refactor: Use Immediately Invoked Function Expressions instead of side effects
+[ ] refactor: Instead of calling functions on document.querySelector, extract the element to const
+[ ] refactor: Use packages for common logic (longestCommonPrefix, etc)
+[ ] refactor: Use common variables for stuff like vscode.workspace
+[ ] docs: dependograph.openFile comment
+[ ] docs: Explain arc logic (force-layout)
+[ ] docs: Explain regex
+[ ] style: Improve anonymous function variable names
+[ ] style: Change file names to use camelCase
+[ ] style: Rename functions (force-layout)
+[ ] style: Improve CSS names
+
 -- BUGS / FIXES / REFACTORS --
 [ ] Show "add entry file" button only on valid files
 [ ] Refactor settings to be a configuration instead of unique event listeners
@@ -11,6 +31,10 @@
 [ ] Create preview panel within visualization webview
 [ ] Some way to select two nodes and find all paths between them
     - Idea: Select one node and ctrl+click on the other?
+[ ] Slider/input to control dependency depth
+[ ] Option to toggle simulation temperature i.e. simulation won't move
+[ ] Use editor background color for settings panel (don't question this)
+[ ] Minimal filenames
 [ ] Support online URIs
 [ ] ⭐️ Visualization of variable utilization
     - Track how a variable is referenced across files
