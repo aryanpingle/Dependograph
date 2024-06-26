@@ -20,8 +20,8 @@ export function setupSettingsPanel() {
         .querySelector(".settings_header")
         .addEventListener("click", toggleSettingsPanel);
 
-    const form = document.querySelector("form") as HTMLFormElement;
-    form.addEventListener("change", onFormChange);
+    const formElement = document.querySelector("form") as HTMLFormElement;
+    formElement.addEventListener("change", onFormChange);
 }
 
 const defaultConfig: GraphAndVisualizationConfig = {
@@ -30,10 +30,11 @@ const defaultConfig: GraphAndVisualizationConfig = {
     hideFilenames: false,
 };
 
-function onFormChange() {
+function onFormChange(event: Event) {
+    const formElement = event.currentTarget as HTMLFormElement;
     let formConfig = Object.fromEntries(
         // @ts-ignore
-        new FormData(form),
+        new FormData(formElement),
     ) as GraphAndVisualizationConfig;
     const config = Object.assign({}, defaultConfig, formConfig);
     visualization.applyConfiguration(config);
