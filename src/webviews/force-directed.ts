@@ -78,6 +78,7 @@ export class ForceDirectedVisualization {
     private originalNodes: SimNode[];
     private originalLinks: SimLink[];
 
+    // TODO: Take in the selector of an svg element
     private constructor(private readonly dependencyInfo: DependencyInfo) {
         const graph = new Graph(this.dependencyInfo).getNodesAndLinks();
         this.originalNodes = graph.nodes;
@@ -91,6 +92,12 @@ export class ForceDirectedVisualization {
             )
             .call(d3.zoom<SVGElement, unknown>().on("zoom", this.onZoom));
 
+        // Create the container for everything inside the svg that should be zoomable / pannable
+        this.zoom_container = d3
+            .select("svg")
+            .append("g")
+            .classed("svg_inner", true);
+
         this.applyGraphConfig();
     }
 
@@ -103,7 +110,7 @@ export class ForceDirectedVisualization {
             } else {
                 // Only the visualization config has changed
                 syncObjects(this.visualizationConfig, newConfig);
-                this.applyVisualizationConfig();
+                this.applyVisualConfig();
             }
         } else {
             // The graph configuration has changed
@@ -127,19 +134,10 @@ export class ForceDirectedVisualization {
         // Now apply structural changes
         // TODO
 
+        // This will call applyVisualizationConfig automatically
         this.createSimulation();
-        this.applyVisualizationConfig();
     }
 
-    private applyVisualizationConfig() {
-        this.initializeDrawing();
-
-        // Any additional post-processing effects
-    }
-
-    /**
-     *
-     */
     private createSimulation() {
         this.simulation = d3
             .forceSimulation(this.nodes)
@@ -151,7 +149,9 @@ export class ForceDirectedVisualization {
             )
             .force("charge", d3.forceManyBody().strength(-600))
             .force("x", d3.forceX())
-            .force("y", d3.forceY());
+            .force("y", d3.forceY())
+            // Pause it until its nodes have been built
+            .stop();
 
         this.simulation.on("tick", () => {
             this.d3Links
@@ -173,17 +173,23 @@ export class ForceDirectedVisualization {
             this.d3Nodes.attr("transform", (d) => `translate(${d.x},${d.y})`);
         });
 
+        this.applyVisualConfig();
+    }
+
+    private applyVisualConfig() {
+        // Temporarily pause the simulation
+        this.simulation.stop();
+        // Some visual changes need to happen during the SVG build process
         this.initializeDrawing();
+
+        // Any additional post-processing effects
+
+        // Start the simulation
+        this.simulation.restart();
     }
 
     private initializeDrawing() {
-        document.querySelector("svg").innerHTML = "";
-
-        // Create the container for everything inside the svg that should be zoomable / pannable
-        this.zoom_container = d3
-            .select("svg")
-            .append("g")
-            .classed("svg_inner", true);
+        document.querySelector(".svg_inner").innerHTML = "";
 
         // Per-type markers, as they don't inherit styles.
         this.zoom_container
@@ -298,11 +304,11 @@ export class ForceDirectedVisualization {
         }
     }
 
-    private onZoom(event: any) {
+    private onZoom = (event: any) => {
         this.zoom_container.attr("transform", event.transform);
-    }
+    };
 
-    public resizeSVG(width: number, height: number) {
+    public resizeSVG = (width: number, height: number) => {
         width = Math.floor(width);
         height = Math.floor(height);
         const svgElement = document.querySelector("svg") as SVGElement;
@@ -312,9 +318,9 @@ export class ForceDirectedVisualization {
             "viewBox",
             `-${width / 2} -${height / 2} ${width} ${height}`,
         );
-    }
+    };
 
-    private getLinkArc(link: SimLink, fromSource: boolean) {
+    private getLinkArc = (link: SimLink, fromSource: boolean) => {
         const source = (fromSource ? link.source : link.target) as SimNode;
         const target = (fromSource ? link.target : link.source) as SimNode;
         const r = Math.hypot(target.x - source.x, target.y - source.y);
@@ -322,24 +328,24 @@ export class ForceDirectedVisualization {
           M${source.x},${source.y}
           A${r},${r} 0 0,1 ${target.x},${target.y}
         `;
-    }
+    };
 
     // Functionality for node-dragging
 
-    private onDragStart(event: any, node: SimNode) {
+    private onDragStart = (event: any, node: SimNode) => {
         node.fx = event.x;
         node.fy = event.y;
         if (!event.active) this.simulation.alphaTarget(0.3).restart();
-    }
+    };
 
-    private onDragged(event: any, node: SimNode) {
+    private onDragged = (event: any, node: SimNode) => {
         node.fx = event.x;
         node.fy = event.y;
-    }
+    };
 
-    private onDragEnd(event: any, node: SimNode) {
+    private onDragEnd = (event: any, node: SimNode) => {
         node.fx = null;
         node.fy = null;
         if (!event.active) this.simulation.alphaTarget(0);
-    }
+    };
 }

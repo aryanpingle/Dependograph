@@ -3,7 +3,10 @@ import {
     provideVSCodeDesignSystem,
     // @ts-ignore
 } from "@vscode/webview-ui-toolkit";
-import { ForceDirectedVisualization, GraphAndVisualizationConfig } from "./force-directed";
+import {
+    ForceDirectedVisualization,
+    GraphAndVisualizationConfig,
+} from "./force-directed";
 
 provideVSCodeDesignSystem().register(vsCodeCheckbox());
 
@@ -17,7 +20,23 @@ export function setupSettingsPanel() {
         .querySelector(".settings_header")
         .addEventListener("click", toggleSettingsPanel);
 
-    addSettingsListeners();
+    const form = document.querySelector("form") as HTMLFormElement;
+    form.addEventListener("change", onFormChange);
+}
+
+const defaultConfig: GraphAndVisualizationConfig = {
+    removeNodeModules: false,
+    reverseDirections: false,
+    hideFilenames: false,
+};
+
+function onFormChange() {
+    let formConfig = Object.fromEntries(
+        // @ts-ignore
+        new FormData(form),
+    ) as GraphAndVisualizationConfig;
+    const config = Object.assign({}, defaultConfig, formConfig);
+    visualization.applyConfiguration(config);
 }
 
 /**
@@ -27,24 +46,4 @@ function toggleSettingsPanel() {
     document
         .querySelector(".settings_content")
         .classList.toggle("settings_content--shown");
-}
-
-function addSettingsListeners() {
-    const checkboxHideModules = document.querySelector(
-        "#checkbox-hide_modules",
-    ) as HTMLInputElement;
-    checkboxHideModules.addEventListener("change", function () {
-        visualization.applyConfiguration({
-            removeNodeModules: this.checked
-        })
-    });
-
-    const checkboxHideFilenames = document.querySelector(
-        "#checkbox-hide_filenames",
-    ) as HTMLInputElement;
-    checkboxHideFilenames.addEventListener("change", function () {
-        visualization.applyConfiguration({
-            hideFilenames: this.checked,
-        })
-    });
 }
