@@ -56,7 +56,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
                 },
             ),
         );
-        // TreeItem button that removes this from entry files
+        // Open the file in a new vscode editor
         context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.openFile",
