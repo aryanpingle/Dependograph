@@ -5,22 +5,17 @@
 [ ] feat: Debounce resize listener (visualization.ts)
 [ ] refactor: Improve TreeView getChildren logic
 [ ] refactor: Use enums and put strings in a constants file
-[ ] refactor: Remove unnecessary comments (force-layout)
-[ ] refactor: Use Immediately Invoked Function Expressions instead of side effects
 [ ] refactor: Instead of calling functions on document.querySelector, extract the element to const
 [ ] refactor: Use packages for common logic (longestCommonPrefix, etc)
 [ ] refactor: Use common variables for stuff like vscode.workspace
-[ ] docs: dependograph.openFile comment
 [ ] docs: Explain arc logic (force-layout)
-[ ] docs: Explain regex
+[ ] docs: Explain regex (getFileType)
 [ ] style: Improve anonymous function variable names
 [ ] style: Change file names to use camelCase
-[ ] style: Rename functions (force-layout)
 [ ] style: Improve CSS names
 
 -- BUGS / FIXES / REFACTORS --
 [ ] Show "add entry file" button only on valid files
-[ ] Refactor settings to be a configuration instead of unique event listeners
 [ ] Files aren't always sorted correctly (especially on adding / removing)
 
 -- FEATURES --
@@ -42,3 +37,8 @@
 -- COMPLETED --
 [X] Create settings panel within visualization webview
 [X] Settings panel should have the background AND border of the editor hover widget
+[X] refactor: Remove unnecessary comments (force-layout)
+[X] refactor: Use Immediately Invoked Function Expressions instead of side effects
+[X] docs: dependograph.openFile comment
+[X] style: Rename functions (force-layout)
+[X] Refactor settings to be a configuration instead of unique event listeners
