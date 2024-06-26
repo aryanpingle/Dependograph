@@ -9,6 +9,7 @@ import {
     Graph,
     WebviewEmbeddedMetadata,
     areObjectsSynced,
+    getMinimalFilepaths,
     syncObjects,
 } from "./utils";
 import { DependencyInfo } from "../code-analyser";
@@ -17,6 +18,7 @@ declare const webviewMetadata: WebviewEmbeddedMetadata;
 
 export interface SimNode extends d3.SimulationNodeDatum {
     name: string;
+    processedFilepath: string;
     fileType: FileType;
     id: string;
 }
@@ -41,6 +43,8 @@ export interface GraphConfig {
 
 export interface VisualConfig {
     hideFilenames: boolean;
+    /** Shorten filenames as much as possible without having any duplicates */
+    minimalFilepaths: boolean;
 }
 
 export type GraphAndVisualizationConfig = GraphConfig | VisualConfig;
@@ -73,6 +77,7 @@ export class ForceDirectedVisualization {
     };
     private visualizationConfig: VisualConfig = {
         hideFilenames: false,
+        minimalFilepaths: false,
     };
 
     private originalNodes: SimNode[];
@@ -131,8 +136,30 @@ export class ForceDirectedVisualization {
     private applyGraphConfig() {
         this.cloneNodesAndLinks();
 
-        // Now apply structural changes
-        // TODO
+        /** Now apply structural changes  */
+
+        if (this.graphConfig.removeNodeModules) {
+            // Remove nodes and links that refer to node modules
+            const NodeModuleNodeIds = new Set<string>();
+            this.nodes.forEach((node) => {
+                if (node.fileType === "nodejs") {
+                    NodeModuleNodeIds.add(node.id);
+                }
+            });
+            this.nodes = this.nodes.filter(
+                (node) => !NodeModuleNodeIds.has(node.id),
+            );
+            this.links = this.links.filter((link) => {
+                return (
+                    !NodeModuleNodeIds.has(link.source as string) &&
+                    !NodeModuleNodeIds.has(link.target as string)
+                );
+            });
+        }
+
+        if (this.graphConfig.reverseDirections) {
+            // TODO
+        }
 
         // This will call applyVisualizationConfig automatically
         this.createSimulation();
@@ -183,6 +210,22 @@ export class ForceDirectedVisualization {
         this.initializeDrawing();
 
         // Any additional post-processing effects
+
+        if (this.visualizationConfig.minimalFilepaths) {
+            const pathSep = webviewMetadata.pathSep;
+            console.log(`Path sep - '${pathSep}'`);
+
+            const shortPaths = getMinimalFilepaths(
+                this.nodes.map((node) => node.processedFilepath),
+                pathSep,
+            );
+
+            // TODO: Writing the select for each setting is painful
+            // Store each component (text, icon, etc) as an instance variable
+            this.d3Nodes
+                .selectAll("text")
+                .text((node: SimNode) => shortPaths[node.index]);
+        }
 
         // Start the simulation
         this.simulation.restart();

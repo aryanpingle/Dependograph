@@ -121,6 +121,7 @@ export class Graph {
             );
             nodes.push({
                 name: nodeName,
+                processedFilepath: nodeName,
                 fileType: fileType,
                 id: nodeId,
             });
@@ -194,4 +195,56 @@ export function syncObjects(target: Object, source: Object) {
         if (!source.hasOwnProperty(property)) continue;
         target[property] = source[property];
     }
+}
+
+/**
+ * Get the shortest version of each filepath in an array without getting duplicates.
+ * 
+ * @example
+ * // returns ["index.ts", "folder1/util.ts", "folder2/util.ts"]
+ * getMinimalFilepaths(
+ *   ["/src/index.ts", "/src/folder1/util.ts", "/src/folder2/util.ts"],
+ *   "/"
+ * )
+ */
+export function getMinimalFilepaths(
+    filepaths: string[],
+    pathSep: string,
+): string[] {
+    const splitPaths = filepaths.map((filepath) => filepath.split(pathSep));
+    const startIndices = splitPaths.map((splitPath) => splitPath.length - 1);
+    // Initially, everything is just the filename + extension
+    const shortPaths = splitPaths.map(
+        (splitPath, index) => splitPath[startIndices[index]],
+    );
+
+    const getFrequencyObject = (): Record<string, number> => {
+        const freqObj: Record<string, number> = {};
+        for (const shortPath of shortPaths) {
+            if (!(shortPath in freqObj)) {
+                freqObj[shortPath] = 0;
+            }
+            ++freqObj[shortPath];
+        }
+        return freqObj;
+    };
+
+    let hasChanged = false;
+    do {
+        hasChanged = false;
+        const freqObj = getFrequencyObject();
+        for (let index = 0; index < shortPaths.length; ++index) {
+            let shortPath = shortPaths[index];
+            if (freqObj[shortPath] > 1) {
+                startIndices[index] -= 1;
+                const startIndex = startIndices[index];
+                shortPath = splitPaths[index][startIndex] + pathSep + shortPath;
+                shortPaths[index] = shortPath;
+
+                hasChanged = true;
+            }
+        }
+    } while (hasChanged);
+
+    return shortPaths;
 }

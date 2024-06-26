@@ -28,6 +28,7 @@ const defaultConfig: GraphAndVisualizationConfig = {
     removeNodeModules: false,
     reverseDirections: false,
     hideFilenames: false,
+    minimalFilepaths: false,
 };
 
 function onFormChange(event: Event) {
