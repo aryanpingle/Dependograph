@@ -13,6 +13,10 @@ import {
 import { Graph } from "./graph";
 import { DependencyInfo } from "../../code-analyser";
 import { SimNode } from "./node";
+import {
+    VscodeCSSVariables,
+    createCSSVariable,
+} from "vscode-webview-variables";
 
 export interface SimLink extends d3.SimulationLinkDatum<SimNode> {
     cyclic: boolean;
@@ -25,10 +29,18 @@ type SVGGSelection<T> = d3.Selection<SVGGElement, T, SVGElement, any>;
 
 // Colors
 const colors = {
-    cyclic: "var(--vscode-editorError-foreground, red)",
-    acyclic: "var(--vscode-editorWarning-foreground, orange)",
-    node_modules:
-        "var(--vscode-gitDecoration-untrackedResourceForeground, green)",
+    cyclic: createCSSVariable(
+        VscodeCSSVariables["editorError-foreground"],
+        "red",
+    ),
+    acyclic: createCSSVariable(
+        VscodeCSSVariables["editorWarning-foreground"],
+        "orange",
+    ),
+    node_modules: createCSSVariable(
+        VscodeCSSVariables["gitDecoration-untrackedResourceForeground"],
+        "green",
+    ),
 };
 
 export interface GraphConfig {

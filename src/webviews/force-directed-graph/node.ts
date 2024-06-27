@@ -1,6 +1,8 @@
 import * as d3 from "d3";
-import { FileType, getFileType, webviewMetadata } from "../utils";
-import { randomUUID } from "crypto";
+import { FileType, WebviewEmbeddedMetadata, getFileType } from "../utils";
+import { v4 as uuidv4 } from "uuid";
+
+declare const webviewMetadata: WebviewEmbeddedMetadata;
 
 export class SimNode implements d3.SimulationNodeDatum {
     public readonly filepath: string;
@@ -27,7 +29,7 @@ export class SimNode implements d3.SimulationNodeDatum {
             this.filepathWithoutWorkspace,
         );
         this.name = this.processedName;
-        this.id = randomUUID();
+        this.id = uuidv4();
         this.fileType = getFileType(this.filepathWithoutWorkspace);
     }
 }
