@@ -58,7 +58,7 @@ export class Graph {
     addNode(filepath: string): string {
         const node = new SimNode(filepath);
         this.nodes.push(node);
-        this.NodeIdToNode[filepath] = node;
+        this.NodeIdToNode[node.id] = node;
 
         this.adjacencySet[node.id] = new Set<string>();
         return node.id;
@@ -105,10 +105,33 @@ export class Graph {
     }
 
     getAllPaths(source: SimNode, target: SimNode): string[][] {
-        console.log(source);
-        console.log(target);
+        // console.log(
+        //     `from ${source.filepathWithoutWorkspace} to ${target.filepathWithoutWorkspace}`,
+        // );
+        const allPaths: string[][] = new Array();
 
-        const allPaths = new Array<string[]>();
+        const visitedNodeIds = new Set<string>();
+
+        const dfs = (node: SimNode, path: string[]) => {
+            // TODO: Doesn't cover if current node is visited but has a path
+            // i.e. only shows unique
+            if (visitedNodeIds.has(node.id)) return;
+
+            visitedNodeIds.add(node.id);
+            // console.log("visiting " + node.name);
+
+            path.push(node.id);
+            if (node.id === target.id) {
+                allPaths.push(Array.from(path));
+            } else {
+                for (const neighbourId of this.adjacencySet[node.id]) {
+                    const neighbourNode = this.NodeIdToNode[neighbourId];
+                    dfs(neighbourNode, path);
+                }
+            }
+            path.pop();
+        };
+        dfs(source, []);
 
         return allPaths;
     }

@@ -129,10 +129,6 @@ export class ForceDirectedVisualization {
         this.nodes = this.graph.nodes;
         this.links = this.graph.links;
 
-        if (this.graphConfig.reverseDirections) {
-            // TODO
-        }
-
         // This will call applyVisualizationConfig automatically
         this.createSimulation();
     }
@@ -279,6 +275,8 @@ export class ForceDirectedVisualization {
             .data(this.nodes)
             .enter()
             .append("g")
+            .classed("node", true)
+            .attr("id", (node) => `node-${node.id}`)
             .attr("fill", (node) =>
                 node.fileType === "nodejs"
                     ? colors.node_modules
@@ -360,10 +358,20 @@ export class ForceDirectedVisualization {
             ) {
                 // Ctrl+click (or command+click on MacOS)
                 // Find a path from `this.selectedNode` to `node`
-                this.graph.getAllPaths(this.selectedNode, node);
+                const paths = this.graph.getAllPaths(this.selectedNode, node);
+                this.highlightNodes(paths);
             } else {
                 this.selectNode(node);
             }
+        }
+    }
+
+    private highlightNodes(allPaths: string[][]) {
+        d3.selectAll(".node").style("opacity", 0.33);
+        for (const path of allPaths) {
+            path.forEach((nodeId) => {
+                d3.select(`#node-${nodeId}`).style("opacity", 1);
+            });
         }
     }
 
