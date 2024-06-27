@@ -110,14 +110,27 @@ export class Graph {
         // );
         const allPaths: string[][] = new Array();
 
-        const visitedNodeIds = new Set<string>();
+        const NodeIdToFeasibility = new Map<string, boolean>();
+        NodeIdToFeasibility[target.id] = true;
 
-        const dfs = (node: SimNode, path: string[]) => {
-            // TODO: Doesn't cover if current node is visited but has a path
-            // i.e. only shows unique
-            if (visitedNodeIds.has(node.id)) return;
+        const dfsToTarget = (node: SimNode, path: string[]): boolean => {
+            if (node.id in NodeIdToFeasibility) {
+                if (NodeIdToFeasibility[node.id] === true) {
+                    // Even though *this* path may terminate before reaching the target, we
+                    // know that we can reach the target if we continue from here.
+                    // Since we only care about highlighting nodes and links, this is perfect.
 
-            visitedNodeIds.add(node.id);
+                    path.push(node.id);
+                    allPaths.push(Array.from(path));
+                    path.pop();
+
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            NodeIdToFeasibility[node.id] = false;
             // console.log("visiting " + node.name);
 
             path.push(node.id);
@@ -126,12 +139,17 @@ export class Graph {
             } else {
                 for (const neighbourId of this.adjacencySet[node.id]) {
                     const neighbourNode = this.NodeIdToNode[neighbourId];
-                    dfs(neighbourNode, path);
+                    const canReachTarget = dfsToTarget(neighbourNode, path);
+                    if (canReachTarget) {
+                        NodeIdToFeasibility[node.id] = true;
+                    }
                 }
             }
             path.pop();
+
+            return NodeIdToFeasibility[node.id];
         };
-        dfs(source, []);
+        dfsToTarget(source, []);
 
         return allPaths;
     }
