@@ -6,7 +6,7 @@ import {
 import {
     ForceDirectedVisualization,
     GraphAndVisualizationConfig,
-} from "./force-directed";
+} from "./force-directed-graph";
 
 provideVSCodeDesignSystem().register(vsCodeCheckbox());
 

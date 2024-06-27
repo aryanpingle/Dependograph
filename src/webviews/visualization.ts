@@ -1,6 +1,6 @@
 // This file is run within the webview
 
-import { ForceDirectedVisualization } from "./force-directed";
+import { ForceDirectedVisualization } from "./force-directed-graph";
 import { DependencyInfo } from "../code-analyser";
 import { setupSettingsPanel } from "./settings-panel";
 

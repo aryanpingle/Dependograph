@@ -6,15 +6,12 @@
 import * as d3 from "d3";
 import {
     FileType,
-    Graph,
     WebviewEmbeddedMetadata,
-    areObjectsSynced,
     getMinimalFilepaths,
-    syncObjects,
-} from "./utils";
-import { DependencyInfo } from "../code-analyser";
-
-declare const webviewMetadata: WebviewEmbeddedMetadata;
+} from "../utils";
+import { areObjectsSynced, syncObjects } from "./graph";
+import { Graph } from "./graph";
+import { DependencyInfo } from "../../code-analyser";
 
 export interface SimNode extends d3.SimulationNodeDatum {
     name: string;
@@ -22,9 +19,13 @@ export interface SimNode extends d3.SimulationNodeDatum {
     fileType: FileType;
     id: string;
 }
+
 export interface SimLink extends d3.SimulationLinkDatum<SimNode> {
     cyclic: boolean;
 }
+
+declare const webviewMetadata: WebviewEmbeddedMetadata;
+
 type SVGSelection = d3.Selection<SVGElement, unknown, HTMLElement, any>;
 type SVGGSelection<T> = d3.Selection<SVGGElement, T, SVGElement, any>;
 
@@ -318,7 +319,11 @@ export class ForceDirectedVisualization {
                     .on("start", this.onDragStart)
                     .on("drag", this.onDragged)
                     .on("end", this.onDragEnd),
-            );
+            )
+            .style("cursor", "pointer")
+            .on("click", (event: Event, node) => {
+                console.log(node);
+            });
 
         this.d3Nodes
             .append("image")
