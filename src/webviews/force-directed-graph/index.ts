@@ -5,20 +5,14 @@
 
 import * as d3 from "d3";
 import {
-    FileType,
     WebviewEmbeddedMetadata,
     getMinimalFilepaths,
+    areObjectsSynced,
+    syncObjects,
 } from "../utils";
-import { areObjectsSynced, syncObjects } from "./graph";
 import { Graph } from "./graph";
 import { DependencyInfo } from "../../code-analyser";
-
-export interface SimNode extends d3.SimulationNodeDatum {
-    name: string;
-    processedFilepath: string;
-    fileType: FileType;
-    id: string;
-}
+import { SimNode } from "./node";
 
 export interface SimLink extends d3.SimulationLinkDatum<SimNode> {
     cyclic: boolean;
@@ -221,7 +215,7 @@ export class ForceDirectedVisualization {
             console.log(`Path sep - '${pathSep}'`);
 
             const shortPaths = getMinimalFilepaths(
-                this.nodes.map((node) => node.processedFilepath),
+                this.nodes.map((node) => node.processedName),
                 pathSep,
             );
 
@@ -399,9 +393,11 @@ export class ForceDirectedVisualization {
         }
     }
 
-    private selectNode(node: SimNode) {
-        this.selectedNode = node;
-    }
+    /**
+     * Select the given node, and highlight all direct dependencies from it.
+     * @param node
+     */
+    private selectNode(node: SimNode) {}
 
     // Functionality for node-dragging
 

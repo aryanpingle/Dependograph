@@ -1,6 +1,6 @@
 import { Uri } from "vscode";
 
-declare const webviewMetadata: WebviewEmbeddedMetadata;
+export declare const webviewMetadata: WebviewEmbeddedMetadata;
 
 export interface AcquiredVsCodeApi {
     postMessage(message: any): void;
@@ -58,26 +58,6 @@ export function longestCommonPrefix(strings: string[]) {
 }
 
 /**
- * If the given filename corresponds to a NodeJS module,
- * give it a single-phrase name.
- * @example "/node_modules/lodash/index.js" -> "lodash"
- */
-export function processNodeModulesFilename(filename: string): string {
-    const pathSep = webviewMetadata.pathSep;
-
-    const nodeModulesPrefix = pathSep + "node_modules" + pathSep;
-    if (filename.startsWith(nodeModulesPrefix)) {
-        const moduleEndIndex = filename.indexOf(
-            pathSep,
-            nodeModulesPrefix.length,
-        );
-        filename = filename.substring(nodeModulesPrefix.length, moduleEndIndex);
-    }
-
-    return filename;
-}
-
-/**
  * Get the shortest version of each filepath in an array without getting duplicates.
  *
  * @example
@@ -127,4 +107,30 @@ export function getMinimalFilepaths(
     } while (hasChanged);
 
     return shortPaths;
+}
+
+/**
+ * Check if two objects have the same value for every common property.
+ * @param object1
+ * @param object2
+ * @returns
+ */
+
+export function areObjectsSynced(object1: Object, object2: Object) {
+    for (const property in object1) {
+        if (!object2.hasOwnProperty(property)) continue;
+        if (object2[property] !== object1[property]) return false;
+    }
+    return true;
+}
+/**
+ * Assign values from the source object to the target object
+ * for all common properties.
+ */
+
+export function syncObjects(target: Object, source: Object) {
+    for (const property in target) {
+        if (!source.hasOwnProperty(property)) continue;
+        target[property] = source[property];
+    }
 }
