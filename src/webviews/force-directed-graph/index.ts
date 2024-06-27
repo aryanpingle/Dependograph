@@ -84,11 +84,15 @@ export class ForceDirectedVisualization {
     private originalNodes: SimNode[];
     private originalLinks: SimLink[];
 
+    private selectedNode?: SimNode;
+
+    public graph: Graph;
+
     // TODO: Take in the selector of an svg element
     private constructor(private readonly dependencyInfo: DependencyInfo) {
-        const graph = new Graph(this.dependencyInfo).getNodesAndLinks();
-        this.originalNodes = graph.nodes;
-        this.originalLinks = graph.links;
+        this.graph = new Graph(this.dependencyInfo);
+        ({ nodes: this.originalNodes, links: this.originalLinks } =
+            this.graph.getNodesAndLinks());
 
         // Set some properies on the svg
         (d3.select("svg") as SVGSelection)
@@ -321,8 +325,8 @@ export class ForceDirectedVisualization {
                     .on("end", this.onDragEnd),
             )
             .style("cursor", "pointer")
-            .on("click", (event: Event, node) => {
-                console.log(node);
+            .on("click", (event, node) => {
+                this.onClickNode(event, node);
             });
 
         this.d3Nodes
@@ -377,6 +381,27 @@ export class ForceDirectedVisualization {
           A${r},${r} 0 0,1 ${target.x},${target.y}
         `;
     };
+
+    // Event handlers
+
+    private onClickNode(event: MouseEvent, node: SimNode) {
+        if (event.button === 0) {
+            // Left click
+            if (
+                this.selectedNode !== undefined &&
+                (event.ctrlKey || event.metaKey)
+            ) {
+                // Ctrl+click (or command+click on MacOS)
+                // Find a path from `this.selectedNode` to `node`
+            } else {
+                this.selectNode(node);
+            }
+        }
+    }
+
+    private selectNode(node: SimNode) {
+        this.selectedNode = node;
+    }
 
     // Functionality for node-dragging
 

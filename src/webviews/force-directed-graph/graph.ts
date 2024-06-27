@@ -1,11 +1,16 @@
-import { getFileType, processNodeModulesFilename } from "../utils";
+import {
+    WebviewEmbeddedMetadata,
+    getFileType,
+    processNodeModulesFilename,
+} from "../utils";
 
 import { DependencyInfo } from "../../code-analyser";
 import { SimNode, SimLink } from ".";
-import { webviewMetadata } from "../utils";
+
+declare const webviewMetadata: WebviewEmbeddedMetadata;
 
 export interface GraphRepresentation {
-    [key: string]: Record<string, boolean>;
+    [key: string]: Set<string>;
 }
 
 export class Graph {
@@ -24,18 +29,12 @@ export class Graph {
     }
 
     addEdge(source: string, target: string) {
-        if (source in this.graph[target]) {
-            // Circular dependency
-            this.graph[target][source] = true;
-        } else {
-            // Unidirectional dependency
-            this.graph[source][target] = false;
-        }
+        this.graph[source].add(target);
     }
 
     addNode(node: string) {
         if (!(node in this.graph)) {
-            this.graph[node] = {};
+            this.graph[node] = new Set<string>();
         }
     }
 
@@ -77,11 +76,12 @@ export class Graph {
         // Create all links
         const links: SimLink[] = [];
         for (const file in this.graph) {
-            for (const dep in this.graph[file]) {
+            for (const dep of this.graph[file]) {
                 links.push({
                     source: FilepathToNodeId[file],
                     target: FilepathToNodeId[dep],
-                    cyclic: this.graph[file][dep],
+                    cyclic:
+                        this.graph[file].has(dep) && this.graph[dep].has(file),
                 });
             }
         }

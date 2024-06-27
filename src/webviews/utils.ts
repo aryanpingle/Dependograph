@@ -1,6 +1,6 @@
 import { Uri } from "vscode";
 
-export declare const webviewMetadata: WebviewEmbeddedMetadata;
+declare const webviewMetadata: WebviewEmbeddedMetadata;
 
 export interface AcquiredVsCodeApi {
     postMessage(message: any): void;
