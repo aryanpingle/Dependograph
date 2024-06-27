@@ -10,7 +10,7 @@ import {
     areObjectsSynced,
     syncObjects,
 } from "../utils";
-import { Graph } from "./graph";
+import { Graph, GraphConfig } from "./graph";
 import { DependencyInfo } from "../../code-analyser";
 import { SimNode } from "./node";
 import {
@@ -18,14 +18,14 @@ import {
     createCSSVariable,
 } from "vscode-webview-variables";
 
+declare const webviewMetadata: WebviewEmbeddedMetadata;
+
 export interface SimLink extends d3.SimulationLinkDatum<SimNode> {
     cyclic: boolean;
 }
 
-declare const webviewMetadata: WebviewEmbeddedMetadata;
-
-type SVGSelection = d3.Selection<SVGElement, unknown, HTMLElement, any>;
-type SVGGSelection<T> = d3.Selection<SVGGElement, T, SVGElement, any>;
+export type SVGSelection = d3.Selection<SVGElement, unknown, HTMLElement, any>;
+export type SVGGSelection<T> = d3.Selection<SVGGElement, T, SVGElement, any>;
 
 // Colors
 const colors = {
@@ -42,11 +42,6 @@ const colors = {
         "green",
     ),
 };
-
-export interface GraphConfig {
-    removeNodeModules: boolean;
-    reverseDirections: boolean;
-}
 
 export interface VisualConfig {
     hideFilenames: boolean;
@@ -87,19 +82,12 @@ export class ForceDirectedVisualization {
         minimalFilepaths: false,
     };
 
-    private originalNodes: SimNode[];
-    private originalLinks: SimLink[];
-
     private selectedNode?: SimNode;
 
     public graph: Graph;
 
     // TODO: Take in the selector of an svg element
     private constructor(private readonly dependencyInfo: DependencyInfo) {
-        this.graph = new Graph(this.dependencyInfo);
-        ({ nodes: this.originalNodes, links: this.originalLinks } =
-            this.graph.getNodesAndLinks());
-
         // Set some properies on the svg
         (d3.select("svg") as SVGSelection)
             .attr(
@@ -136,37 +124,10 @@ export class ForceDirectedVisualization {
         }
     }
 
-    /**
-     * Set this.nodes and this.links to COPIES of their originals.
-     */
-    private cloneNodesAndLinks() {
-        this.nodes = this.originalNodes.map((node) => Object.assign({}, node));
-        this.links = this.originalLinks.map((link) => Object.assign({}, link));
-    }
-
     private applyGraphConfig() {
-        this.cloneNodesAndLinks();
-
-        /** Now apply structural changes  */
-
-        if (this.graphConfig.removeNodeModules) {
-            // Remove nodes and links that refer to node modules
-            const NodeModuleNodeIds = new Set<string>();
-            this.nodes.forEach((node) => {
-                if (node.fileType === "nodejs") {
-                    NodeModuleNodeIds.add(node.id);
-                }
-            });
-            this.nodes = this.nodes.filter(
-                (node) => !NodeModuleNodeIds.has(node.id),
-            );
-            this.links = this.links.filter((link) => {
-                return (
-                    !NodeModuleNodeIds.has(link.source as string) &&
-                    !NodeModuleNodeIds.has(link.target as string)
-                );
-            });
-        }
+        this.graph = new Graph(this.dependencyInfo, this.graphConfig);
+        this.nodes = this.graph.nodes;
+        this.links = this.graph.links;
 
         if (this.graphConfig.reverseDirections) {
             // TODO
@@ -399,6 +360,7 @@ export class ForceDirectedVisualization {
             ) {
                 // Ctrl+click (or command+click on MacOS)
                 // Find a path from `this.selectedNode` to `node`
+                this.graph.getAllPaths(this.selectedNode, node);
             } else {
                 this.selectNode(node);
             }
@@ -409,7 +371,9 @@ export class ForceDirectedVisualization {
      * Select the given node, and highlight all direct dependencies from it.
      * @param node
      */
-    private selectNode(node: SimNode) {}
+    private selectNode(node: SimNode) {
+        this.selectedNode = node;
+    }
 
     // Functionality for node-dragging
 
