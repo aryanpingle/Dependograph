@@ -132,7 +132,9 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
                     new TreeItem(path.join(rootDir, entry.name), element, {
                         isFile: entry.isFile(),
                         isEntryFile: false,
-                        isPossibleEntryFile: entry.isFile() && /\.[jt]sx?$/.test(entry.name),
+                        isPossibleEntryFile:
+                            entry.isFile() &&
+                            /\.[mc]?[jt]sx?$/.test(entry.name),
                     }),
             )
             .filter((element) => !this.chosenFilesSet.has(element.filepath));

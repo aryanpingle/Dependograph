@@ -29,15 +29,15 @@ export const isFileNotExcluded = (
   isFilePath(directoyAbsoluteAddress) &&
   !excludedFilesRegex.test(directoyAbsoluteAddress);
 
-// Valid extensions to parse are .js, .jsx, .ts, .tsx
+// Valid extensions to parse are .js, .ts, .mjs, .tsx, etc.
 export const isFileExtensionNotValid = (fileLocation) =>
-  !/[jt]sx?$/.test(fileLocation);
+  !/\.[mc]?[jt]sx?$/.test(fileLocation);
 
 export const isFileNotVisited = (fileLocation, filesMetadata) =>
   !filesMetadata.visitedFilesMapping[fileLocation];
 
 export const isFileExtensionValid = (fileLocation) =>
-  /\.[jt]sx?$/.test(fileLocation);
+  /\.[mc]?[jt]sx?$/.test(fileLocation);
 
 export const isFileTraversable = (file, filesMetadata) =>
   isFileNotVisited(file, filesMetadata) &&

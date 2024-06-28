@@ -1,4 +1,4 @@
-export const DEFAULT_ENTRY_ARRAY = [/.[jt]sx?$/];
+export const DEFAULT_ENTRY_ARRAY = [/\.[mc]?[jt]sx?$/];
 export const DEFAULT_REGEX_STRING = "!^()";
 export const DEFAULT_TRUE_REGEX_STRING = "^()";
 export const IGNORED_FILES_REGEX =
@@ -8,7 +8,12 @@ export const IGNORED_FOLDERS_REGEX =
 export const JSCONFIG_FILE = "jsconfig.json";
 export const TSCONFIG_FILE = "tsconfig.json";
 
-export const VALID_EXTENSIONS_ARRAY = [".js", ".jsx", ".ts", ".tsx", ".d.ts"];
+export const VALID_EXTENSIONS_ARRAY = [
+  // Javascript family
+  ".js", ".jsx", ".mjs", ".mjsx", ".cjs", ".cjsx",
+  // Typescript family
+  ".ts", ".tsx", ".mts", ".mtsx", ".cts", ".ctsx",
+];
 export const DEFAULT_MODULES_ARRAY = ["src", "node_modules"];
 export const SIZES_ARRAY = ["B", "KB", "MB", "GB", "TB", "PB"];
 

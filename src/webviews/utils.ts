@@ -34,9 +34,9 @@ export function getFileType(filepath: string, pathSep: string = "/"): FileType {
         return "nodejs";
     if (/(?:\\|\/)node_modules(?:\\|\/)/.test(filepath)) return "nodejs";
 
-    if (/\.js$/.test(filepath)) return "javascript";
-    if (/\.ts$/.test(filepath)) return "typescript";
-    if (/\.tsx$/.test(filepath)) return "react";
+    if (/\.[mc]?js$/.test(filepath)) return "javascript";
+    if (/\.[mc]?ts$/.test(filepath)) return "typescript";
+    if (/\.[mc]?[jt]sx$/.test(filepath)) return "react";
     if (/\.css$/.test(filepath)) return "css";
     if (/\.scss$/.test(filepath)) return "sass";
 
