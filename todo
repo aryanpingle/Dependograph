@@ -15,25 +15,24 @@
 [ ] style: Improve CSS names
 
 -- BUGS / FIXES / REFACTORS --
-[ ] Show "add entry file" button only on valid files
 [ ] Files aren't always sorted correctly (especially on adding / removing)
-[ ] Support .mjs and .cjs
+[X] Show "add entry file" button only on valid files
 
 -- FEATURES --
+[ ] ⭐️ Visualization of variable utilization
+    - Track how a variable is referenced across files
+[ ] ⭐️ Find imports / exports within file (git diff)
+[ ] ⭐️ Slider/input to control dependency depth
 [ ] importing types (type, interface, etc) should be counted differently
     - The visualization should have an option to exclude imports which are only types
 [ ] Download visualization button
-[ ] Find imports / exports within file (git diff)
 [ ] Create preview panel within visualization webview
-[ ] Some way to select two nodes and find all paths between them
-    - Idea: Select one node and ctrl+click on the other?
-[ ] Slider/input to control dependency depth
 [ ] Option to toggle simulation temperature i.e. simulation won't move
-[ ] Use editor background color for settings panel (don't question this)
-[ ] Minimal filenames
 [ ] Support online URIs
-[ ] ⭐️ Visualization of variable utilization
-    - Track how a variable is referenced across files
+[X] Use editor background color for settings panel (don't question this)
+[X] Minimal filenames
+[X] Some way to select two nodes and find all paths between them
+    - Idea: Select one node and ctrl+click on the other?
 
 -- COMPLETED --
 [X] Create settings panel within visualization webview
