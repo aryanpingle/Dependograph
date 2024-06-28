@@ -16,6 +16,7 @@ export interface GraphConfig {
  */
 export class Graph {
     adjacencySet: AdjacencySet = {};
+    FilepathToNodeId = new Map<string, string>();
     NodeIdToNode: Record<string, SimNode> = {};
 
     nodes: SimNode[];
@@ -29,10 +30,18 @@ export class Graph {
         this.links = [];
 
         // 1. Add all nodes
-        const FilepathToNodeId = new Map<string, string>();
         for (const filepath in dependencyInfo.filesMapping) {
-            const id = this.addNode(filepath);
-            FilepathToNodeId[filepath] = id;
+            const node = this.addNode(filepath);
+            this.FilepathToNodeId[filepath] = node.id;
+
+            // Some dependencies (excluded ones) aren't part of filesMapping.
+            // But they are still part of the visualization.
+            const importedFilesMapping =
+                dependencyInfo.filesMapping[filepath].importedFilesMapping;
+            for (const dependencyFilepath in importedFilesMapping) {
+                const node = this.addNode(dependencyFilepath);
+                this.FilepathToNodeId[dependencyFilepath] = node.id;
+            }
         }
 
         // 2. Add all edges
@@ -41,8 +50,8 @@ export class Graph {
                 dependencyInfo.filesMapping[sourceFilepath]
                     .importedFilesMapping;
             for (const targetFilepath in importedFilesMapping) {
-                const sourceId = FilepathToNodeId[sourceFilepath];
-                const targetId = FilepathToNodeId[targetFilepath];
+                const sourceId = this.FilepathToNodeId[sourceFilepath];
+                const targetId = this.FilepathToNodeId[targetFilepath];
                 this.addEdge(sourceId, targetId);
             }
         }
@@ -55,19 +64,24 @@ export class Graph {
         this.adjacencySet[sourceId].add(targetId);
     }
 
-    addNode(filepath: string): string {
+    addNode(filepath: string): SimNode {
+        if (filepath in this.FilepathToNodeId) {
+            const nodeId = this.FilepathToNodeId[filepath];
+            const node = this.NodeIdToNode[nodeId];
+            return node;
+        }
         const node = new SimNode(filepath);
         this.nodes.push(node);
         this.NodeIdToNode[node.id] = node;
 
         this.adjacencySet[node.id] = new Set<string>();
-        return node.id;
+        return node;
     }
 
     createLinks() {
         const visitedNodeIds = new Set<string>();
         for (const sourceId in this.adjacencySet) {
-            for (const targetId of this.adjacencySet[sourceId]) {
+            for (const targetId of this.adjacencySet[sourceId].values()) {
                 // If there is already a link between source and target
                 if (
                     visitedNodeIds.has(targetId) &&
@@ -105,9 +119,6 @@ export class Graph {
     }
 
     getAllPaths(source: SimNode, target: SimNode): string[][] {
-        // console.log(
-        //     `from ${source.filepathWithoutWorkspace} to ${target.filepathWithoutWorkspace}`,
-        // );
         const allPaths: string[][] = new Array();
 
         const NodeIdToFeasibility = new Map<string, boolean>();
@@ -131,7 +142,6 @@ export class Graph {
             }
 
             NodeIdToFeasibility[node.id] = false;
-            // console.log("visiting " + node.name);
 
             path.push(node.id);
             if (node.id === target.id) {

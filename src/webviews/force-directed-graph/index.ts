@@ -238,7 +238,13 @@ export class ForceDirectedVisualization {
             .enter()
             .append("g")
             .classed("cyclic", (link) => link.cyclic)
-            .classed("acyclic", (link) => !link.cyclic);
+            .classed("acyclic", (link) => !link.cyclic)
+            .attr("id", (link) => {
+                const sourceId = (link.source as SimNode).id;
+                const targetId = (link.target as SimNode).id;
+                return `link-${sourceId}-${targetId}`;
+            })
+            .classed("link", true);
 
         // Add cyclic paths
         this.d3Links
@@ -359,19 +365,35 @@ export class ForceDirectedVisualization {
                 // Ctrl+click (or command+click on MacOS)
                 // Find a path from `this.selectedNode` to `node`
                 const paths = this.graph.getAllPaths(this.selectedNode, node);
-                this.highlightNodes(paths);
+                this.highlightPaths(paths);
             } else {
                 this.selectNode(node);
             }
         }
     }
 
-    private highlightNodes(allPaths: string[][]) {
-        d3.selectAll(".node").style("opacity", 0.33);
+    private highlightPaths(allPaths: string[][]) {
+        d3.selectAll(".node").style("opacity", 0.1);
+        d3.selectAll(".link").style("opacity", 0.1);
         for (const path of allPaths) {
+            // Highlight nodes
             path.forEach((nodeId) => {
                 d3.select(`#node-${nodeId}`).style("opacity", 1);
             });
+
+            // Highlight links
+            for (let i = 0; i < path.length - 1; ++i) {
+                let fromNodeId = path[i];
+                let toNodeId = path[i + 1];
+                d3.select(`#link-${fromNodeId}-${toNodeId}`).style(
+                    "opacity",
+                    1,
+                );
+                d3.select(`#link-${toNodeId}-${fromNodeId}`).style(
+                    "opacity",
+                    1,
+                );
+            }
         }
     }
 
