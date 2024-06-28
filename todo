@@ -17,6 +17,7 @@
 -- BUGS / FIXES / REFACTORS --
 [ ] Show "add entry file" button only on valid files
 [ ] Files aren't always sorted correctly (especially on adding / removing)
+[ ] Support .mjs and .cjs
 
 -- FEATURES --
 [ ] importing types (type, interface, etc) should be counted differently
