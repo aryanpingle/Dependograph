@@ -53,17 +53,17 @@
         {
           "command": "dependograph.openFile",
           "group": "inline@1",
-          "when": "view == 'dependograph-fs-explorer' && viewItem != 'folder'"
+          "when": "view == 'dependograph-fs-explorer' && viewItem =~ /isFile=true/"
         },
         {
           "command": "dependograph.chooseEntryFile",
           "group": "inline@2",
-          "when": "view == 'dependograph-fs-explorer' && viewItem == 'file'"
+          "when": "view == 'dependograph-fs-explorer' && viewItem =~ /isFile=true/ && viewItem =~ /isEntryFile=false/ && viewItem =~ /isPossibleEntryFile=true/"
         },
         {
           "command": "dependograph.dropEntryFile",
           "group": "inline@2",
-          "when": "view == 'dependograph-fs-explorer' && viewItem == 'file--entry'"
+          "when": "view == 'dependograph-fs-explorer'  && viewItem =~ /isFile=true/ && viewItem =~ /isEntryFile=true/ && viewItem =~ /isPossibleEntryFile=true/"
         }
       ]
     },

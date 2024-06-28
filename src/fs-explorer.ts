@@ -76,7 +76,11 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
 
     getChildren(element?: TreeItem): vscode.ProviderResult<TreeItem[]> {
         if (!element) {
-            this.chosenFilesTreeItem = new TreeItem("", false, undefined);
+            this.chosenFilesTreeItem = new TreeItem("", undefined, {
+                isFile: false,
+                isEntryFile: false,
+                isPossibleEntryFile: false,
+            });
             this.chosenFilesTreeItem.label = "Chosen";
             this.chosenFilesTreeItem.description = "Entry Files";
             this.chosenFilesTreeItem.collapsibleState =
@@ -84,8 +88,12 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
 
             const workspaceFilesTreeItem = new TreeItem(
                 this.workspace,
-                false,
                 undefined,
+                {
+                    isFile: false,
+                    isEntryFile: false,
+                    isPossibleEntryFile: false,
+                },
             );
             workspaceFilesTreeItem.label = "Workspace Files";
             workspaceFilesTreeItem.collapsibleState =
@@ -95,7 +103,12 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
         } else if (element == this.chosenFilesTreeItem) {
             // Get all chosen entry files
             const chosenTreeItems = Array.from(this.chosenFilesSet).map(
-                (filepath) => new EntryFileTreeItem(filepath, element),
+                (filepath) =>
+                    new TreeItem(filepath, element, {
+                        isFile: true,
+                        isEntryFile: true,
+                        isPossibleEntryFile: true,
+                    }),
             );
 
             return chosenTreeItems;
@@ -116,18 +129,18 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
         const treeItems = dirEntries
             .map(
                 (entry) =>
-                    new TreeItem(
-                        path.join(rootDir, entry.name),
-                        entry.isFile(),
-                        element,
-                    ),
+                    new TreeItem(path.join(rootDir, entry.name), element, {
+                        isFile: entry.isFile(),
+                        isEntryFile: false,
+                        isPossibleEntryFile: entry.isFile() && /\.[jt]sx?$/.test(entry.name),
+                    }),
             )
             .filter((element) => !this.chosenFilesSet.has(element.filepath));
 
         // Sort alphabetically
         treeItems.sort((a, b) => a.filepath.localeCompare(b.filepath));
         // Sort folders before files
-        binarySort(treeItems, (element) => (element.isFile ? 1 : 0));
+        binarySort(treeItems, (element) => (element.config.isFile ? 1 : 0));
 
         return treeItems;
     }
@@ -149,31 +162,35 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
     }
 }
 
-class TreeItem extends vscode.TreeItem {
-    public isEntryFile: boolean = false;
+interface TreeItemConfig {
+    isFile: boolean;
+    isEntryFile: boolean;
+    isPossibleEntryFile: boolean;
+}
 
+class TreeItem extends vscode.TreeItem {
     constructor(
         public readonly filepath: string,
-        public readonly isFile: boolean,
         public readonly parent: TreeItem | undefined,
+        public config: TreeItemConfig,
     ) {
         super(
             path.basename(filepath),
-            isFile
+            config.isFile
                 ? vscode.TreeItemCollapsibleState.None
                 : vscode.TreeItemCollapsibleState.Collapsed,
         );
         this.resourceUri = vscode.Uri.file(filepath);
-        this.contextValue = isFile ? "file" : "folder";
+        this.setContextValue(config);
     }
-}
 
-class EntryFileTreeItem extends TreeItem {
-    constructor(
-        public filepath: string,
-        public readonly parent: TreeItem,
-    ) {
-        super(filepath, true, parent);
-        this.contextValue = "file--entry";
+    setContextValue(config: TreeItemConfig) {
+        this.contextValue = Object.entries(config)
+            .map((entry) => {
+                const key = entry[0];
+                const value = entry[1];
+                return String(key) + "=" + String(value);
+            })
+            .join(" ");
     }
 }
