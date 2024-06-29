@@ -20,15 +20,5 @@ export function getNonce() {
  * @param key A function that maps an element of the array to 0 or 1
  */
 export function binarySort<T>(array: T[], key: (element: T) => 0 | 1) {
-    let firstEnd = 0;
-    for (let i = 0; i < array.length; ++i) {
-        if (key(array[i]) === 0) {
-            // Swap array[i] with arra[firstEnd]
-            const temp = array[i];
-            array[i] = array[firstEnd];
-            array[firstEnd] = temp;
-
-            ++firstEnd;
-        }
-    }
+    array.sort((a, b) => key(a) - key(b));
 }
