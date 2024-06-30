@@ -9,6 +9,7 @@ import {
     getMinimalFilepaths,
     areObjectsSynced,
     syncObjects,
+    FileType,
 } from "../utils";
 import { Graph, GraphConfig } from "./graph";
 import { DependencyInfo } from "../../code-analyser";
@@ -284,7 +285,7 @@ export class ForceDirectedVisualization {
             .classed("node", true)
             .attr("id", (node) => `node-${node.id}`)
             .attr("fill", (node) =>
-                node.fileType === "nodejs"
+                node.fileType === FileType.NODEJS
                     ? colors.node_modules
                     : "currentColor",
             )
@@ -347,6 +348,7 @@ export class ForceDirectedVisualization {
         const source = (fromSource ? link.source : link.target) as SimNode;
         const target = (fromSource ? link.target : link.source) as SimNode;
         const r = Math.hypot(target.x - source.x, target.y - source.y);
+        // Draws an arc from the source to the target in a clockwise manner
         return `
           M${source.x},${source.y}
           A${r},${r} 0 0,1 ${target.x},${target.y}
