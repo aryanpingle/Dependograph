@@ -8,14 +8,14 @@
 [ ] refactor: Instead of calling functions on document.querySelector, extract the element to const
 [ ] refactor: Use packages for common logic (longestCommonPrefix, etc)
 [ ] refactor: Use common variables for stuff like vscode.workspace
-[ ] docs: Explain arc logic (force-layout)
-[ ] docs: Explain regex (getFileType)
 [ ] style: Improve anonymous function variable names
 [ ] style: Change file names to use camelCase
 [ ] style: Improve CSS names
+[X] docs: Explain arc logic (force-layout)
+[X] docs: Explain regex (getFileType)
 
 -- BUGS / FIXES / REFACTORS --
-[ ] Files aren't always sorted correctly (especially on adding / removing)
+[X] Files aren't always sorted correctly (especially on adding / removing)
 [X] Show "add entry file" button only on valid files
 
 -- FEATURES --
