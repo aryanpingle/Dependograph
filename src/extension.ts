@@ -3,6 +3,10 @@
 import * as vscode from "vscode";
 import { VisualizationEditorProvider } from "./visualization-editor";
 import { FileItemsProvider } from "./fs-explorer";
+import {
+    CustomTextEditorProvider,
+    FileDependencyViewerScheme,
+} from "./file-dependency-viewer";
 
 export function activate(context: vscode.ExtensionContext) {
     new VisualizationEditorProvider(context);
@@ -12,6 +16,13 @@ export function activate(context: vscode.ExtensionContext) {
         vscode.window.registerTreeDataProvider(
             "dependograph-fs-explorer",
             new FileItemsProvider(workspace, context),
+        ),
+    );
+
+    context.subscriptions.push(
+        vscode.workspace.registerTextDocumentContentProvider(
+            FileDependencyViewerScheme,
+            new CustomTextEditorProvider(),
         ),
     );
 }
