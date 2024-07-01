@@ -49,33 +49,57 @@ export class CustomTextEditorProvider
     }
 }
 
-export async function highlightDependencies(resourceUri: vscode.Uri) {
+const importHighlightColor = createCSSVariable(
+    VscodeCSSVariables["diffEditor-removedTextBackground"],
+    "red",
+);
+const exportHighlightColor = createCSSVariable(
+    VscodeCSSVariables["diffEditor-insertedTextBackground"],
+    "green",
+);
+
+export async function createFileDependencyViewer(resourceUri: vscode.Uri) {
     // Open a readonly editor using the given resource URI
     const customUri = CustomTextEditorProvider.convertToCustomUri(resourceUri);
-    const doc = await vscode.workspace.openTextDocument(customUri);
-    await vscode.window.showTextDocument(doc, { preview: false });
-
-    const editor = vscode.window.activeTextEditor;
-    const editorDocument = editor.document;
-
-    // Test: Highlight the first line
-    const lineHighlight = createCSSVariable(
-        VscodeCSSVariables["diffEditor-insertedTextBackground"],
-        "hotpink",
-    );
-    const decoration = vscode.window.createTextEditorDecorationType({
-        backgroundColor: lineHighlight,
+    const editorDocument = await vscode.workspace.openTextDocument(customUri);
+    const editor = await vscode.window.showTextDocument(editorDocument, {
+        preview: false,
     });
-    const startPos = editorDocument.positionAt(0);
-    const endPos = editorDocument.positionAt(
-        editorDocument.lineAt(0).text.length,
-    );
-    const ranges: vscode.DecorationOptions[] = [
-        {
-            range: new vscode.Range(startPos, endPos),
-        },
-    ];
 
-    // Apply decorations
-    editor.setDecorations(decoration, ranges);
+    const lineCount = editorDocument.lineCount;
+
+    // Test: Assume the first line is an import
+    const line0Start = 0;
+    const line0End = editorDocument.lineAt(0).text.length;
+    const importRanges: [number, number][] = [[line0Start, line0End]];
+    highlightSections(editor, importRanges, importHighlightColor);
+
+    // Test: Assume the second line is an export
+    const line1Start = line0End + 1;
+    const line1End = line1Start + editorDocument.lineAt(1).text.length;
+    const exportRanges: [number, number][] = [[line1Start, line1End]];
+    highlightSections(editor, exportRanges, exportHighlightColor);
+}
+
+/**
+ * Higlight the given sections of code.
+ */
+function highlightSections(
+    editor: vscode.TextEditor,
+    ranges: [number, number][],
+    highlightColor: string,
+) {
+    const editorDocument = editor.document;
+    const decoration = vscode.window.createTextEditorDecorationType({
+        backgroundColor: highlightColor,
+    });
+    const vscodeRanges: vscode.Range[] = ranges.map(
+        (range) =>
+            new vscode.Range(
+                editorDocument.positionAt(range[0]),
+                editorDocument.positionAt(range[1]),
+            ),
+    );
+
+    editor.setDecorations(decoration, vscodeRanges);
 }

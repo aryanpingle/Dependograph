@@ -5,7 +5,7 @@ import * as vscode from "vscode";
 import * as fs from "fs";
 import * as path from "path";
 import { binarySort } from "./utils";
-import { highlightDependencies } from "./file-dependency-viewer";
+import { createFileDependencyViewer } from "./file-dependency-viewer";
 
 export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
     private chosenFilesSet: Set<string> = new Set<string>();
@@ -74,7 +74,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
             vscode.commands.registerCommand(
                 "dependograph.showFileDependencies",
                 (element: TreeItem) => {
-                    highlightDependencies(element.resourceUri);
+                    createFileDependencyViewer(element.resourceUri);
                 },
             ),
         );
@@ -194,12 +194,12 @@ class TreeItem extends vscode.TreeItem {
         );
         this.resourceUri = vscode.Uri.file(filepath);
         // If this is a valid entry file, offer the comand to show file dependencies
-        if(this.config.isPossibleEntryFile) {
+        if (this.config.isPossibleEntryFile) {
             this.command = {
                 command: "dependograph.showFileDependencies",
                 title: "Show file dependencies",
                 arguments: [this],
-            }
+            };
         }
         this.setContextValue(config);
     }
