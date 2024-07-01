@@ -4,47 +4,53 @@ const production = process.argv.includes("--production");
 const watch = process.argv.includes("--watch");
 
 async function main() {
-    const ctxExtension = await esbuild.context({
-        entryPoints: ["src/extension.ts"],
-        bundle: true,
-        format: "cjs",
-        minify: production,
-        sourcemap: !production,
-        sourcesContent: false,
-        platform: "node",
-        outdir: "out",
-        external: ["vscode", "dependency-tree"],
-        logLevel: "silent",
-        plugins: [
-            /* add to the end of plugins array */
-            esbuildProblemMatcherPlugin,
-        ],
-        allowOverwrite: true,
-    });
-    const ctxWebviews = await esbuild.context({
-        entryPoints: ["src/webviews/visualization.ts"],
-        bundle: true,
-        format: "esm",
-        target: "es2020",
-        minify: production,
-        sourcemap: !production,
-        sourcesContent: false,
-        outdir: "out/webviews",
-        logLevel: "silent",
-        plugins: [
-            /* add to the end of plugins array */
-            esbuildProblemMatcherPlugin,
-        ],
-        allowOverwrite: true,
-    });
+    const contexts = [];
+    // Build the extension code
+    contexts.push(
+        await esbuild.context({
+            entryPoints: ["src/extension.ts"],
+            bundle: true,
+            format: "cjs",
+            minify: production,
+            sourcemap: !production,
+            sourcesContent: false,
+            platform: "node",
+            outdir: "out",
+            external: ["vscode", "dependency-tree"],
+            logLevel: "silent",
+            plugins: [
+                /* add to the end of plugins array */
+                esbuildProblemMatcherPlugin,
+            ],
+            allowOverwrite: true,
+        }),
+    );
+    // Build the visualization webview code
+    contexts.push(
+        await esbuild.context({
+            entryPoints: ["src/webviews/visualization.ts"],
+            bundle: true,
+            format: "esm",
+            target: "es2020",
+            minify: production,
+            sourcemap: !production,
+            sourcesContent: false,
+            outdir: "out/webviews",
+            logLevel: "silent",
+            plugins: [
+                /* add to the end of plugins array */
+                esbuildProblemMatcherPlugin,
+            ],
+            allowOverwrite: true,
+        }),
+    );
 
     if (watch) {
-        await Promise.allSettled([ctxExtension.watch(), ctxWebviews.watch()]);
+        await Promise.allSettled(contexts.map((context) => context.watch()));
     } else {
-        await Promise.allSettled([
-            ctxExtension.rebuild().then(ctxExtension.dispose),
-            ctxWebviews.rebuild().then(ctxWebviews.dispose),
-        ]);
+        await Promise.allSettled(
+            contexts.map((context) => context.rebuild().then(context.dispose)),
+        );
     }
 }
 
