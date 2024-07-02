@@ -14,10 +14,7 @@ import {
 import { Graph, GraphConfig } from "./graph";
 import { DependencyInfo } from "../../code-analyser";
 import { SimNode } from "./node";
-import {
-    VscodeCSSVariables,
-    createCSSVariable,
-} from "vscode-webview-variables";
+import { VscodeColors, createCSSVariable } from "vscode-webview-variables";
 
 declare const webviewMetadata: WebviewEmbeddedMetadata;
 
@@ -31,15 +28,15 @@ export type SVGGSelection<T> = d3.Selection<SVGGElement, T, SVGElement, any>;
 // Colors
 const colors = {
     cyclic: createCSSVariable(
-        VscodeCSSVariables["editorError-foreground"],
+        VscodeColors["editorError-foreground"].cssName,
         "red",
     ),
     acyclic: createCSSVariable(
-        VscodeCSSVariables["editorWarning-foreground"],
+        VscodeColors["editorWarning-foreground"].cssName,
         "orange",
     ),
     node_modules: createCSSVariable(
-        VscodeCSSVariables["gitDecoration-untrackedResourceForeground"],
+        VscodeColors["gitDecoration-untrackedResourceForeground"].cssName,
         "green",
     ),
 };

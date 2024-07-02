@@ -1,10 +1,11 @@
 import * as vscode from "vscode";
 import {
-    VscodeCSSVariables,
+    VscodeColor,
+    VscodeColors,
     createCSSVariable,
 } from "vscode-webview-variables";
 
-export const FileDependencyViewerScheme = "customscheme";
+export const FileDependencyViewerScheme = "dependograph";
 
 export class CustomTextEditorProvider
     implements vscode.TextDocumentContentProvider
@@ -49,14 +50,8 @@ export class CustomTextEditorProvider
     }
 }
 
-const importHighlightColor = createCSSVariable(
-    VscodeCSSVariables["diffEditor-removedTextBackground"],
-    "red",
-);
-const exportHighlightColor = createCSSVariable(
-    VscodeCSSVariables["diffEditor-insertedTextBackground"],
-    "green",
-);
+const importColor = VscodeColors["diffEditor-removedLineBackground"];
+const exportColor = VscodeColors["diffEditor-insertedLineBackground"];
 
 export async function createFileDependencyViewer(resourceUri: vscode.Uri) {
     // Open a readonly editor using the given resource URI
@@ -72,13 +67,13 @@ export async function createFileDependencyViewer(resourceUri: vscode.Uri) {
     const line0Start = 0;
     const line0End = editorDocument.lineAt(0).text.length;
     const importRanges: [number, number][] = [[line0Start, line0End]];
-    highlightSections(editor, importRanges, importHighlightColor);
+    highlightSections(editor, importRanges, importColor);
 
     // Test: Assume the second line is an export
     const line1Start = line0End + 1;
     const line1End = line1Start + editorDocument.lineAt(1).text.length;
     const exportRanges: [number, number][] = [[line1Start, line1End]];
-    highlightSections(editor, exportRanges, exportHighlightColor);
+    highlightSections(editor, exportRanges, exportColor);
 }
 
 /**
@@ -87,11 +82,13 @@ export async function createFileDependencyViewer(resourceUri: vscode.Uri) {
 function highlightSections(
     editor: vscode.TextEditor,
     ranges: [number, number][],
-    highlightColor: string,
+    vscodeColor: VscodeColor,
 ) {
     const editorDocument = editor.document;
     const decoration = vscode.window.createTextEditorDecorationType({
-        backgroundColor: highlightColor,
+        backgroundColor: createCSSVariable(vscodeColor.cssName),
+        overviewRulerColor: new vscode.ThemeColor(vscodeColor.themeName),
+        overviewRulerLane: vscode.OverviewRulerLane.Full,
     });
     const vscodeRanges: vscode.Range[] = ranges.map(
         (range) =>

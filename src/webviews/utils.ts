@@ -14,13 +14,13 @@ export interface WebviewEmbeddedMetadata {
 }
 
 export enum FileType {
-    CSS,
-    FILE,
-    JAVASCRIPT,
-    NODEJS,
-    REACT,
-    SASS,
-    TYPESCRIPT,
+    CSS = "css",
+    FILE = "file",
+    JAVASCRIPT = "javascript",
+    NODEJS = "nodejs",
+    REACT = "react",
+    SASS = "sass",
+    TYPESCRIPT = "typescript",
 }
 
 /**
