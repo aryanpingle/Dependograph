@@ -180,7 +180,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
     /**
      * Refresh the entire explorer, preserving the expanded/collapsed state of
      * all folders.
-     * 
+     *
      * NOTE: Call this.debouncedRefresh instead for better performance.
      */
     private refresh = () => {

@@ -4,10 +4,11 @@ import {
     VscodeColors,
     createCSSVariable,
 } from "vscode-webview-variables";
+import { getFileDependencySections } from "./ast";
 
 export const FileDependencyViewerScheme = "dependograph";
 
-export class CustomTextEditorProvider
+export class FileDependencyViewerProvider
     implements vscode.TextDocumentContentProvider
 {
     // Taken from:
@@ -15,9 +16,69 @@ export class CustomTextEditorProvider
     onDidChangeEmitter = new vscode.EventEmitter<vscode.Uri>();
     onDidChange = this.onDidChangeEmitter.event;
 
-    async provideTextDocumentContent(customUri: vscode.Uri): Promise<string> {
+    // Maps a custom URI to the file system watcher associated with it
+    fileSystemWatchers = new Map<string, vscode.FileSystemWatcher>();
+
+    /**
+     * Set a file system watcher on the resource URI, if it doesn't already exist.
+     */
+    async watch(customUri: vscode.Uri, resourceUri: vscode.Uri) {
+        try {
+            // Will throw ENOENT error if the file does not exist
+            await vscode.workspace.fs.stat(resourceUri);
+        } catch {
+            // File does not exist
+            return;
+        }
+
+        const customUriString = customUri.toString();
+        if (!this.fileSystemWatchers.has(customUriString)) {
+            const resourceGlob = {
+                baseUri: resourceUri,
+                pattern: "*",
+            } as vscode.GlobPattern;
+
+            const watcher =
+                vscode.workspace.createFileSystemWatcher(resourceGlob);
+
+            // If the file is modified
+            watcher.onDidChange((uri) => this.onResourceChanged(uri));
+            // If the file is deleted
+            watcher.onDidDelete((uri) => this.onResourceDeleted(uri));
+
+            this.fileSystemWatchers.set(customUriString, watcher);
+        }
+    }
+
+    /**
+     * Handle the event when a resource is changed.
+     */
+    private onResourceChanged(resourceUri: vscode.Uri) {
+        const customUri =
+            FileDependencyViewerProvider.convertToCustomUri(resourceUri);
+
+        this.onDidChangeEmitter.fire(customUri);
+    }
+
+    private onResourceDeleted(resourceUri: vscode.Uri) {
+        const customUri =
+            FileDependencyViewerProvider.convertToCustomUri(resourceUri);
+        const customUriString = customUri.toString();
+
+        this.fileSystemWatchers.get(customUriString).dispose();
+        this.fileSystemWatchers.delete(customUriString);
+        this.onDidChangeEmitter.fire(customUri);
+    }
+
+    /**
+     * Called automatically whenever the document needs to be updated/initialized with text.
+     */
+    async provideTextDocumentContent(customUri: vscode.Uri) {
         const resourceUri =
-            CustomTextEditorProvider.convertToResourceUri(customUri);
+            FileDependencyViewerProvider.convertToResourceUri(customUri);
+
+        this.watch(customUri, resourceUri);
+
         const bytes = await vscode.workspace.fs.readFile(resourceUri);
         return bytes.toString();
     }
@@ -55,13 +116,17 @@ const exportColor = VscodeColors["diffEditor-insertedLineBackground"];
 
 export async function createFileDependencyViewer(resourceUri: vscode.Uri) {
     // Open a readonly editor using the given resource URI
-    const customUri = CustomTextEditorProvider.convertToCustomUri(resourceUri);
+    const customUri =
+        FileDependencyViewerProvider.convertToCustomUri(resourceUri);
     const editorDocument = await vscode.workspace.openTextDocument(customUri);
     const editor = await vscode.window.showTextDocument(editorDocument, {
         preview: false,
     });
 
     const lineCount = editorDocument.lineCount;
+
+    const fileContents = editorDocument.getText();
+    getFileDependencySections(fileContents);
 
     // Test: Assume the first line is an import
     const line0Start = 0;

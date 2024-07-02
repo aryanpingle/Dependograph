@@ -4,7 +4,7 @@ import * as vscode from "vscode";
 import { VisualizationEditorProvider } from "./visualization-editor";
 import { FileItemsProvider } from "./fs-explorer";
 import {
-    CustomTextEditorProvider,
+    FileDependencyViewerProvider,
     FileDependencyViewerScheme,
 } from "./file-dependency-viewer";
 
@@ -22,7 +22,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(
         vscode.workspace.registerTextDocumentContentProvider(
             FileDependencyViewerScheme,
-            new CustomTextEditorProvider(),
+            new FileDependencyViewerProvider(),
         ),
     );
 }
