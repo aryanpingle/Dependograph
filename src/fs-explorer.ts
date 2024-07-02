@@ -6,27 +6,43 @@ import * as fs from "fs";
 import * as path from "path";
 import { binarySort } from "./utils";
 import { createFileDependencyViewer } from "./file-dependency-viewer";
+import debounce from "debounce";
 
 export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
     private chosenFilesSet: Set<string> = new Set<string>();
     private chosenFilesTreeItem: TreeItem;
 
+    // File system watcher
+    private fsWatcher: vscode.FileSystemWatcher;
+    // Debounce refreshing the explorer by this amount of time
+    private DEBOUNCE_MS = 50;
+
+    private _onDidChangeTreeData = new vscode.EventEmitter<
+        TreeItem | undefined | null | void
+    >();
+
+    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
+
     constructor(
         private readonly workspace: string,
-        context: vscode.ExtensionContext,
+        private readonly context: vscode.ExtensionContext,
     ) {
-        // Navigation button that refreshes the TreeView
-        context.subscriptions.push(
-            vscode.commands.registerCommand(
-                "dependograph.refreshFSExplorer",
-                () => {
-                    this.refresh();
-                },
-            ),
-        );
+        this.addCommands();
+
+        // Add file system watcher
+        this.fsWatcher = vscode.workspace.createFileSystemWatcher({
+            baseUri: vscode.workspace.workspaceFolders[0].uri,
+            pattern: "**/*",
+        } as vscode.RelativePattern);
+        this.fsWatcher.onDidCreate(this.debouncedRefresh);
+        this.fsWatcher.onDidChange(this.debouncedRefresh);
+        this.fsWatcher.onDidDelete(this.debouncedRefresh);
+    }
+
+    addCommands() {
         // Navigation button that uses the selected entry files
         // to open a visualization window
-        context.subscriptions.push(
+        this.context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.openVisualization",
                 () => {
@@ -38,27 +54,27 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
             ),
         );
         // TreeItem button that adds this to entry files
-        context.subscriptions.push(
+        this.context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.chooseEntryFile",
                 (element: TreeItem) => {
                     this.chosenFilesSet.add(element.filepath);
-                    this.refresh();
+                    this.debouncedRefresh();
                 },
             ),
         );
         // TreeItem button that removes this from entry files
-        context.subscriptions.push(
+        this.context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.dropEntryFile",
                 (element: TreeItem) => {
                     this.chosenFilesSet.delete(element.filepath);
-                    this.refresh();
+                    this.debouncedRefresh();
                 },
             ),
         );
         // Open the file in a new vscode editor
-        context.subscriptions.push(
+        this.context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.openFile",
                 (element: TreeItem) => {
@@ -70,7 +86,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
             ),
         );
         // Show file dependencies
-        context.subscriptions.push(
+        this.context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.showFileDependencies",
                 (element: TreeItem) => {
@@ -161,17 +177,17 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
         return element.parent;
     }
 
-    // Boilerplate code to refresh the TreeView
-
-    private _onDidChangeTreeData: vscode.EventEmitter<
-        TreeItem | undefined | null | void
-    > = new vscode.EventEmitter<TreeItem | undefined | null | void>();
-
-    readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
-
-    refresh(): void {
+    /**
+     * Refresh the entire explorer, preserving the expanded/collapsed state of
+     * all folders.
+     * 
+     * NOTE: Call this.debouncedRefresh instead for better performance.
+     */
+    private refresh = () => {
         this._onDidChangeTreeData.fire();
-    }
+    };
+
+    private debouncedRefresh = debounce(this.refresh, this.DEBOUNCE_MS);
 }
 
 interface TreeItemConfig {

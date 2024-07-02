@@ -39,11 +39,6 @@
     "menus": {
       "view/title": [
         {
-          "command": "dependograph.refreshFSExplorer",
-          "group": "navigation@1",
-          "when": "view == dependograph-fs-explorer"
-        },
-        {
           "command": "dependograph.openVisualization",
           "group": "navigation@2",
           "when": "view == dependograph-fs-explorer"
@@ -77,11 +72,6 @@
         "command": "dependograph.dropEntryFile",
         "title": "Remove from entry files",
         "icon": "$(remove)"
-      },
-      {
-        "command": "dependograph.refreshFSExplorer",
-        "icon": "$(refresh)",
-        "title": "Refresh"
       },
       {
         "command": "dependograph.openVisualization",
@@ -132,6 +122,7 @@
     "@vscode/webview-ui-toolkit": "^1.4.0",
     "cli-table3": "0.6.2",
     "d3": "7.9.0",
+    "debounce": "^2.1.0",
     "ejs": "^3.1.10",
     "enhanced-resolve": "4.5.0",
     "enquirer": "2.3.6",
