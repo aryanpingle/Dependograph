@@ -4,7 +4,7 @@ import {
     VscodeColors,
     createCSSVariable,
 } from "vscode-webview-variables";
-import { getFileDependencySections } from "./ast";
+import { DependencyType, getFileDependencySections } from "./ast";
 
 export const FileDependencyViewerScheme = "dependograph";
 
@@ -119,25 +119,19 @@ export async function createFileDependencyViewer(resourceUri: vscode.Uri) {
     const customUri =
         FileDependencyViewerProvider.convertToCustomUri(resourceUri);
     const editorDocument = await vscode.workspace.openTextDocument(customUri);
-    const editor = await vscode.window.showTextDocument(editorDocument, {
-        preview: false,
-    });
-
-    const lineCount = editorDocument.lineCount;
+    const editor = await vscode.window.showTextDocument(editorDocument);
 
     const fileContents = editorDocument.getText();
-    getFileDependencySections(fileContents);
+    const fileDepSections = getFileDependencySections(fileContents);
 
-    // Test: Assume the first line is an import
-    const line0Start = 0;
-    const line0End = editorDocument.lineAt(0).text.length;
-    const importRanges: [number, number][] = [[line0Start, line0End]];
+    const importRanges = fileDepSections
+        .filter((section) => section.type === DependencyType.IMPORT)
+        .map((section) => [section.start, section.end]);
     highlightSections(editor, importRanges, importColor);
 
-    // Test: Assume the second line is an export
-    const line1Start = line0End + 1;
-    const line1End = line1Start + editorDocument.lineAt(1).text.length;
-    const exportRanges: [number, number][] = [[line1Start, line1End]];
+    const exportRanges = fileDepSections
+        .filter((section) => section.type === DependencyType.EXPORT)
+        .map((section) => [section.start, section.end]);
     highlightSections(editor, exportRanges, exportColor);
 }
 
@@ -146,7 +140,7 @@ export async function createFileDependencyViewer(resourceUri: vscode.Uri) {
  */
 function highlightSections(
     editor: vscode.TextEditor,
-    ranges: [number, number][],
+    ranges: number[][],
     vscodeColor: VscodeColor,
 ) {
     const editorDocument = editor.document;

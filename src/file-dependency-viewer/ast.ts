@@ -1,4 +1,4 @@
-import traverse, { Node as ASTNode, TraverseOptions } from "@babel/traverse";
+import traverse from "@babel/traverse";
 import { parse as babelParse } from "@babel/parser";
 import { astParserPlugins, astOtherSettings } from "./ast-plugins";
 
@@ -13,8 +13,6 @@ export enum DependencyType {
     EXPORT,
 }
 
-const CustomTraverseOptions: TraverseOptions<ASTNode> = {};
-
 export function getFileDependencySections(
     fileContents: string,
 ): FileDependencySection[] {
@@ -24,7 +22,53 @@ export function getFileDependencySections(
         plugins: astParserPlugins,
         ...astOtherSettings,
     });
-    traverse(ast, CustomTraverseOptions);
+    traverse(ast, {
+        Import(path) {
+            const node = path.node;
+            const { start: startPos, end: endPos } = node.loc;
+            fileDependencySections.push({
+                start: startPos.index,
+                end: endPos.index,
+                type: DependencyType.IMPORT,
+            });
+        },
+        ImportDeclaration(path) {
+            const node = path.node;
+            const { start: startPos, end: endPos } = node.loc;
+            fileDependencySections.push({
+                start: startPos.index,
+                end: endPos.index,
+                type: DependencyType.IMPORT,
+            });
+        },
+        ExportDeclaration(path) {
+            const node = path.node;
+            const { start: startPos, end: endPos } = node.loc;
+            fileDependencySections.push({
+                start: startPos.index,
+                end: endPos.index,
+                type: DependencyType.EXPORT,
+            });
+        },
+        ExportAllDeclaration(path) {
+            const node = path.node;
+            const { start: startPos, end: endPos } = node.loc;
+            fileDependencySections.push({
+                start: startPos.index,
+                end: endPos.index,
+                type: DependencyType.EXPORT,
+            });
+        },
+        ExportDefaultDeclaration(path) {
+            const node = path.node;
+            const { start: startPos, end: endPos } = node.loc;
+            fileDependencySections.push({
+                start: startPos.index,
+                end: endPos.index,
+                type: DependencyType.EXPORT,
+            });
+        },
+    });
 
     return fileDependencySections;
 }
