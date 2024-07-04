@@ -16,10 +16,6 @@ export function setupSettingsPanel() {
     // Get the singleton instance
     visualization = ForceDirectedVisualization.instance;
 
-    document
-        .querySelector(".settings_header")
-        .addEventListener("click", toggleSettingsPanel);
-
     const formElement = document.querySelector("form") as HTMLFormElement;
     formElement.addEventListener("change", onFormChange);
 }
@@ -39,13 +35,4 @@ function onFormChange(event: Event) {
     ) as GraphAndVisualizationConfig;
     const config = Object.assign({}, defaultConfig, formConfig);
     visualization.applyConfiguration(config);
-}
-
-/**
- * Toggle the settings panel to be shown or not.
- */
-function toggleSettingsPanel() {
-    document
-        .querySelector(".settings_content")
-        .classList.toggle("settings_content--shown");
 }

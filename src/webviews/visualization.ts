@@ -4,6 +4,7 @@ import debounce from "debounce";
 import { ForceDirectedVisualization } from "./force-directed-graph";
 import { DependencyInfo } from "../code-analyser";
 import { setupSettingsPanel } from "./settings-panel";
+import { setupPanels } from "./panel";
 
 declare const dependencyInfo: DependencyInfo;
 
@@ -26,6 +27,8 @@ const debouncedResizeSVG = debounce(fitSVGToContainer, 50);
     window.addEventListener("resize", debouncedResizeSVG);
     // Resize
     debouncedResizeSVG();
+
+    setupPanels();
 
     setupSettingsPanel();
 })();

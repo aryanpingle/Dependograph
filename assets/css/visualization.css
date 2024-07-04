@@ -22,16 +22,14 @@ svg {
     user-select: none;
 }
 
-/* Settings Panel */
+/* Panel */
 
-.settings_panel {
+.panel {
     position: absolute;
     top: 0;
-    left: 0;
     height: 100%;
     width: 33%;
     padding: 1em;
-    padding-right: 0;
 
     display: flex;
     flex-direction: column;
@@ -40,7 +38,7 @@ svg {
     pointer-events: none;
 }
 
-.settings_panel > * {
+.panel > * {
     padding: 0.5rem;
     background: var(--vscode-editorHoverWidget-background, black);
 
@@ -48,7 +46,7 @@ svg {
     border: 1px solid var(--vscode-editorHoverWidget-border, red);
 }
 
-.settings_header {
+.panel_header {
     flex: 0 0 auto;
     display: flex;
     align-items: center;
@@ -62,13 +60,13 @@ svg {
     pointer-events: all;
 }
 
-.settings_title {
+.panel_title {
     flex: 1 0 0;
     text-overflow: ellipsis;
     overflow: hidden;
 }
 
-.button-toggle_settings {
+.button-toggle_panel {
     width: 0.75em;
     height: 0.75em;
     flex: 0 0 auto;
@@ -76,15 +74,30 @@ svg {
     place-items: center;
 }
 
-.settings_content {
+.panel_content {
     flex: 1 0 0;
     opacity: 0;
     pointer-events: none;
     user-select: none;
 }
 
-.settings_content--shown {
+.panel_content--shown {
     opacity: 1;
     pointer-events: auto;
     user-select: auto;
 }
+
+/* Settings Panel */
+
+.settings-panel {
+    left: 0;
+    padding-right: 0;
+}
+
+/* Preview Panel */
+
+.preview-panel {
+    right: 0;
+    padding-left: 0;
+}
+

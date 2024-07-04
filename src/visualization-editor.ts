@@ -13,6 +13,8 @@ interface WebviewParams {
     jsURIs: vscode.Uri[];
     webviewMetadata: WebviewEmbeddedMetadata;
     dependencyInfo: DependencyInfo;
+    settings_icon: string;
+    preview_icon: string;
 }
 
 export class VisualizationEditorProvider {
@@ -97,7 +99,8 @@ export class VisualizationEditorProvider {
      * using the given files.
      */
     private async setEditorWebview(filepaths: string[]) {
-        const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
+        const workspaceUri = vscode.workspace.workspaceFolders![0].uri;
+        const workspacePath = workspaceUri.fsPath;
 
         let params: WebviewParams = {} as WebviewParams;
         params["cssURIs"] = [
@@ -107,16 +110,37 @@ export class VisualizationEditorProvider {
         params["jsURIs"] = [
             this.getWebviewURI("out", "webviews", "visualization.js"),
         ];
+        const extensionWebviewUri = this.currentEditor.webview.asWebviewUri(
+            this.context.extensionUri,
+        );
         params["webviewMetadata"] = {
             pathSep: path.sep,
-            workspaceURI: vscode.workspace.workspaceFolders[0].uri,
-            extensionWebviewURI: this.currentEditor.webview
-                .asWebviewUri(this.context.extensionUri)
-                .toString(),
+            workspaceURI: workspaceUri,
+            extensionWebviewURI: extensionWebviewUri.toString(),
         };
         params["dependencyInfo"] = await getDependencyObject(filepaths, [
             workspacePath,
         ]);
+        params.settings_icon = fs
+            .readFileSync(
+                path.join(
+                    this.context.extensionUri.fsPath,
+                    "assets",
+                    "icons",
+                    "settings-gear.svg",
+                ),
+            )
+            .toString();
+        params.preview_icon = fs
+            .readFileSync(
+                path.join(
+                    this.context.extensionUri.fsPath,
+                    "assets",
+                    "icons",
+                    "preview.svg",
+                ),
+            )
+            .toString();
 
         const ejsContent = fs
             .readFileSync(
