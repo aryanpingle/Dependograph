@@ -15,6 +15,7 @@ import { Graph, GraphConfig } from "./graph";
 import { DependencyInfo } from "../../code-analyser";
 import { SimNode } from "./node";
 import { VscodeColors, createCSSVariable } from "vscode-webview-variables";
+import { updatePreviewPanel } from "../preview-panel";
 
 declare const webviewMetadata: WebviewEmbeddedMetadata;
 
@@ -402,6 +403,8 @@ export class ForceDirectedVisualization {
      */
     private selectNode(node: SimNode) {
         this.selectedNode = node;
+
+        updatePreviewPanel(node);
     }
 
     // Functionality for node-dragging
