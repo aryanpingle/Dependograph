@@ -1,0 +1,11 @@
+.clickable_node_link {
+    color: var(--vscode-textLink-foreground, blue);
+}
+
+.clickable_node_link-container {
+    cursor: pointer;
+    display: inline-block;
+    max-width: 100%;
+    overflow: auto;
+    vertical-align: text-bottom;
+}

@@ -10,14 +10,17 @@
     gap: 1em;
 
     pointer-events: none;
+
+    --panel-background-color: var(--vscode-editorHoverWidget-background, black);
+    --panel-border-color: var(--vscode-editorHoverWidget-border, gray);
 }
 
 .panel > * {
     padding: 0.5rem;
-    background: var(--vscode-editorHoverWidget-background, black);
+    background: var(--panel-background-color);
 
     border-radius: 3px;
-    border: 1px solid var(--vscode-editorHoverWidget-border, red);
+    border: 1px solid var(--panel-border-color);
 }
 
 .panel_header {
@@ -59,4 +62,8 @@
     opacity: 1;
     pointer-events: auto;
     user-select: auto;
+}
+
+hr {
+    border-color: var(--panel-border-color);
 }

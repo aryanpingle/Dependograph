@@ -3,8 +3,10 @@ import { Panel } from "../Panel";
 import { SettingsGearIcon } from "../icons";
 // @ts-ignore
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
-import { ForceDirectedVisualization, GraphAndVisualizationConfig } from "../../force-directed-graph";
-import linkref from "linkref";
+import {
+    ForceDirectedVisualization,
+    GraphAndVisualizationConfig,
+} from "../../force-directed-graph";
 
 import "./index.css";
 
@@ -32,7 +34,7 @@ export class SettingsPanel extends Component<Props, State> {
         const config = Object.assign({}, defaultConfig, formConfig);
 
         visualization.applyConfiguration(config);
-    }
+    };
 
     render({}: Props, {}: State) {
         return (
@@ -41,7 +43,12 @@ export class SettingsPanel extends Component<Props, State> {
                 icon={<SettingsGearIcon />}
                 className="settings_panel"
             >
-                <form action="" id="form-settings" ref={linkref(this, 'formElement')} onChange={this.onFormChange}>
+                <form
+                    action=""
+                    id="form-settings"
+                    ref={(formElement) => (this.formElement = formElement)}
+                    onChange={this.onFormChange}
+                >
                     <VSCodeCheckbox
                         name="removeNodeModules"
                         id="checkbox-hide_modules"
