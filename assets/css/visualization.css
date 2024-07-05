@@ -89,14 +89,14 @@ svg {
 
 /* Settings Panel */
 
-.settings-panel {
+.settings_panel {
     left: 0;
     padding-right: 0;
 }
 
 /* Preview Panel */
 
-.preview-panel {
+.preview_panel {
     right: 0;
     padding-left: 0;
 }
