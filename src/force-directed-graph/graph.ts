@@ -1,4 +1,4 @@
-import { DependencyInfo } from "../../code-analyser";
+import { DependencyInfo } from "../code-analyser";
 import { SimLink } from ".";
 import { SimNode } from "./node";
 

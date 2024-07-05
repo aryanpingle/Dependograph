@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 
-import { SimNode } from "./force-directed-graph/node";
+import { SimNode } from "../force-directed-graph/node";
 
 export function setupPreviewPanel() {}
 

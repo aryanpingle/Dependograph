@@ -1,21 +1,9 @@
 import * as vscode from "vscode";
-import { WebviewEmbeddedMetadata } from "./webviews/utils";
 import path from "path";
-import { DependencyInfo, getDependencyObject } from "./code-analyser";
+import { getDependencyObject } from "./code-analyser";
 import * as ejs from "ejs";
 import * as fs from "fs";
-
-/**
- * Definition of the parameters object passed to the webview
- */
-interface WebviewParams {
-    cssURIs: vscode.Uri[];
-    jsURIs: vscode.Uri[];
-    webviewMetadata: WebviewEmbeddedMetadata;
-    dependencyInfo: DependencyInfo;
-    settings_icon: string;
-    preview_icon: string;
-}
+import { WebviewParams } from "./app";
 
 export class VisualizationEditorProvider {
     private currentEditor: vscode.WebviewPanel | null = null;
@@ -108,7 +96,7 @@ export class VisualizationEditorProvider {
             this.getWebviewURI("assets", "css", "visualization.css"),
         ];
         params["jsURIs"] = [
-            this.getWebviewURI("out", "webviews", "visualization.js"),
+            this.getWebviewURI("out", "visualization.js"),
         ];
         const extensionWebviewUri = this.currentEditor.webview.asWebviewUri(
             this.context.extensionUri,
@@ -121,26 +109,6 @@ export class VisualizationEditorProvider {
         params["dependencyInfo"] = await getDependencyObject(filepaths, [
             workspacePath,
         ]);
-        params.settings_icon = fs
-            .readFileSync(
-                path.join(
-                    this.context.extensionUri.fsPath,
-                    "assets",
-                    "icons",
-                    "settings-gear.svg",
-                ),
-            )
-            .toString();
-        params.preview_icon = fs
-            .readFileSync(
-                path.join(
-                    this.context.extensionUri.fsPath,
-                    "assets",
-                    "icons",
-                    "preview.svg",
-                ),
-            )
-            .toString();
 
         const ejsContent = fs
             .readFileSync(

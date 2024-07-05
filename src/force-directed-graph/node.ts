@@ -1,5 +1,5 @@
 import * as d3 from "d3";
-import { FileType, WebviewEmbeddedMetadata, getFileType } from "../utils";
+import { FileType, WebviewEmbeddedMetadata, getFileType } from "../webviews/utils";
 import { v4 as uuidv4 } from "uuid";
 
 declare const webviewMetadata: WebviewEmbeddedMetadata;

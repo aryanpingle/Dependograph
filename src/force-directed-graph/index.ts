@@ -10,12 +10,12 @@ import {
     areObjectsSynced,
     syncObjects,
     FileType,
-} from "../utils";
+} from "../webviews/utils";
 import { Graph, GraphConfig } from "./graph";
-import { DependencyInfo } from "../../code-analyser";
+import { DependencyInfo } from "../code-analyser";
 import { SimNode } from "./node";
 import { VscodeColors, createCSSVariable } from "vscode-webview-variables";
-import { updatePreviewPanel } from "../preview-panel";
+import { updatePreviewPanel } from "../webviews/preview-panel";
 
 declare const webviewMetadata: WebviewEmbeddedMetadata;
 
@@ -100,6 +100,9 @@ export class ForceDirectedVisualization {
             .select("svg")
             .append("g")
             .classed("svg_inner", true);
+
+        console.log(d3
+            .select("svg"))
 
         this.applyGraphConfig();
     }
@@ -199,6 +202,7 @@ export class ForceDirectedVisualization {
     }
 
     private initializeDrawing() {
+        console.log("svg_inner accessing...")
         document.querySelector(".svg_inner").innerHTML = "";
 
         // Per-type markers, as they don't inherit styles.

@@ -28,14 +28,17 @@ async function main() {
     // Build the visualization webview code
     contexts.push(
         await esbuild.context({
-            entryPoints: ["src/webviews/visualization.ts"],
+            entryPoints: ["src/app/index.tsx"],
+            alias: {
+                "react": "preact/compat",
+            },
             bundle: true,
             format: "esm",
             target: "es2020",
             minify: production,
             sourcemap: !production,
             sourcesContent: false,
-            outdir: "out/webviews",
+            outfile: "./out/visualization.js",
             logLevel: "silent",
             plugins: [
                 /* add to the end of plugins array */
