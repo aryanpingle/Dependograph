@@ -1,5 +1,7 @@
 import { h, Component, VNode } from "preact";
 
+import "./index.css";
+
 interface Props {
     title: string;
     icon: VNode;
@@ -14,8 +16,8 @@ export class Panel extends Component<Props, State> {
     togglePanel = () => {
         this.setState({
             shown: !this.state.shown,
-        })
-    }
+        });
+    };
 
     render({ title, icon, className }: Props, { shown }: State) {
         return (

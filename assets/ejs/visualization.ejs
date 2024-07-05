@@ -9,6 +9,20 @@
     <%- "<script>const webviewMetadata = " + JSON.stringify(webviewMetadata) + ";</script>" %>
     <%- "<script>const dependencyInfo = " + JSON.stringify(dependencyInfo) + ";</script>" %>
 
+    <style>
+        html {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+        }
+    </style>
+
     <!-- CSS Stylesheets -->
     <% cssURIs.forEach(cssURI => { %>
         <link rel="stylesheet" href="<%- cssURI %>">

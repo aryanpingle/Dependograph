@@ -15,7 +15,6 @@ import { Graph, GraphConfig } from "./graph";
 import { DependencyInfo } from "../code-analyser";
 import { SimNode } from "./node";
 import { VscodeColors, createCSSVariable } from "vscode-webview-variables";
-import { updatePreviewPanel } from "../webviews/preview-panel";
 
 declare const webviewMetadata: WebviewEmbeddedMetadata;
 
@@ -405,8 +404,11 @@ export class ForceDirectedVisualization {
     private selectNode(node: SimNode) {
         this.selectedNode = node;
 
-        updatePreviewPanel(node);
+        this.updatePreviewPanel(node);
     }
+
+    // TODO: There has got to be a better way of doing this rather than overriding from preview panel
+    updatePreviewPanel(node: SimNode) {}
 
     // Functionality for node-dragging
 

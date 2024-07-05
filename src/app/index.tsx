@@ -35,9 +35,9 @@ class Webview extends Component<Props, State> {
     ) {
         return (
             <Fragment>
-                <Visualization dependencyInfo={dependencyInfo}></Visualization>
+                <Visualization dependencyInfo={dependencyInfo} />
                 <SettingsPanel />
-                <PreviewPanel />
+                <PreviewPanel dependencyInfo={dependencyInfo} />
             </Fragment>
         );
     }

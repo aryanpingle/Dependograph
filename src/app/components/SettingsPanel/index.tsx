@@ -6,6 +6,8 @@ import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
 import { ForceDirectedVisualization, GraphAndVisualizationConfig } from "../../../force-directed-graph";
 import linkref from "linkref";
 
+import "./index.css";
+
 interface Props {}
 
 interface State {}

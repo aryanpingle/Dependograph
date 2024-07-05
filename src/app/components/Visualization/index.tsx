@@ -3,8 +3,10 @@ import { h, Component } from "preact";
 import { ForceDirectedVisualization } from "../../../force-directed-graph";
 import { DependencyInfo } from "../../../code-analyser";
 
+import "./index.css";
+
 interface Props {
-    dependencyInfo: DependencyInfo
+    dependencyInfo: DependencyInfo;
 }
 
 interface State {}
@@ -22,8 +24,9 @@ export class Visualization extends Component<Props, State> {
         // Resize
         this.debouncedResizeSVG();
 
-        this.visualization =
-            ForceDirectedVisualization.createSingletonInstance(this.props.dependencyInfo);
+        this.visualization = ForceDirectedVisualization.createSingletonInstance(
+            this.props.dependencyInfo,
+        );
     }
 
     private fitSVGToContainer = () => {
