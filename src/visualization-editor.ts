@@ -95,9 +95,7 @@ export class VisualizationEditorProvider {
             this.getWebviewURI("assets", "css", "vscode.css"),
             this.getWebviewURI("assets", "css", "visualization.css"),
         ];
-        params["jsURIs"] = [
-            this.getWebviewURI("out", "visualization.js"),
-        ];
+        params["jsURIs"] = [this.getWebviewURI("out", "visualization.js")];
         const extensionWebviewUri = this.currentEditor.webview.asWebviewUri(
             this.context.extensionUri,
         );

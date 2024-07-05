@@ -101,9 +101,6 @@ export class ForceDirectedVisualization {
             .append("g")
             .classed("svg_inner", true);
 
-        console.log(d3
-            .select("svg"))
-
         this.applyGraphConfig();
     }
 
@@ -202,7 +199,7 @@ export class ForceDirectedVisualization {
     }
 
     private initializeDrawing() {
-        console.log("svg_inner accessing...")
+        console.log("svg_inner accessing...");
         document.querySelector(".svg_inner").innerHTML = "";
 
         // Per-type markers, as they don't inherit styles.
