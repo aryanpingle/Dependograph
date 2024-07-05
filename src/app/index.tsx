@@ -2,9 +2,9 @@ import * as vscode from "vscode";
 import { h, Component, render, Fragment } from "preact";
 import { AcquiredVsCodeApi, WebviewEmbeddedMetadata } from "./utils";
 import { DependencyInfo } from "../code-analyser";
-import { Visualization } from "./components/Visualization";
-import { SettingsPanel } from "./components/SettingsPanel";
-import { PreviewPanel } from "./components/PreviewPanel";
+import { VisualizationSVG } from "./VisualizationSVG";
+import { SettingsPanel } from "./SettingsPanel";
+import { PreviewPanel } from "./PreviewPanel";
 
 /**
  * Definition of the parameters object passed to the webview
@@ -35,7 +35,7 @@ class Webview extends Component<Props, State> {
     ) {
         return (
             <Fragment>
-                <Visualization dependencyInfo={dependencyInfo} />
+                <VisualizationSVG dependencyInfo={dependencyInfo} />
                 <SettingsPanel />
                 <PreviewPanel dependencyInfo={dependencyInfo} />
             </Fragment>

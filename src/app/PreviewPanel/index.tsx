@@ -1,9 +1,9 @@
 import { h, Component, Fragment } from "preact";
 import { Panel } from "../Panel";
-import { PreviewEyeIcon } from "../../icons";
-import { ForceDirectedVisualization } from "../../../force-directed-graph";
-import { SimNode } from "../../../force-directed-graph/node";
-import { DependencyInfo } from "../../../code-analyser";
+import { PreviewEyeIcon } from "../icons";
+import { ForceDirectedVisualization } from "../../force-directed-graph";
+import { SimNode } from "../../force-directed-graph/node";
+import { DependencyInfo } from "../../code-analyser";
 
 import "./index.css";
 
@@ -14,6 +14,8 @@ interface Props {
 interface State {
     node?: SimNode;
 }
+
+// Simulation. Visualization containing d3nodes and stuff. Unerlying graph.
 
 export class PreviewPanel extends Component<Props, State> {
     componentDidMount(): void {

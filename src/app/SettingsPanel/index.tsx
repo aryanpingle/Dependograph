@@ -1,9 +1,9 @@
 import { h, Component, VNode } from "preact";
 import { Panel } from "../Panel";
-import { SettingsGearIcon } from "../../icons";
+import { SettingsGearIcon } from "../icons";
 // @ts-ignore
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
-import { ForceDirectedVisualization, GraphAndVisualizationConfig } from "../../../force-directed-graph";
+import { ForceDirectedVisualization, GraphAndVisualizationConfig } from "../../force-directed-graph";
 import linkref from "linkref";
 
 import "./index.css";

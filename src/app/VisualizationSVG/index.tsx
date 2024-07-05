@@ -1,7 +1,7 @@
 import debounce from "debounce";
 import { h, Component } from "preact";
-import { ForceDirectedVisualization } from "../../../force-directed-graph";
-import { DependencyInfo } from "../../../code-analyser";
+import { ForceDirectedVisualization } from "../../force-directed-graph";
+import { DependencyInfo } from "../../code-analyser";
 
 import "./index.css";
 
@@ -11,7 +11,7 @@ interface Props {
 
 interface State {}
 
-export class Visualization extends Component<Props, State> {
+export class VisualizationSVG extends Component<Props, State> {
     visualization: ForceDirectedVisualization;
 
     constructor(props: Props) {
