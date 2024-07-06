@@ -26,6 +26,40 @@ export class PreviewPanel extends Component<Props, State> {
         };
     }
 
+    getImportNodes(): SimNode[] {
+        const visualization = ForceDirectedVisualization.instance;
+        const graph = visualization.graph;
+
+        const importNodes = [];
+
+        const selectedNode = this.state.selectedNode;
+
+        for (const link of graph.links) {
+            if (link.source === selectedNode) {
+                importNodes.push(link.target);
+            }
+        }
+
+        return importNodes;
+    }
+
+    getExportNodes(): SimNode[] {
+        const visualization = ForceDirectedVisualization.instance;
+        const graph = visualization.graph;
+
+        const exportNodes = [];
+
+        const selectedNode = this.state.selectedNode;
+
+        for (const link of graph.links) {
+            if (link.target === selectedNode) {
+                exportNodes.push(link.source);
+            }
+        }
+
+        return exportNodes;
+    }
+
     /**
      * Get the content of the preview panel based on the current state.
      */
@@ -49,15 +83,31 @@ export class PreviewPanel extends Component<Props, State> {
                 <b>Path</b>:{" "}
                 <ClickableNodeLink node={node} useFilepath={true} />
                 <hr />
-                {/* Imports (with names) */}
-                <div className="preview-imports_section">
-                    <b>Imports</b>
-                </div>
+                {/* Imports */}
+                <b>Imports</b>
+                <br />
+                {...this.getImportNodes().map((node) => {
+                    return (
+                        <Fragment>
+                            <code>somevariable</code> from{" "}
+                            <ClickableNodeLink node={node} />
+                            <br />
+                        </Fragment>
+                    );
+                })}
                 <hr />
-                {/* Exports (with names) */}
-                <div className="preview-exports_section">
-                    <b>Exports</b>
-                </div>
+                {/* Exports */}
+                <b>Exports</b>
+                <br />
+                {...this.getExportNodes().map((node) => {
+                    return (
+                        <Fragment>
+                            <code>somevariable</code> to{" "}
+                            <ClickableNodeLink node={node} />
+                            <br />
+                        </Fragment>
+                    );
+                })}
             </Fragment>
         );
     }

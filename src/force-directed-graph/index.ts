@@ -92,7 +92,8 @@ export class ForceDirectedVisualization {
                 "style",
                 "max-width: 100%; height: auto; font: 12px sans-serif;",
             )
-            .call(d3.zoom<SVGElement, unknown>().on("zoom", this.onZoom));
+            .call(d3.zoom<SVGElement, unknown>().on("zoom", this.onZoom))
+            .on("click", this.onClickBackground);
 
         // Create the container for everything inside the svg that should be zoomable / pannable
         this.zoom_container = d3
@@ -355,7 +356,12 @@ export class ForceDirectedVisualization {
 
     // Event handlers
 
+    private onClickBackground = () => {
+        this.selectNode(undefined);
+    };
+
     private onClickNode(event: MouseEvent, node: SimNode) {
+        event.stopPropagation();
         if (event.button === 0) {
             // Left click
             if (
@@ -397,12 +403,20 @@ export class ForceDirectedVisualization {
         }
     }
 
+    private unHighlightPaths() {
+        d3.selectAll(".node").style("opacity", 1);
+        d3.selectAll(".link").style("opacity", 1);
+    }
+
     /**
      * Select the given node, and highlight all direct dependencies from it.
-     * @param node
      */
-    private selectNode(node: SimNode) {
+    private selectNode(node?: SimNode) {
         this.selectedNode = node;
+
+        if (node === undefined) {
+            this.unHighlightPaths();
+        }
 
         this.updatePreviewPanel(node);
     }

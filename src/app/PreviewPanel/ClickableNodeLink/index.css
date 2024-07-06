@@ -6,6 +6,6 @@
     cursor: pointer;
     display: inline-block;
     max-width: 100%;
-    overflow: auto;
+    overflow: auto hidden;
     vertical-align: text-bottom;
 }
