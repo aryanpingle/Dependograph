@@ -1,8 +1,6 @@
 import * as vscode from "vscode";
-import path from "path";
 import { getDependencyObject } from "./code-analyser";
 import * as ejs from "ejs";
-import * as fs from "fs";
 import { WebviewParams } from "./app";
 
 export class VisualizationEditorProvider {
@@ -13,8 +11,13 @@ export class VisualizationEditorProvider {
             vscode.commands.registerCommand(
                 "dependograph.sendEntryFiles",
                 (stringifiedEntryFiles: string) => {
-                    const entryFiles = JSON.parse(stringifiedEntryFiles);
-                    this.createOrShowEditor(entryFiles);
+                    const entryFileUriJSONs = JSON.parse(
+                        stringifiedEntryFiles,
+                    ) as Array<Object>;
+                    const entryFileUris = entryFileUriJSONs.map((UriJSON) =>
+                        vscode.Uri.from(UriJSON as any),
+                    );
+                    this.createOrShowEditor(entryFileUris);
                 },
             ),
         );
@@ -29,7 +32,7 @@ export class VisualizationEditorProvider {
         );
     }
 
-    public async createOrShowEditor(filepaths: string[]) {
+    public async createOrShowEditor(fileUris: vscode.Uri[]) {
         // Check if the editor already exists
         if (this.currentEditor !== null) {
             this.currentEditor.reveal(undefined);
@@ -37,7 +40,7 @@ export class VisualizationEditorProvider {
             this.createEditor();
         }
 
-        await this.setEditorWebview(filepaths);
+        await this.setEditorWebview(fileUris);
     }
 
     /**
@@ -86,7 +89,7 @@ export class VisualizationEditorProvider {
      * Set the webview of the editor after getting the dependency graph
      * using the given files.
      */
-    private async setEditorWebview(filepaths: string[]) {
+    private async setEditorWebview(fileUris: vscode.Uri[]) {
         const workspaceUri = vscode.workspace.workspaceFolders![0].uri;
         const workspacePath = workspaceUri.fsPath;
 
@@ -100,24 +103,27 @@ export class VisualizationEditorProvider {
             this.context.extensionUri,
         );
         params["webviewMetadata"] = {
-            pathSep: path.sep,
+            // Since we're now switching to vscode's FS API,
+            // this might cause problems on DOS down the line. Refactor?
+            pathSep: "/",
             workspaceURI: workspaceUri,
             extensionWebviewURI: extensionWebviewUri.toString(),
         };
-        params["dependencyInfo"] = await getDependencyObject(filepaths, [
-            workspacePath,
-        ]);
+        params["dependencyInfo"] = await getDependencyObject(
+            fileUris,
+            [workspacePath],
+        );
 
-        const ejsContent = fs
-            .readFileSync(
-                path.join(
-                    this.context.extensionUri.fsPath,
+        const ejsContent = (
+            await vscode.workspace.fs.readFile(
+                vscode.Uri.joinPath(
+                    this.context.extensionUri,
                     "assets",
                     "ejs",
                     "visualization.ejs",
                 ),
             )
-            .toString();
+        ).toString();
         this.currentEditor.webview.html = ejs.render(ejsContent, params);
     }
 }

@@ -1,4 +1,5 @@
 const esbuild = require("esbuild");
+const polyfill = require("@esbuild-plugins/node-globals-polyfill");
 
 const production = process.argv.includes("--production");
 const watch = process.argv.includes("--watch");
@@ -16,7 +17,7 @@ async function main() {
             sourcesContent: false,
             platform: "node",
             outdir: "out",
-            external: ["vscode", "dependency-tree"],
+            external: ["vscode"],
             logLevel: "silent",
             plugins: [
                 /* add to the end of plugins array */
@@ -25,12 +26,46 @@ async function main() {
             allowOverwrite: true,
         }),
     );
+    contexts.push(
+        await esbuild.context({
+            entryPoints: ["src/extension.ts"],
+            bundle: true,
+            format: "cjs",
+            minify: production,
+            sourcemap: !production,
+            sourcesContent: false,
+            platform: "browser",
+            outfile: "dist/extension-web.js",
+            external: [
+                "vscode",
+                "fs",
+                "assert",
+                "console",
+                "constants",
+                "module",
+                "url",
+                "stream",
+            ],
+            logLevel: "silent",
+            // Node.js global to browser globalThis
+            define: {
+                global: "globalThis",
+            },
+            plugins: [
+                polyfill.NodeGlobalsPolyfillPlugin({
+                    process: true,
+                    buffer: true,
+                }),
+                esbuildProblemMatcherPlugin /* add to the end of plugins array */,
+            ],
+        }),
+    );
     // Build the visualization webview code
     contexts.push(
         await esbuild.context({
             entryPoints: ["src/app/index.tsx"],
             alias: {
-                "react": "preact/compat",
+                react: "preact/compat",
             },
             bundle: true,
             format: "esm",

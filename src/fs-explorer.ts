@@ -2,14 +2,13 @@
 // https://github.com/microsoft/vscode-extension-samples/blob/main/fsprovider-sample/README.md
 
 import * as vscode from "vscode";
-import * as fs from "fs";
 import * as path from "path";
 import { binarySort } from "./utils";
 import { createFileDependencyViewer } from "./file-dependency-viewer";
 import debounce from "debounce";
 
 export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
-    private chosenFilesSet: Set<string> = new Set<string>();
+    private chosenFileUriSet: Set<vscode.Uri> = new Set<vscode.Uri>();
     private chosenFilesTreeItem: TreeItem;
 
     // File system watcher
@@ -24,14 +23,14 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
     readonly onDidChangeTreeData = this._onDidChangeTreeData.event;
 
     constructor(
-        private readonly workspace: string,
+        private readonly workspaceUri: vscode.Uri,
         private readonly context: vscode.ExtensionContext,
     ) {
         this.addCommands();
 
         // Add file system watcher
         this.fsWatcher = vscode.workspace.createFileSystemWatcher({
-            baseUri: vscode.workspace.workspaceFolders[0].uri,
+            baseUri: workspaceUri,
             pattern: "**/*",
         } as vscode.RelativePattern);
         this.fsWatcher.onDidCreate(this.debouncedRefresh);
@@ -48,7 +47,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
                 () => {
                     vscode.commands.executeCommand(
                         "dependograph.sendEntryFiles",
-                        JSON.stringify(Array.from(this.chosenFilesSet)),
+                        JSON.stringify(Array.from(this.chosenFileUriSet)),
                     );
                 },
             ),
@@ -58,7 +57,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
             vscode.commands.registerCommand(
                 "dependograph.chooseEntryFile",
                 (element: TreeItem) => {
-                    this.chosenFilesSet.add(element.filepath);
+                    this.chosenFileUriSet.add(element.resourceUri);
                     this.debouncedRefresh();
                 },
             ),
@@ -68,7 +67,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
             vscode.commands.registerCommand(
                 "dependograph.dropEntryFile",
                 (element: TreeItem) => {
-                    this.chosenFilesSet.delete(element.filepath);
+                    this.chosenFileUriSet.delete(element.resourceUri);
                     this.debouncedRefresh();
                 },
             ),
@@ -100,20 +99,23 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
         return element;
     }
 
-    getChildren(element?: TreeItem): vscode.ProviderResult<TreeItem[]> {
+    async getChildren(element?: TreeItem): Promise<TreeItem[]> {
         if (!element) {
-            this.chosenFilesTreeItem = new TreeItem("", undefined, {
-                isFile: false,
-                isEntryFile: false,
-                isPossibleEntryFile: false,
-            });
-            this.chosenFilesTreeItem.label = "Chosen";
-            this.chosenFilesTreeItem.description = "Entry Files";
+            this.chosenFilesTreeItem = new TreeItem(
+                this.workspaceUri,
+                undefined,
+                {
+                    isFile: false,
+                    isEntryFile: false,
+                    isPossibleEntryFile: false,
+                },
+            );
+            this.chosenFilesTreeItem.label = "Chosen Entry Files";
             this.chosenFilesTreeItem.collapsibleState =
                 vscode.TreeItemCollapsibleState.Expanded;
 
             const workspaceFilesTreeItem = new TreeItem(
-                this.workspace,
+                this.workspaceUri,
                 undefined,
                 {
                     isFile: false,
@@ -128,9 +130,9 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
             return [this.chosenFilesTreeItem, workspaceFilesTreeItem];
         } else if (element == this.chosenFilesTreeItem) {
             // Get all chosen entry files
-            const chosenTreeItems = Array.from(this.chosenFilesSet).map(
-                (filepath) =>
-                    new TreeItem(filepath, element, {
+            const chosenTreeItems = Array.from(this.chosenFileUriSet).map(
+                (fileUri) =>
+                    new TreeItem(fileUri, element, {
                         isFile: true,
                         isEntryFile: true,
                         isPossibleEntryFile: true,
@@ -144,29 +146,34 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
         }
     }
 
-    getChildrenFromWorkspace(
-        element: TreeItem,
-    ): vscode.ProviderResult<TreeItem[]> {
-        const rootDir = element.filepath;
-
-        const dirEntries = fs.readdirSync(rootDir, {
-            withFileTypes: true,
-        });
+    async getChildrenFromWorkspace(element: TreeItem) {
+        // [filenameWithExtension, vscode.FileType]
+        const dirEntries = await vscode.workspace.fs.readDirectory(
+            element.resourceUri,
+        );
         const treeItems = dirEntries
             .map(
-                (entry) =>
-                    new TreeItem(path.join(rootDir, entry.name), element, {
-                        isFile: entry.isFile(),
-                        isEntryFile: false,
-                        isPossibleEntryFile:
-                            entry.isFile() &&
-                            /\.[mc]?[jt]sx?$/.test(entry.name),
-                    }),
+                ([filename, filetype]) =>
+                    new TreeItem(
+                        vscode.Uri.joinPath(element.resourceUri, filename),
+                        element,
+                        {
+                            isFile: filetype === vscode.FileType.File,
+                            isEntryFile: false,
+                            isPossibleEntryFile:
+                                filetype === vscode.FileType.File &&
+                                /\.[mc]?[jt]sx?$/.test(filename),
+                        },
+                    ),
             )
-            .filter((element) => !this.chosenFilesSet.has(element.filepath));
+            .filter(
+                (element) => !this.chosenFileUriSet.has(element.resourceUri),
+            );
 
         // Sort alphabetically
-        treeItems.sort((a, b) => a.filepath.localeCompare(b.filepath));
+        treeItems.sort((a, b) =>
+            a.resourceUri.fsPath.localeCompare(b.resourceUri.fsPath),
+        );
         // Sort folders before files
         binarySort(treeItems, (element) => (element.config.isFile ? 1 : 0));
 
@@ -198,17 +205,16 @@ interface TreeItemConfig {
 
 class TreeItem extends vscode.TreeItem {
     constructor(
-        public readonly filepath: string,
+        public readonly resourceUri: vscode.Uri,
         public readonly parent: TreeItem | undefined,
         public config: TreeItemConfig,
     ) {
         super(
-            path.basename(filepath),
+            undefined,
             config.isFile
                 ? vscode.TreeItemCollapsibleState.None
                 : vscode.TreeItemCollapsibleState.Collapsed,
         );
-        this.resourceUri = vscode.Uri.file(filepath);
         // If this is a valid entry file, offer the comand to show file dependencies
         if (this.config.isPossibleEntryFile) {
             this.command = {

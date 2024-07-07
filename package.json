@@ -16,7 +16,7 @@
     "Other"
   ],
   "main": "./out/extension.js",
-  "browser": "./out/extension.js",
+  "browser": "./out/extension-web.js",
   "contributes": {
     "viewsContainers": {
       "activitybar": [
@@ -95,6 +95,7 @@
     "vscode:prepublish": "npm run compile"
   },
   "devDependencies": {
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
     "@types/babel__generator": "^7.6.8",
     "@types/babel__traverse": "^7.20.6",
     "@types/d3": "^7.4.3",

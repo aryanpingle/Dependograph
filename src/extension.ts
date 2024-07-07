@@ -11,11 +11,11 @@ import {
 export function activate(context: vscode.ExtensionContext) {
     new VisualizationEditorProvider(context);
 
-    const workspace = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    const workspaceUri = vscode.workspace.workspaceFolders?.[0]?.uri;
     context.subscriptions.push(
         vscode.window.registerTreeDataProvider(
             "dependograph-fs-explorer",
-            new FileItemsProvider(workspace, context),
+            new FileItemsProvider(workspaceUri, context),
         ),
     );
 
