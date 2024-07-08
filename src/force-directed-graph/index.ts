@@ -12,7 +12,7 @@ import {
     FileType,
 } from "../webviews/utils";
 import { Graph, GraphConfig } from "./graph";
-import { DependencyInfo } from "../code-analyser";
+import { GlobalTradeInfo } from "../trade-analyser";
 import { SimNode } from "./node";
 import { VscodeColors, createCSSVariable } from "vscode-webview-variables";
 
@@ -52,8 +52,8 @@ export type GraphAndVisualizationConfig = GraphConfig | VisualConfig;
 export class ForceDirectedVisualization {
     // Singleton Pattern
     public static instance: ForceDirectedVisualization;
-    public static createSingletonInstance(dependencyInfo: DependencyInfo) {
-        this.instance = new ForceDirectedVisualization(dependencyInfo);
+    public static createSingletonInstance(globalTradeInfo: GlobalTradeInfo) {
+        this.instance = new ForceDirectedVisualization(globalTradeInfo);
         return this.instance;
     }
 
@@ -85,7 +85,7 @@ export class ForceDirectedVisualization {
     public graph: Graph;
 
     // TODO: Take in the selector of an svg element
-    private constructor(private readonly dependencyInfo: DependencyInfo) {
+    private constructor(private readonly globalTradeInfo: GlobalTradeInfo) {
         // Set some properies on the svg
         (d3.select("svg") as SVGSelection)
             .attr(
@@ -124,7 +124,7 @@ export class ForceDirectedVisualization {
     }
 
     private applyGraphConfig() {
-        this.graph = new Graph(this.dependencyInfo, this.graphConfig);
+        this.graph = new Graph(this.globalTradeInfo, this.graphConfig);
         this.nodes = this.graph.nodes;
         this.links = this.graph.links;
 
@@ -180,7 +180,6 @@ export class ForceDirectedVisualization {
 
         if (this.visualizationConfig.minimalFilepaths) {
             const pathSep = webviewMetadata.pathSep;
-            console.log(`Path sep - '${pathSep}'`);
 
             const shortPaths = getMinimalFilepaths(
                 this.nodes.map((node) => node.processedName),
@@ -199,7 +198,6 @@ export class ForceDirectedVisualization {
     }
 
     private initializeDrawing() {
-        console.log("svg_inner accessing...");
         document.querySelector(".svg_inner").innerHTML = "";
 
         // Per-type markers, as they don't inherit styles.

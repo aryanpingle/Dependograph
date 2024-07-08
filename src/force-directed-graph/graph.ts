@@ -1,4 +1,4 @@
-import { DependencyInfo } from "../code-analyser";
+import { GlobalTradeInfo } from "../trade-analyser";
 import { SimLink } from ".";
 import { SimNode } from "./node";
 
@@ -23,33 +23,29 @@ export class Graph {
     links: SimLink[];
 
     constructor(
-        dependencyInfo: DependencyInfo,
+        globalTradeInfo: GlobalTradeInfo,
         private readonly config: GraphConfig,
     ) {
         this.nodes = [];
         this.links = [];
 
         // 1. Add all nodes
-        for (const filepath in dependencyInfo.filesMapping) {
+        for (const filepath in globalTradeInfo.files) {
             const node = this.addNode(filepath);
             this.FilepathToNodeId[filepath] = node.id;
 
-            // Some dependencies (excluded ones) aren't part of filesMapping.
-            // But they are still part of the visualization.
-            const importedFilesMapping =
-                dependencyInfo.filesMapping[filepath].importedFilesMapping;
-            for (const dependencyFilepath in importedFilesMapping) {
+            const dependencies = globalTradeInfo.files[filepath].dependencies;
+            for (const dependencyFilepath in dependencies) {
                 const node = this.addNode(dependencyFilepath);
                 this.FilepathToNodeId[dependencyFilepath] = node.id;
             }
         }
 
         // 2. Add all edges
-        for (const sourceFilepath in dependencyInfo.filesMapping) {
-            const importedFilesMapping =
-                dependencyInfo.filesMapping[sourceFilepath]
-                    .importedFilesMapping;
-            for (const targetFilepath in importedFilesMapping) {
+        for (const sourceFilepath in globalTradeInfo.files) {
+            const dependencies =
+                globalTradeInfo.files[sourceFilepath].dependencies;
+            for (const targetFilepath in dependencies) {
                 const sourceId = this.FilepathToNodeId[sourceFilepath];
                 const targetId = this.FilepathToNodeId[targetFilepath];
                 this.addEdge(sourceId, targetId);

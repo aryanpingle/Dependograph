@@ -3,13 +3,13 @@ import { Panel } from "../Panel";
 import { PreviewEyeIcon } from "../icons";
 import { ForceDirectedVisualization } from "../../force-directed-graph";
 import { SimNode } from "../../force-directed-graph/node";
-import { DependencyInfo } from "../../code-analyser";
+import { GlobalTradeInfo } from "../../trade-analyser";
 import { ClickableNodeLink } from "./ClickableNodeLink";
 
 import "./index.css";
 
 interface Props {
-    dependencyInfo: DependencyInfo;
+    globalTradeInfo: GlobalTradeInfo;
 }
 
 interface State {

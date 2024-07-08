@@ -1,12 +1,12 @@
 import debounce from "debounce";
 import { h, Component } from "preact";
 import { ForceDirectedVisualization } from "../../force-directed-graph";
-import { DependencyInfo } from "../../code-analyser";
+import { GlobalTradeInfo } from "../../trade-analyser";
 
 import "./index.css";
 
 interface Props {
-    dependencyInfo: DependencyInfo;
+    globalTradeInfo: GlobalTradeInfo;
 }
 
 interface State {}
@@ -25,7 +25,7 @@ export class VisualizationSVG extends Component<Props, State> {
         this.debouncedResizeSVG();
 
         this.visualization = ForceDirectedVisualization.createSingletonInstance(
-            this.props.dependencyInfo,
+            this.props.globalTradeInfo,
         );
     }
 

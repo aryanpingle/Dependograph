@@ -15,7 +15,7 @@ export type FileImportInfo = Record<string, ImportedVariableInfo[]>;
 
 export interface FileTradeInfo {
     imports: FileImportInfo;
-    dependencies: Set<string>;
+    dependencies: Record<string, boolean>;
 }
 
 export interface GlobalTradeInfo {
@@ -25,7 +25,7 @@ export interface GlobalTradeInfo {
 function createEmptyFileTradeInfo(): FileTradeInfo {
     return {
         imports: {},
-        dependencies: new Set(),
+        dependencies: {},
     };
 }
 
@@ -52,7 +52,11 @@ async function vscodeResolve(
     baseUri: vscode.Uri,
     path: string,
 ): Promise<string> {
-    if (!path.startsWith(".")) return `node_modules/${path}`;
+    if (!path.startsWith("."))
+        return vscode.Uri.from({
+            scheme: "node_modules",
+            path: path,
+        }).toString();
 
     const simpleJoinedUri = vscode.Uri.joinPath(baseUri, "..", path);
     if (await doesUriExist(simpleJoinedUri)) {
@@ -116,7 +120,7 @@ export async function getGlobalTradeInfo(uris: vscode.Uri[]) {
         if (hasBeenAdded) {
             // Add its dependencies to queue
             const fti = globalTradeInfo.files[uriToBeChecked.toString()];
-            fti.dependencies.forEach((dependencyUriString) => {
+            Object.keys(fti.dependencies).forEach((dependencyUriString) => {
                 queue.push(vscode.Uri.parse(dependencyUriString));
             });
         }
@@ -159,7 +163,8 @@ export async function addFileTradeInfo(
                         uri,
                         importSource,
                     );
-                    fileTradeInfo.dependencies.add(importSourceUriString);
+                    // true is meaningless
+                    fileTradeInfo.dependencies[importSourceUriString] = true;
 
                     // TODO: There may be two import declarations importing from the same source.
                     // This statement will overwrite the previous statements.
