@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { getDependencyObject } from "./code-analyser";
 import * as ejs from "ejs";
 import { WebviewParams } from "./app";
+import { getGlobalTradeInfo } from "./trade-analyser";
 
 export class VisualizationEditorProvider {
     private currentEditor: vscode.WebviewPanel | null = null;
@@ -109,21 +110,23 @@ export class VisualizationEditorProvider {
             workspaceURI: workspaceUri,
             extensionWebviewURI: extensionWebviewUri.toString(),
         };
-        params["dependencyInfo"] = await getDependencyObject(
-            fileUris,
-            [workspacePath],
-        );
+        const gti = await getGlobalTradeInfo(fileUris);
+        console.log(gti)
+        // params["dependencyInfo"] = await getDependencyObject(
+        //     [],
+        //     [workspacePath],
+        // );
 
-        const ejsContent = (
-            await vscode.workspace.fs.readFile(
-                vscode.Uri.joinPath(
-                    this.context.extensionUri,
-                    "assets",
-                    "ejs",
-                    "visualization.ejs",
-                ),
-            )
-        ).toString();
-        this.currentEditor.webview.html = ejs.render(ejsContent, params);
+        // const ejsContent = (
+        //     await vscode.workspace.fs.readFile(
+        //         vscode.Uri.joinPath(
+        //             this.context.extensionUri,
+        //             "assets",
+        //             "ejs",
+        //             "visualization.ejs",
+        //         ),
+        //     )
+        // ).toString();
+        // this.currentEditor.webview.html = ejs.render(ejsContent, params);
     }
 }
