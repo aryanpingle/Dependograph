@@ -1,6 +1,7 @@
 import { GlobalTradeInfo } from "../trade-analyser";
 import { SimLink } from ".";
 import { SimNode } from "./node";
+import { FileType } from "../webviews/utils";
 
 export interface AdjacencySet {
     [key: string]: Set<string>;
@@ -32,11 +33,21 @@ export class Graph {
         // 1. Add all nodes
         for (const filepath in globalTradeInfo.files) {
             const node = this.addNode(filepath);
+            if (
+                node.fileType === FileType.NODEJS &&
+                this.config.removeNodeModules
+            )
+                continue;
             this.FilepathToNodeId[filepath] = node.id;
 
             const dependencies = globalTradeInfo.files[filepath].dependencies;
             for (const dependencyFilepath in dependencies) {
                 const node = this.addNode(dependencyFilepath);
+                if (
+                    node.fileType === FileType.NODEJS &&
+                    this.config.removeNodeModules
+                )
+                    continue;
                 this.FilepathToNodeId[dependencyFilepath] = node.id;
             }
         }
@@ -57,6 +68,7 @@ export class Graph {
     }
 
     addEdge(sourceId: string, targetId: string) {
+        if (sourceId === undefined || targetId === undefined) return;
         this.adjacencySet[sourceId].add(targetId);
     }
 
@@ -67,6 +79,8 @@ export class Graph {
             return node;
         }
         const node = new SimNode(filepath);
+        if (node.fileType === FileType.NODEJS && this.config.removeNodeModules)
+            return node;
         this.nodes.push(node);
         this.NodeIdToNode[node.id] = node;
 

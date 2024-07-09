@@ -109,25 +109,30 @@ async function vscodeResolve(
 }
 
 export async function getGlobalTradeInfo(uris: vscode.Uri[]) {
-    const stime = +new Date();
     const globalTradeInfo: GlobalTradeInfo = { files: {} };
     const queue = Array.from(uris);
     while (queue.length !== 0) {
         const uriToBeChecked = queue.pop();
 
-        const hasBeenAdded = await addFileTradeInfo(
-            uriToBeChecked,
-            globalTradeInfo,
-        );
-        if (hasBeenAdded) {
-            // Add its dependencies to queue
-            const fti = globalTradeInfo.files[uriToBeChecked.toString()];
-            Object.keys(fti.dependencies).forEach((dependencyUriString) => {
-                queue.push(vscode.Uri.parse(dependencyUriString));
-            });
+        await addFileTradeInfo(uriToBeChecked, globalTradeInfo);
+
+        // Add its dependencies to queue
+        const fti = globalTradeInfo.files[uriToBeChecked.toString()];
+        for (const dependencyUriString in fti.dependencies) {
+            if (dependencyUriString in globalTradeInfo.files) continue;
+            queue.push(vscode.Uri.parse(dependencyUriString));
         }
+
+        // Preload all dependencies
+        const uncheckedDependencies = Object.keys(fti.dependencies).filter(
+            (dep) => !(dep in globalTradeInfo.files),
+        );
+        await Promise.all(
+            uncheckedDependencies.map((uriString) =>
+                getFileContent(vscode.Uri.parse(uriString)),
+            ),
+        );
     }
-    console.log(`Time taken: ${+new Date() - stime}ms`);
     return globalTradeInfo;
 }
 
@@ -166,24 +171,37 @@ function isStaticImport(path: NodePath<CallExpression>) {
     );
 }
 
+const cachedFileContent = {};
+async function getFileContent(uri: vscode.Uri): Promise<string> {
+    const uriString = uri.toString();
+    if (uriString in cachedFileContent) {
+        return cachedFileContent[uriString];
+    }
+
+    if (!(await doesUriExist(uri))) {
+        cachedFileContent[uriString] = "";
+        return cachedFileContent[uriString];
+    }
+
+    const fileContent = (await vscodeFS.readFile(uri)).toString();
+    cachedFileContent[uriString] = fileContent;
+    return cachedFileContent[uriString];
+}
+
 export async function addFileTradeInfo(
     uri: vscode.Uri,
     globalTradeInfo: GlobalTradeInfo,
-): Promise<boolean> {
+) {
     const uriString = uri.toString();
-
-    if (uriString in globalTradeInfo.files) {
-        return false;
-    }
 
     const fileTradeInfo = createEmptyFileTradeInfo();
     globalTradeInfo.files[uriString] = fileTradeInfo;
 
     if (!(await doesUriExist(uri))) {
-        return false;
+        return;
     }
 
-    const fileContent = (await vscodeFS.readFile(uri)).toString();
+    const fileContent = await getFileContent(uri);
     const astRoot = babelParse(fileContent, {
         plugins: astParserPlugins,
         ...astOtherSettings,
@@ -266,5 +284,5 @@ export async function addFileTradeInfo(
     });
     await Promise.all(promisedFunctions.map((func) => func()));
 
-    return true;
+    return;
 }

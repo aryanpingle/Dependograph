@@ -25,20 +25,10 @@ export enum FileType {
 
 /**
  * Get the file "type" (which is synonymous with the file icon name).
- * TODO: Not robust enough to cover DOS systems.
  */
 export function getFileType(filepath: string, pathSep: string = "/"): FileType {
     /** NodeJS */
-    // If it starts with "@" (eg: @babel/traverse)
-    if (/^@/.test(filepath)) return FileType.NODEJS;
-    // If it doesn't start with a path separator
-    if (/^[^\\\/]/.test(filepath)) return FileType.NODEJS;
-    // If a colon isn't followed by a windows path separator
-    // TODO: May fail for filenames with a colon
-    if (filepath.indexOf(":") != -1 && filepath.indexOf(":\\") == -1)
-        return FileType.NODEJS;
-    // If "node_modules" is a directory in the filepath
-    if (/(?:\\|\/)node_modules(?:\\|\/)/.test(filepath)) return FileType.NODEJS;
+    if (filepath.startsWith("node_modules:")) return FileType.NODEJS;
 
     /** Javascript */
     if (/\.[mc]?js$/.test(filepath)) return FileType.JAVASCRIPT;
