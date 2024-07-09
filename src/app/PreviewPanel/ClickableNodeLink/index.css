@@ -8,4 +8,5 @@
     max-width: 100%;
     overflow: auto hidden;
     vertical-align: text-bottom;
+    text-wrap: nowrap;
 }
