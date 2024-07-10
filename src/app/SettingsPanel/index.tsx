@@ -1,42 +1,39 @@
-import { h, Component, VNode } from "preact";
+import { h, Component } from "preact";
 import { Panel } from "../Panel";
 import { SettingsGearIcon } from "../icons";
-// @ts-ignore
-import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
-import {
-    ForceDirectedVisualization,
-    GraphAndVisualizationConfig,
-} from "../../force-directed-graph";
 
 import "./index.css";
+import { Graph, Visualization } from "../visualization";
 
-interface Props {}
+interface Props {
+    visualization: Visualization<any>;
+}
 
 interface State {}
 
-const defaultConfig: GraphAndVisualizationConfig = {
-    removeNodeModules: false,
-    reverseDirections: false,
-    hideFilenames: false,
-    minimalFilepaths: false,
-};
-
 export class SettingsPanel extends Component<Props, State> {
     formElement?: HTMLFormElement;
+    defaultConfig: Object;
+
+    componentDidMount(): void {
+        const { visualization } = this.props;
+        this.defaultConfig = Object.assign(
+            {},
+            Graph.DefaultConfig,
+            visualization.DefaultConfig,
+        );
+    }
 
     onFormChange = () => {
-        const visualization = ForceDirectedVisualization.instance;
-
         let formConfig = Object.fromEntries(
             // @ts-ignore
             new FormData(this.formElement),
-        ) as GraphAndVisualizationConfig;
-        const config = Object.assign({}, defaultConfig, formConfig);
-
-        visualization.applyConfiguration(config);
+        );
+        const config = Object.assign({}, this.defaultConfig, formConfig);
+        this.props.visualization.applyConfiguration(config);
     };
 
-    render({}: Props, {}: State) {
+    render({ visualization }: Props, {}: State) {
         return (
             <Panel
                 title="Settings"
@@ -49,24 +46,8 @@ export class SettingsPanel extends Component<Props, State> {
                     ref={(formElement) => (this.formElement = formElement)}
                     onChange={this.onFormChange}
                 >
-                    <VSCodeCheckbox
-                        name="removeNodeModules"
-                        id="checkbox-hide_modules"
-                    >
-                        Hide NodeJS modules
-                    </VSCodeCheckbox>
-                    <VSCodeCheckbox
-                        name="minimalFilepaths"
-                        id="checkbox-minimal_filepaths"
-                    >
-                        Shorten filepaths
-                    </VSCodeCheckbox>
-                    <VSCodeCheckbox
-                        name="hideFilenames"
-                        id="checkbox-hide_filenames"
-                    >
-                        Hide filenames
-                    </VSCodeCheckbox>
+                    {...Graph.ConfigInputElements}
+                    {...visualization.ConfigInputElements}
                 </form>
             </Panel>
         );

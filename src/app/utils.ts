@@ -6,9 +6,8 @@ export interface AcquiredVsCodeApi {
 }
 
 export interface WebviewEmbeddedMetadata {
-    workspaceURI: Uri;
+    workspaceURIString: string;
     extensionWebviewURI: string;
-    pathSep: string;
 }
 
 export enum FileType {
@@ -25,18 +24,9 @@ export enum FileType {
  * Get the file "type" (which is synonymous with the file icon name).
  * TODO: Not robust enough to cover DOS systems.
  */
-export function getFileType(filepath: string, pathSep: string = "/"): FileType {
+export function getFileType(filepath: string): FileType {
     /** NodeJS */
-    // If it starts with "@" (eg: @babel/traverse)
-    if (/^@/.test(filepath)) return FileType.NODEJS;
-    // If it doesn't start with a path separator
-    if (/^[^\\\/]/.test(filepath)) return FileType.NODEJS;
-    // If a colon isn't followed by a windows path separator
-    // TODO: May fail for filenames with a colon
-    if (filepath.indexOf(":") != -1 && filepath.indexOf(":\\") == -1)
-        return FileType.NODEJS;
-    // If "node_modules" is a directory in the filepath
-    if (/(?:\\|\/)node_modules(?:\\|\/)/.test(filepath)) return FileType.NODEJS;
+    if (filepath.startsWith("node_modules:")) return FileType.NODEJS;
 
     /** Javascript */
     if (/\.[mc]?js$/.test(filepath)) return FileType.JAVASCRIPT;
@@ -78,9 +68,8 @@ export function longestCommonPrefix(strings: string[]) {
  */
 export function getMinimalFilepaths(
     filepaths: string[],
-    pathSep: string,
 ): string[] {
-    const splitPaths = filepaths.map((filepath) => filepath.split(pathSep));
+    const splitPaths = filepaths.map((filepath) => filepath.split("/"));
     const startIndices = splitPaths.map((splitPath) => splitPath.length - 1);
     // Initially, everything is just the filename + extension
     const shortPaths = splitPaths.map(
@@ -107,7 +96,7 @@ export function getMinimalFilepaths(
             if (freqObj[shortPath] > 1) {
                 startIndices[index] -= 1;
                 const startIndex = startIndices[index];
-                shortPath = splitPaths[index][startIndex] + pathSep + shortPath;
+                shortPath = splitPaths[index][startIndex] + "/" + shortPath;
                 shortPaths[index] = shortPath;
 
                 hasChanged = true;

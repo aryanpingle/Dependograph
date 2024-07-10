@@ -104,10 +104,7 @@ export class VisualizationEditorProvider {
             this.context.extensionUri,
         );
         params["webviewMetadata"] = {
-            // Since we're now switching to vscode's FS API,
-            // this might cause problems on DOS down the line. Refactor?
-            pathSep: "/",
-            workspaceURI: workspaceUri,
+            workspaceURIString: workspaceUri.toString(),
             extensionWebviewURI: extensionWebviewUri.toString(),
         };
         params["globalTradeInfo"] = await getGlobalTradeInfo(fileUris);

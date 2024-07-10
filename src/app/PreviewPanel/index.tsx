@@ -1,63 +1,59 @@
 import { h, Component, Fragment, VNode } from "preact";
 import { Panel } from "../Panel";
 import { PreviewEyeIcon } from "../icons";
-import { ForceDirectedVisualization } from "../../force-directed-graph";
-import { SimNode } from "../../force-directed-graph/node";
 import { GlobalTradeInfo } from "../../trade-analyser";
 import { ClickableNodeLink } from "./ClickableNodeLink";
 
 import "./index.css";
+import { Visualization, VizNode } from "../visualization";
 
 interface Props {
     globalTradeInfo: GlobalTradeInfo;
+    visualization: Visualization<any>;
 }
 
 interface State {
-    selectedNode?: SimNode;
+    selectedNode?: VizNode;
 }
-
-// Simulation. Visualization containing d3nodes and stuff. Unerlying graph.
 
 export class PreviewPanel extends Component<Props, State> {
     componentDidMount(): void {
-        const visualization = ForceDirectedVisualization.instance;
-        visualization.updatePreviewPanel = (node) => {
+        this.props.visualization.onSelectNode = (node) => {
             this.setState({ selectedNode: node });
         };
     }
 
-    getImportNodes(): SimNode[] {
-        const visualization = ForceDirectedVisualization.instance;
+    getImportNodes(): VizNode[] {
+        const visualization = this.props.visualization;
         const graph = visualization.graph;
 
-        const importNodes = [];
-
         const selectedNode = this.state.selectedNode;
+        const selectedNodeId = selectedNode.id;
 
-        for (const link of graph.links) {
-            if (link.source === selectedNode) {
-                importNodes.push(link.target);
-            }
-        }
+        // Get all dependencies of the selected file
+        const importedNodeIds = Array.from(graph.adjacencySet[selectedNodeId])
+        const importNodes = importedNodeIds.map(nodeId => graph.NodeIdToNode[nodeId]);
 
         return importNodes;
     }
 
-    getExportNodes(): SimNode[] {
-        const visualization = ForceDirectedVisualization.instance;
+    getExportNodes(): VizNode[] {
+        const visualization = this.props.visualization;
         const graph = visualization.graph;
 
-        const exportNodes = [];
-
         const selectedNode = this.state.selectedNode;
+        const selectedNodeId = selectedNode.id;
 
-        for (const link of graph.links) {
-            if (link.target === selectedNode) {
-                exportNodes.push(link.source);
+        // Check if any file has the selected file as its dependency
+        const exportedNodes: VizNode[] = [];
+        for(const sourceNodeId in graph.adjacencySet) {
+            const dependencyNodeIds = graph.adjacencySet[sourceNodeId];
+            if(dependencyNodeIds.has(selectedNodeId)) {
+                const sourceNode = graph.NodeIdToNode[sourceNodeId];
+                exportedNodes.push(sourceNode);
             }
         }
-
-        return exportNodes;
+        return exportedNodes;
     }
 
     /**

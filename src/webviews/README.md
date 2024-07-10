@@ -1,1 +1,0 @@
-All files inside this directory (`webviews/*.ts`) will be emitted to `out/webviews/*.js` and used within the context of webviews.

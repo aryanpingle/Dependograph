@@ -7,23 +7,24 @@ import * as d3 from "d3";
 import {
     WebviewEmbeddedMetadata,
     getMinimalFilepaths,
-    areObjectsSynced,
-    syncObjects,
     FileType,
-} from "../webviews/utils";
-import { Graph, GraphConfig } from "./graph";
-import { GlobalTradeInfo } from "../trade-analyser";
-import { SimNode } from "./node";
+} from "../utils";
+import { GlobalTradeInfo } from "../../../trade-analyser";
 import { VscodeColors, createCSSVariable } from "vscode-webview-variables";
+import { Visualization, SVGSelection, SVGGSelection } from "../visualization";
+import { Graph, GraphConfig } from "../graph";
+import { NodeId, VizNode } from "../node";
+import { VNode } from "preact";
+// @ts-ignore
+import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
 
 declare const webviewMetadata: WebviewEmbeddedMetadata;
+
+export type SimNode = VizNode & d3.SimulationNodeDatum;
 
 export interface SimLink extends d3.SimulationLinkDatum<SimNode> {
     cyclic: boolean;
 }
-
-export type SVGSelection = d3.Selection<SVGElement, unknown, HTMLElement, any>;
-export type SVGGSelection<T> = d3.Selection<SVGGElement, T, SVGElement, any>;
 
 // Colors
 const colors = {
@@ -42,20 +43,24 @@ const colors = {
 };
 
 export interface VisualConfig {
-    hideFilenames: boolean;
     /** Shorten filenames as much as possible without having any duplicates */
     minimalFilepaths: boolean;
+    hideFilepaths: boolean;
 }
 
-export type GraphAndVisualizationConfig = GraphConfig | VisualConfig;
+export type GraphAndVisualConfig = GraphConfig & VisualConfig;
 
-export class ForceDirectedVisualization {
-    // Singleton Pattern
-    public static instance: ForceDirectedVisualization;
-    public static createSingletonInstance(globalTradeInfo: GlobalTradeInfo) {
-        this.instance = new ForceDirectedVisualization(globalTradeInfo);
-        return this.instance;
-    }
+export class ForceVisualization extends Visualization<VisualConfig> {
+    DefaultConfig: VisualConfig = {
+        minimalFilepaths: false,
+        hideFilepaths: false,
+    };
+    ConfigInputElements: VNode[] = [
+        <VSCodeCheckbox name="minimalFilepaths">
+            Shorten Filepaths
+        </VSCodeCheckbox>,
+        <VSCodeCheckbox name="hideFilepaths">Hide Filepaths</VSCodeCheckbox>,
+    ];
 
     // Instance variables and methods
     private simulation: d3.Simulation<SimNode, SimLink>;
@@ -64,72 +69,86 @@ export class ForceDirectedVisualization {
 
     private d3Nodes: SVGGSelection<SimNode>;
     private d3Links: SVGGSelection<SimLink>;
-    private zoom_container: d3.Selection<
-        SVGGElement,
-        unknown,
-        HTMLElement,
-        any
-    >;
 
-    private graphConfig: GraphConfig = {
-        removeNodeModules: false,
-        reverseDirections: false,
-    };
-    private visualizationConfig: VisualConfig = {
-        hideFilenames: false,
-        minimalFilepaths: false,
-    };
+    public visualConfig: VisualConfig;
 
     private selectedNode?: SimNode;
 
-    public graph: Graph;
-
-    // TODO: Take in the selector of an svg element
-    private constructor(private readonly globalTradeInfo: GlobalTradeInfo) {
-        // Set some properies on the svg
-        (d3.select("svg") as SVGSelection)
-            .attr(
-                "style",
-                "max-width: 100%; height: auto; font: 12px sans-serif;",
-            )
-            .call(d3.zoom<SVGElement, unknown>().on("zoom", this.onZoom))
-            .on("click", this.onClickBackground);
-
-        // Create the container for everything inside the svg that should be zoomable / pannable
-        this.zoom_container = d3
-            .select("svg")
-            .append("g")
-            .classed("svg_inner", true);
-
-        this.applyGraphConfig();
+    public constructor(globalTradeInfo: GlobalTradeInfo) {
+        super(globalTradeInfo);
+        this.visualConfig = this.DefaultConfig;
     }
 
-    public applyConfiguration(newConfig: Partial<GraphAndVisualizationConfig>) {
-        if (areObjectsSynced(this.graphConfig, newConfig)) {
-            // No change in graph config
-            if (areObjectsSynced(this.visualizationConfig, newConfig)) {
-                // No change in visualization config either
-                return;
-            } else {
-                // Only the visualization config has changed
-                syncObjects(this.visualizationConfig, newConfig);
-                this.applyVisualConfig();
+    public onComponentDidMount(): void {
+        // Setup a click listener on the svg element (for unselecting)
+        this.svgSelection.on("click", this.onClickBackground);
+
+        const defaultConfig = Object.assign(
+            {},
+            Graph.DefaultConfig,
+            this.DefaultConfig,
+        );
+        this.applyConfiguration(defaultConfig, true);
+    }
+
+    private createLinksFromGraph(): SimLink[] {
+        const links: SimLink[] = [];
+
+        const visitedNodeIds = new Set<NodeId>();
+
+        const adjacencySet = this.graph.adjacencySet;
+        for (const sourceId in adjacencySet) {
+            for (const targetId of adjacencySet[sourceId].values()) {
+                // If there is already a link between source and target
+                if (
+                    visitedNodeIds.has(targetId) &&
+                    adjacencySet[targetId].has(sourceId)
+                )
+                    continue;
+
+                // Establish a cyclic or acyclic link
+                links.push({
+                    source: sourceId,
+                    target: targetId,
+                    cyclic: adjacencySet[targetId].has(sourceId),
+                });
             }
-        } else {
-            // The graph configuration has changed
-            syncObjects(this.graphConfig, newConfig);
-            syncObjects(this.visualizationConfig, newConfig);
-            this.applyGraphConfig();
+
+            visitedNodeIds.add(sourceId);
         }
+
+        return links;
     }
 
-    private applyGraphConfig() {
-        this.graph = new Graph(this.globalTradeInfo, this.graphConfig);
+    protected onGraphModified() {
         this.nodes = this.graph.nodes;
-        this.links = this.graph.links;
+        this.links = this.createLinksFromGraph();
 
-        // This will call applyVisualizationConfig automatically
         this.createSimulation();
+    }
+
+    protected createVisuals() {
+        // Temporarily pause the simulation
+        this.simulation.stop();
+
+        this.initializeDrawing();
+
+        // Any additional post-processing effects
+
+        if (this.visualConfig.minimalFilepaths) {
+            const shortPaths = getMinimalFilepaths(
+                this.nodes.map((node) => node.filepath),
+            );
+
+            // TODO: Writing the select for each setting is painful
+            // Store each component (text, icon, etc) as an instance variable
+            this.d3Nodes
+                .selectAll("text")
+                .text((node: SimNode) => shortPaths[node.index]);
+        }
+
+        // Start the simulation
+        this.simulation.restart();
     }
 
     private createSimulation() {
@@ -166,42 +185,14 @@ export class ForceDirectedVisualization {
                 .attr("d", (link) => this.getLinkArc(link, false));
             this.d3Nodes.attr("transform", (d) => `translate(${d.x},${d.y})`);
         });
-
-        this.applyVisualConfig();
     }
 
-    private applyVisualConfig() {
-        // Temporarily pause the simulation
-        this.simulation.stop();
-        // Some visual changes need to happen during the SVG build process
-        this.initializeDrawing();
-
-        // Any additional post-processing effects
-
-        if (this.visualizationConfig.minimalFilepaths) {
-            const pathSep = webviewMetadata.pathSep;
-
-            const shortPaths = getMinimalFilepaths(
-                this.nodes.map((node) => node.processedName),
-                pathSep,
-            );
-
-            // TODO: Writing the select for each setting is painful
-            // Store each component (text, icon, etc) as an instance variable
-            this.d3Nodes
-                .selectAll("text")
-                .text((node: SimNode) => shortPaths[node.index]);
-        }
-
-        // Start the simulation
-        this.simulation.restart();
-    }
-
-    private initializeDrawing() {
-        document.querySelector(".svg_inner").innerHTML = "";
+    protected initializeDrawing() {
+        // Reset the zoom container
+        this.zoomContainer.html("");
 
         // Per-type markers, as they don't inherit styles.
-        this.zoom_container
+        this.zoomContainer
             .append("defs")
             .selectAll("marker")
             .data(this.links)
@@ -226,7 +217,7 @@ export class ForceDirectedVisualization {
 
     private createD3Links() {
         // Create links
-        this.d3Links = this.zoom_container
+        this.d3Links = this.zoomContainer
             .append("g")
             .classed("link-container", true)
             .attr("fill", "none")
@@ -269,7 +260,7 @@ export class ForceDirectedVisualization {
     }
 
     private createD3Nodes() {
-        this.d3Nodes = this.zoom_container
+        this.d3Nodes = this.zoomContainer
             .append("g")
             .classed("node-g", true)
             .attr("fill", "currentColor")
@@ -306,14 +297,14 @@ export class ForceDirectedVisualization {
                     "assets",
                     "icons",
                     node.fileType + ".svg",
-                ].join(webviewMetadata.pathSep),
+                ].join("/"),
             )
             .attr("x", -8)
             .attr("y", -8)
             .attr("width", 16)
             .attr("height", 16);
 
-        if (!this.visualizationConfig.hideFilenames) {
+        if (!this.visualConfig.hideFilepaths) {
             this.d3Nodes
                 .append("text")
                 .attr("x", 8)
@@ -324,22 +315,6 @@ export class ForceDirectedVisualization {
                 .attr("fill", "none");
         }
     }
-
-    private onZoom = (event: any) => {
-        this.zoom_container.attr("transform", event.transform);
-    };
-
-    public resizeSVG = (width: number, height: number) => {
-        width = Math.floor(width);
-        height = Math.floor(height);
-        const svgElement = document.querySelector("svg") as SVGElement;
-        svgElement.setAttribute("width", "" + width);
-        svgElement.setAttribute("height", "" + height);
-        svgElement.setAttribute(
-            "viewBox",
-            `-${width / 2} -${height / 2} ${width} ${height}`,
-        );
-    };
 
     private getLinkArc = (link: SimLink, fromSource: boolean) => {
         const source = (fromSource ? link.source : link.target) as SimNode;
@@ -409,18 +384,15 @@ export class ForceDirectedVisualization {
     /**
      * Select the given node, and highlight all direct dependencies from it.
      */
-    private selectNode(node?: SimNode) {
+    protected selectNode(node?: SimNode) {
         this.selectedNode = node;
 
         if (node === undefined) {
             this.unHighlightPaths();
         }
 
-        this.updatePreviewPanel(node);
+        this.onSelectNode(node);
     }
-
-    // TODO: There has got to be a better way of doing this rather than overriding from preview panel
-    updatePreviewPanel(node: SimNode) {}
 
     // Functionality for node-dragging
 

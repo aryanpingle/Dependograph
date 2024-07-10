@@ -1,10 +1,10 @@
 import { h, Component } from "preact";
+import { VizNode } from "../../visualization";
 
 import "./index.css";
-import { SimNode } from "../../../force-directed-graph/node";
 
 interface Props {
-    node: SimNode;
+    node: VizNode;
     useFilepath?: boolean;
 }
 

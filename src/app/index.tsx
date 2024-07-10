@@ -5,6 +5,7 @@ import { VisualizationSVG } from "./VisualizationSVG";
 import { SettingsPanel } from "./SettingsPanel";
 import { PreviewPanel } from "./PreviewPanel";
 import { GlobalTradeInfo } from "../trade-analyser";
+import { ForceVisualization, Visualization } from "./visualization";
 
 /**
  * Definition of the parameters object passed to the webview
@@ -26,18 +27,22 @@ interface Props {
     globalTradeInfo: GlobalTradeInfo;
     webviewMetadata: WebviewEmbeddedMetadata;
     acquireVsCodeApi(): AcquiredVsCodeApi;
+    visualization: Visualization<any>;
 }
 
 class Webview extends Component<Props, State> {
-    render(
-        { acquireVsCodeApi, globalTradeInfo, webviewMetadata }: Props,
-        state: State,
-    ) {
+    render(props: Props, state: State) {
         return (
             <Fragment>
-                <VisualizationSVG globalTradeInfo={globalTradeInfo} />
-                <SettingsPanel />
-                <PreviewPanel globalTradeInfo={globalTradeInfo} />
+                <VisualizationSVG
+                    visualization={props.visualization}
+                    globalTradeInfo={props.globalTradeInfo}
+                />
+                <SettingsPanel visualization={props.visualization} />
+                <PreviewPanel
+                    visualization={props.visualization}
+                    globalTradeInfo={props.globalTradeInfo}
+                />
             </Fragment>
         );
     }
@@ -48,6 +53,7 @@ render(
         globalTradeInfo={globalTradeInfo}
         acquireVsCodeApi={acquireVsCodeApi}
         webviewMetadata={webviewMetadata}
+        visualization={new ForceVisualization(globalTradeInfo)}
     />,
     document.body,
 );
