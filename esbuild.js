@@ -35,7 +35,7 @@ async function main() {
             sourcemap: !production,
             sourcesContent: false,
             platform: "browser",
-            outfile: "dist/extension-web.js",
+            outfile: "out/extension-web.js",
             external: [
                 "vscode",
                 "fs",
