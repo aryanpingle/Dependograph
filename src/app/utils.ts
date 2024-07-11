@@ -60,14 +60,22 @@ export function longestCommonPrefix(strings: string[]) {
  * Get the shortest version of each filepath in an array without getting duplicates.
  *
  * @example
- * // returns ["index.ts", "folder1/util.ts", "folder2/util.ts"]
+ * returns ["index.ts", "folder1/util.ts", "folder2/util.ts"]
  * getMinimalFilepaths(
  *   ["/src/index.ts", "/src/folder1/util.ts", "/src/folder2/util.ts"],
  *   "/"
  * )
+ * // will return
+ * {
+ *   "/src/index.ts": "index.ts",
+ *   "/src/folder1/util.ts": "folder1/util.ts",
+ *   "/src/folder2/util.ts": "folder2/util.ts"
+ * }
  */
-export function getMinimalFilepaths(filepaths: string[]): string[] {
-    const splitPaths = filepaths.map((filepath) => filepath.split("/"));
+export function getMinimalFilepaths(filepaths: string[]): Record<string, string> {
+    // TODO: Refactor this whole thing because we now want an object mapping a filepath to its shortened
+    const uniqueFilepaths = Array.from(new Set(filepaths));
+    const splitPaths = uniqueFilepaths.map((filepath) => filepath.split("/"));
     const startIndices = splitPaths.map((splitPath) => splitPath.length - 1);
     // Initially, everything is just the filename + extension
     const shortPaths = splitPaths.map(
@@ -102,7 +110,11 @@ export function getMinimalFilepaths(filepaths: string[]): string[] {
         }
     } while (hasChanged);
 
-    return shortPaths;
+    const returnObject = {};
+    for(let i = 0; i < uniqueFilepaths.length; ++i) {
+        returnObject[uniqueFilepaths[i]] = shortPaths[i];
+    }
+    return returnObject;
 }
 
 /**
@@ -129,4 +141,14 @@ export function syncObjects(target: Object, source: Object) {
         if (!source.hasOwnProperty(property)) continue;
         target[property] = source[property];
     }
+}
+
+/**
+ * Remove the leading workspace directory from the given filename.
+ */
+export function removeWorkspaceFromFilename(
+    filename: string,
+    workspaceUriString: string,
+): string {
+    return filename.replace(workspaceUriString, "");
 }

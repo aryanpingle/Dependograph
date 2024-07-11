@@ -56,6 +56,7 @@
     opacity: 0;
     pointer-events: none;
     user-select: none;
+    overflow: auto;
 }
 
 .panel_content--shown {

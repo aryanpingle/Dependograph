@@ -1,8 +1,7 @@
 import { VNode } from "preact";
 import { GlobalTradeInfo } from "../../trade-analyser";
-import { FileType } from "../utils";
 import { NodeId, VizNode } from "./node";
-import { areObjectsSynced, syncObjects } from "./utils";
+import { areObjectsSynced, FileType, getFileType, syncObjects } from "../utils";
 // @ts-ignore
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
 
@@ -13,6 +12,7 @@ export interface AdjacencySet {
 export interface GraphConfig {
     removeNodeModules: boolean;
     reverseDirections: boolean;
+    separateCyclicDependencies: boolean;
 }
 
 /**
@@ -22,6 +22,7 @@ export class Graph {
     static DefaultConfig: GraphConfig = {
         removeNodeModules: false,
         reverseDirections: false,
+        separateCyclicDependencies: false,
     };
     static ConfigInputElements: VNode[] = [
         <VSCodeCheckbox name="removeNodeModules">
@@ -38,8 +39,13 @@ export class Graph {
 
     /** An object that maps a uri string to a set of other uri strings */
     adjacencySet: AdjacencySet;
-    /** Maps uri strings to the id of their corresponding node */
-    UriStringToNodeId: Map<string, NodeId>;
+    /**
+     * Maps uri strings to the id of its corresponding node.
+     *
+     * Sometimes, multiple such nodes may exist due to removal of cyclic dependencies.
+     * In that case, the returned node will be the original (first created).
+     */
+    private UriStringToNodeId: Map<string, NodeId>;
     /** Maps node id's to their corresponding node */
     NodeIdToNode: Record<string, VizNode>;
 
@@ -70,58 +76,86 @@ export class Graph {
 
         // 1. Add all nodes
         for (const uristring in this.globalTradeInfo.files) {
-            const node = this.addNode(uristring);
+            // If node modules need to be removed
             if (
-                node.fileType === FileType.NODEJS &&
+                getFileType(uristring) === FileType.NODEJS &&
                 this.config.removeNodeModules
             )
                 continue;
-            this.UriStringToNodeId[uristring] = node.id;
 
-            const dependencies =
-                this.globalTradeInfo.files[uristring].dependencies;
-            for (const dependencyFilepath in dependencies) {
-                const node = this.addNode(dependencyFilepath);
-                if (
-                    node.fileType === FileType.NODEJS &&
-                    this.config.removeNodeModules
-                )
-                    continue;
-                this.UriStringToNodeId[dependencyFilepath] = node.id;
-            }
+            this.addNode(uristring);
         }
 
         // 2. Add all edges
-        for (const sourceFilepath in this.globalTradeInfo.files) {
-            const dependencies =
-                this.globalTradeInfo.files[sourceFilepath].dependencies;
-            for (const targetFilepath in dependencies) {
-                const sourceId = this.UriStringToNodeId[sourceFilepath];
-                const targetId = this.UriStringToNodeId[targetFilepath];
-                this.addEdge(sourceId, targetId);
+        // BFS traversal starting from the entry files
+        // If adding an edge will cause a cyclic dependency, point to a clone instead
+        const visited = new Set();
+        Object.keys(this.globalTradeInfo.files).forEach(uriString => {
+            const isEntryFile = this.globalTradeInfo.files[uriString].isEntryFile;
+            if(!isEntryFile) return;
+
+            const queue = [uriString];
+            const componentVisited = new Set(queue);
+            while(queue.length !== 0) {
+                const current = queue.shift();
+
+                if(visited.has(current)) continue;
+                visited.add(current);
+
+                const sourceId = this.UriStringToNodeId[current];
+
+                // Add links to its dependencies
+                const dependencies = this.globalTradeInfo.files[current].dependencies;
+                for(const dependency in dependencies) {
+                    // If this uri string is not part of the graph (maybe it was removed)
+                    // then ignore it.
+                    if(!(dependency in this.UriStringToNodeId)) continue;
+
+                    const targetId = this.UriStringToNodeId[dependency];
+
+                    if(componentVisited.has(dependency)) {
+                        // Adding this dependency will create a cycle
+                        if(this.config.separateCyclicDependencies) {
+                            // console.log("cloning", dependency)
+                            // Create a clone and point to it
+                            const clonedNode = this.addNode(dependency);
+                            this.addEdge(sourceId, clonedNode.id);
+                        } else {
+                            // console.log("pointing to original", dependency)
+                            // Cycles are fine, point to the original
+                            this.addEdge(sourceId, targetId)
+                        }
+                    } else {
+                        // console.log("adding", dependency)
+                        // Adding this dependency won't create a cycle
+                        this.addEdge(sourceId, targetId)
+                        queue.push(dependency);
+                        componentVisited.add(dependency)
+                    }
+                }
             }
-        }
+        })
     }
 
     private addEdge(sourceId: string, targetId: string) {
-        if (sourceId === undefined || targetId === undefined) return;
         this.adjacencySet[sourceId].add(targetId);
     }
 
-    private addNode(filepath: string): VizNode {
-        if (filepath in this.UriStringToNodeId) {
-            const nodeId = this.UriStringToNodeId[filepath];
-            const node = this.NodeIdToNode[nodeId];
-            return node;
-        }
-        const isEntryFile = this.globalTradeInfo.files[filepath].isEntryFile;
-        const node = new VizNode(filepath, isEntryFile);
-        if (node.fileType === FileType.NODEJS && this.config.removeNodeModules)
-            return node;
+    /**
+     * Create a new node for this uri string and officially make it a part of the graph.
+     */
+    private addNode(uriString: string): VizNode {
+        const isEntryFile = this.globalTradeInfo.files[uriString].isEntryFile;
+
+        // Create the node
+        const node = new VizNode(uriString, isEntryFile);
         this.nodes.push(node);
         this.NodeIdToNode[node.id] = node;
-
         this.adjacencySet[node.id] = new Set<string>();
+        if(!this.UriStringToNodeId.has(uriString)) {
+            this.UriStringToNodeId[uriString] = node.id;
+        }
+
         return node;
     }
 

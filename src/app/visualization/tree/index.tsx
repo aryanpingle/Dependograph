@@ -8,7 +8,7 @@ import {
     WebviewEmbeddedMetadata,
     getMinimalFilepaths,
     FileType,
-} from "../utils";
+} from "../../utils";
 import { GlobalTradeInfo } from "../../../trade-analyser";
 import { VscodeColors, createCSSVariable } from "vscode-webview-variables";
 import { Visualization, SVGSelection, SVGGSelection } from "../visualization";
@@ -25,7 +25,10 @@ export type TreeLink = d3.HierarchyLink<VizNode>;
 
 // Colors
 const colors = {
-    links: "currentColor",
+    links: createCSSVariable(
+        VscodeColors["editorWidget-border"].cssName,
+        "gray",
+    ),
     node_modules: createCSSVariable(
         VscodeColors["gitDecoration-untrackedResourceForeground"].cssName,
         "green",
@@ -64,6 +67,8 @@ export class TreeVisualization extends Visualization<VisualConfig> {
     private selectedNode?: TreeNode;
 
     private NODE_SIZE = 16;
+    private TREE_NODE_WIDTH = this.NODE_SIZE * 4;
+    private TREE_NODE_HEIGHT = this.NODE_SIZE * 7;
 
     public constructor(globalTradeInfo: GlobalTradeInfo) {
         super(globalTradeInfo);
@@ -83,27 +88,29 @@ export class TreeVisualization extends Visualization<VisualConfig> {
     }
 
     protected onGraphModified() {
-        this.nodes = this.graph.nodes;
+        const graph = this.graph;
+
+        this.nodes = graph.nodes;
+
         this.root = d3.hierarchy(
             this.graph.nodes.find((node) => node.isEntryFile),
             (node) => {
-                console.log("node", node);
+                if (!node) console.log("undefined node?!?!");
                 // Find all children of this node
-                const nodeFilepath = node.filepath;
-                const dependencyFilepaths = Object.keys(
-                    this.globalTradeInfo.files[nodeFilepath].dependencies,
+                const nodeId = node.id;
+                const dependencyNodeIds = Array.from(
+                    graph.adjacencySet[nodeId],
                 );
-                return dependencyFilepaths
-                    .map(
-                        (depFilepath) =>
-                            this.graph.UriStringToNodeId[depFilepath],
-                    )
-                    .map((depNodeId) => this.graph.NodeIdToNode[depNodeId]);
+
+                const y = dependencyNodeIds.map(
+                    (depNodeId) => graph.NodeIdToNode[depNodeId],
+                );
+                return y;
             },
         );
         const tree = d3
             .tree()
-            .nodeSize([this.NODE_SIZE * 4, this.NODE_SIZE * 10]);
+            .nodeSize([this.TREE_NODE_WIDTH, this.TREE_NODE_HEIGHT]);
         // Compute the x and y coordinates
         tree(this.root);
     }
@@ -116,12 +123,6 @@ export class TreeVisualization extends Visualization<VisualConfig> {
             const shortPaths = getMinimalFilepaths(
                 this.nodes.map((node) => node.filepathWithoutWorkspace),
             );
-            console.log(shortPaths);
-            const filepathToShortPath = {};
-            this.nodes.forEach((node, index) => {
-                filepathToShortPath[node.filepathWithoutWorkspace] =
-                    shortPaths[index];
-            });
 
             // TODO: Writing the select for each setting is painful
             // Store each component (text, icon, etc) as an instance variable
@@ -129,16 +130,64 @@ export class TreeVisualization extends Visualization<VisualConfig> {
                 .selectAll("text")
                 .text(
                     (node: TreeNode) =>
-                        filepathToShortPath[node.data.filepathWithoutWorkspace],
+                        shortPaths[node.data.filepathWithoutWorkspace],
                 );
         }
     }
 
     protected initializeDrawing() {
+        this.zoomContainer.html("");
         this.createD3Links();
         this.createD3Markers();
         this.createD3Nodes();
     }
+
+    private createD3Links() {
+        // Create links
+        this.d3Links = this.zoomContainer
+            .append("g")
+            .classed("link-container", true)
+            .attr("fill", "none")
+            .attr("stroke-width", 1.5)
+            .selectAll("g")
+            .data(this.root.links())
+            .enter()
+            .append("g")
+            .attr("id", (link) => {
+                const sourceId = link.source.data.id;
+                const targetId = link.target.data.id;
+                return `link-${sourceId}-${targetId}`;
+            })
+            // .style("opacity", 0.5)
+            .classed("link", true);
+
+        this.d3Links.append("path").attr("d", (link) => this.getLinkArc(link));
+
+        this.d3Links
+            .selectAll("path")
+            .attr("stroke", colors.links)
+            .style("marker-end", `url(#arrow)`);
+    }
+
+    private getLinkArc = (link: TreeLink) => {
+        const source = link.source;
+        const target = link.target;
+        const path = d3.path();
+        path.moveTo(source.x, source.y);
+        path.bezierCurveTo(
+            // Control point 1
+            source.x,
+            source.y + this.TREE_NODE_HEIGHT / 2,
+            // Control point 2
+            target.x,
+            target.y - this.TREE_NODE_HEIGHT / 2,
+            // End
+            target.x,
+            target.y,
+        );
+        // Draws an arc from the source to the target in a clockwise manner
+        return path.toString();
+    };
 
     private createD3Markers() {
         this.zoomContainer
@@ -158,52 +207,6 @@ export class TreeVisualization extends Visualization<VisualConfig> {
             .attr("fill", colors.links)
             .attr("d", "M0,-5 L10,0 L0,5");
     }
-
-    private createD3Links() {
-        // Create links
-        this.d3Links = this.zoomContainer
-            .append("g")
-            .classed("link-container", true)
-            .attr("fill", "none")
-            .attr("stroke-width", 1.5)
-            .selectAll("g")
-            .data(this.root.links())
-            .enter()
-            .append("g")
-            .attr("id", (link) => {
-                const sourceId = link.source.data.id;
-                const targetId = link.target.data.id;
-                return `link-${sourceId}-${targetId}`;
-            })
-            .classed("link", true);
-
-        this.d3Links.append("path").attr("d", (link) => this.getLinkArc(link));
-
-        this.d3Links
-            .selectAll("path")
-            .attr("stroke", colors.links)
-            .style("marker-end", `url(#arrow)`);
-    }
-
-    private getLinkArc = (link: TreeLink) => {
-        const source = link.source;
-        const target = link.target;
-        const path = d3.path();
-        path.moveTo(source.x, source.y);
-        path.bezierCurveTo(
-            // Control point 1
-            source.x,
-            source.y + this.NODE_SIZE,
-            // Control point 2
-            target.x,
-            target.y,
-            // End
-            target.x,
-            target.y,
-        );
-        // Draws an arc from the source to the target in a clockwise manner
-        return path.toString();
-    };
 
     private createD3Nodes() {
         this.d3Nodes = this.zoomContainer
@@ -248,6 +251,9 @@ export class TreeVisualization extends Visualization<VisualConfig> {
             this.d3Nodes
                 .append("text")
                 .attr("text-anchor", "middle")
+                .attr("alignment-baseline", (node) =>
+                    node.children ? "baseline" : "hanging",
+                )
                 .attr("x", 0)
                 .attr("y", (node) => (node.children ? "-1em" : "+1em"))
                 .text((node) => node.data.name)
@@ -255,17 +261,6 @@ export class TreeVisualization extends Visualization<VisualConfig> {
                 .attr("fill", "none");
         }
     }
-
-    // private getLinkArc = (link: SimLink, fromSource: boolean) => {
-    //     const source = (fromSource ? link.source : link.target) as TreeNode;
-    //     const target = (fromSource ? link.target : link.source) as TreeNode;
-    //     const r = Math.hypot(target.x - source.x, target.y - source.y);
-    //     // Draws an arc from the source to the target in a clockwise manner
-    //     return `
-    //       M${source.x},${source.y}
-    //       A${r},${r} 0 0,1 ${target.x},${target.y}
-    //     `;
-    // };
 
     // Event handlers
 
@@ -319,21 +314,13 @@ export class TreeVisualization extends Visualization<VisualConfig> {
         }
     }
 
-    private unHighlightPaths() {
-        d3.selectAll(".node").style("opacity", 1);
-        d3.selectAll(".link").style("opacity", 1);
-    }
-
     /**
      * Select the given node, and highlight all direct dependencies from it.
      */
     protected selectNode(node?: TreeNode) {
         this.selectedNode = node;
 
-        if (node === undefined) {
-            this.unHighlightPaths();
-        }
-
-        this.onSelectNode(node.data);
+        const selectedVizNode = node?.data;
+        this.onSelectNode(selectedVizNode);
     }
 }

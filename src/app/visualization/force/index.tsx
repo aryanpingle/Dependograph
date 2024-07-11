@@ -8,10 +8,10 @@ import {
     WebviewEmbeddedMetadata,
     getMinimalFilepaths,
     FileType,
-} from "../utils";
+} from "../../utils";
 import { GlobalTradeInfo } from "../../../trade-analyser";
 import { VscodeColors, createCSSVariable } from "vscode-webview-variables";
-import { Visualization, SVGSelection, SVGGSelection } from "../visualization";
+import { Visualization, SVGGSelection } from "../visualization";
 import { Graph, GraphConfig } from "../graph";
 import { NodeId, VizNode } from "../node";
 import { VNode } from "preact";
@@ -137,14 +137,17 @@ export class ForceVisualization extends Visualization<VisualConfig> {
 
         if (this.visualConfig.minimalFilepaths) {
             const shortPaths = getMinimalFilepaths(
-                this.nodes.map((node) => node.filepath),
+                this.nodes.map((node) => node.filepathWithoutWorkspace),
             );
 
             // TODO: Writing the select for each setting is painful
             // Store each component (text, icon, etc) as an instance variable
             this.d3Nodes
                 .selectAll("text")
-                .text((node: SimNode) => shortPaths[node.index]);
+                .text(
+                    (node: SimNode) =>
+                        shortPaths[node.filepathWithoutWorkspace],
+                );
         }
 
         // Start the simulation
