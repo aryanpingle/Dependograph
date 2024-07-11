@@ -72,7 +72,9 @@ export function longestCommonPrefix(strings: string[]) {
  *   "/src/folder2/util.ts": "folder2/util.ts"
  * }
  */
-export function getMinimalFilepaths(filepaths: string[]): Record<string, string> {
+export function getMinimalFilepaths(
+    filepaths: string[],
+): Record<string, string> {
     // TODO: Refactor this whole thing because we now want an object mapping a filepath to its shortened
     const uniqueFilepaths = Array.from(new Set(filepaths));
     const splitPaths = uniqueFilepaths.map((filepath) => filepath.split("/"));
@@ -111,7 +113,7 @@ export function getMinimalFilepaths(filepaths: string[]): Record<string, string>
     } while (hasChanged);
 
     const returnObject = {};
-    for(let i = 0; i < uniqueFilepaths.length; ++i) {
+    for (let i = 0; i < uniqueFilepaths.length; ++i) {
         returnObject[uniqueFilepaths[i]] = shortPaths[i];
     }
     return returnObject;

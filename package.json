@@ -92,7 +92,8 @@
     "watch": "tsc --watch -p ./",
     "watch:esbuild": "node esbuild.js --production --watch",
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
-    "vscode:prepublish": "npm run compile"
+    "vscode:prepublish": "npm run compile",
+    "web": "vscode-test-web --extensionDevelopmentPath=. ."
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
@@ -126,7 +127,6 @@
     "cli-table3": "0.6.2",
     "d3": "7.9.0",
     "debounce": "^2.1.0",
-    "ejs": "^3.1.10",
     "enhanced-resolve": "4.5.0",
     "enquirer": "2.3.6",
     "jsconfig-paths-webpack-plugin": "0.1.3",

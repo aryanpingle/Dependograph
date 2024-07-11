@@ -2,7 +2,6 @@
 // https://github.com/microsoft/vscode-extension-samples/blob/main/fsprovider-sample/README.md
 
 import * as vscode from "vscode";
-import * as path from "path";
 import { binarySort } from "./utils";
 import { createFileDependencyViewer } from "./file-dependency-viewer";
 import debounce from "debounce";

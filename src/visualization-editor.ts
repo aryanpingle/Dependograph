@@ -1,6 +1,4 @@
 import * as vscode from "vscode";
-import { getDependencyObject } from "./code-analyser";
-import * as ejs from "ejs";
 import { WebviewParams } from "./app";
 import { getGlobalTradeInfo } from "./trade-analyser";
 
@@ -109,16 +107,20 @@ export class VisualizationEditorProvider {
         };
         params["globalTradeInfo"] = await getGlobalTradeInfo(fileUris);
 
-        const ejsContent = (
-            await vscode.workspace.fs.readFile(
-                vscode.Uri.joinPath(
-                    this.context.extensionUri,
-                    "assets",
-                    "ejs",
-                    "visualization.ejs",
-                ),
-            )
-        ).toString();
-        this.currentEditor.webview.html = ejs.render(ejsContent, params);
+        this.currentEditor.webview.html = /* html */ `
+            <html>
+                <head>
+                    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                    <title>Visualization</title>
+
+                    <script>const webviewMetadata = ${JSON.stringify(params["webviewMetadata"])};</script>
+                    <script>const globalTradeInfo = ${JSON.stringify(params["globalTradeInfo"])};</script>
+
+                    ${params["cssURIs"].map((cssUri) => `<link rel="stylesheet" href="${cssUri}" />`).join("")}
+                    ${params["jsURIs"].map((jsUri) => `<script src="${jsUri}" async defer></script>`).join("")}
+                </head>
+                <body></body>
+            </html>
+        `;
     }
 }

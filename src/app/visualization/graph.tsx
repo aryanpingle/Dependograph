@@ -90,51 +90,50 @@ export class Graph {
         // BFS traversal starting from the entry files
         // If adding an edge will cause a cyclic dependency, point to a clone instead
         const visited = new Set();
-        Object.keys(this.globalTradeInfo.files).forEach(uriString => {
-            const isEntryFile = this.globalTradeInfo.files[uriString].isEntryFile;
-            if(!isEntryFile) return;
+        Object.keys(this.globalTradeInfo.files).forEach((uriString) => {
+            const isEntryFile =
+                this.globalTradeInfo.files[uriString].isEntryFile;
+            if (!isEntryFile) return;
 
             const queue = [uriString];
             const componentVisited = new Set(queue);
-            while(queue.length !== 0) {
+            while (queue.length !== 0) {
                 const current = queue.shift();
 
-                if(visited.has(current)) continue;
+                if (visited.has(current)) continue;
                 visited.add(current);
 
                 const sourceId = this.UriStringToNodeId[current];
 
                 // Add links to its dependencies
-                const dependencies = this.globalTradeInfo.files[current].dependencies;
-                for(const dependency in dependencies) {
+                const dependencies =
+                    this.globalTradeInfo.files[current].dependencies;
+                for (const dependency in dependencies) {
                     // If this uri string is not part of the graph (maybe it was removed)
                     // then ignore it.
-                    if(!(dependency in this.UriStringToNodeId)) continue;
+                    if (!(dependency in this.UriStringToNodeId)) continue;
 
                     const targetId = this.UriStringToNodeId[dependency];
 
-                    if(componentVisited.has(dependency)) {
+                    if (componentVisited.has(dependency)) {
                         // Adding this dependency will create a cycle
-                        if(this.config.separateCyclicDependencies) {
-                            // console.log("cloning", dependency)
+                        if (this.config.separateCyclicDependencies) {
                             // Create a clone and point to it
                             const clonedNode = this.addNode(dependency);
                             this.addEdge(sourceId, clonedNode.id);
                         } else {
-                            // console.log("pointing to original", dependency)
                             // Cycles are fine, point to the original
-                            this.addEdge(sourceId, targetId)
+                            this.addEdge(sourceId, targetId);
                         }
                     } else {
-                        // console.log("adding", dependency)
                         // Adding this dependency won't create a cycle
-                        this.addEdge(sourceId, targetId)
+                        this.addEdge(sourceId, targetId);
                         queue.push(dependency);
-                        componentVisited.add(dependency)
+                        componentVisited.add(dependency);
                     }
                 }
             }
-        })
+        });
     }
 
     private addEdge(sourceId: string, targetId: string) {
@@ -152,7 +151,7 @@ export class Graph {
         this.nodes.push(node);
         this.NodeIdToNode[node.id] = node;
         this.adjacencySet[node.id] = new Set<string>();
-        if(!this.UriStringToNodeId.has(uriString)) {
+        if (!this.UriStringToNodeId.has(uriString)) {
             this.UriStringToNodeId[uriString] = node.id;
         }
 
