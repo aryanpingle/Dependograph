@@ -31,8 +31,10 @@ export class PreviewPanel extends Component<Props, State> {
         const selectedNodeId = selectedNode.id;
 
         // Get all dependencies of the selected file
-        const importedNodeIds = Array.from(graph.adjacencySet[selectedNodeId])
-        const importNodes = importedNodeIds.map(nodeId => graph.NodeIdToNode[nodeId]);
+        const importedNodeIds = Array.from(graph.adjacencySet[selectedNodeId]);
+        const importNodes = importedNodeIds.map(
+            (nodeId) => graph.NodeIdToNode[nodeId],
+        );
 
         return importNodes;
     }
@@ -46,9 +48,9 @@ export class PreviewPanel extends Component<Props, State> {
 
         // Check if any file has the selected file as its dependency
         const exportedNodes: VizNode[] = [];
-        for(const sourceNodeId in graph.adjacencySet) {
+        for (const sourceNodeId in graph.adjacencySet) {
             const dependencyNodeIds = graph.adjacencySet[sourceNodeId];
-            if(dependencyNodeIds.has(selectedNodeId)) {
+            if (dependencyNodeIds.has(selectedNodeId)) {
                 const sourceNode = graph.NodeIdToNode[sourceNodeId];
                 exportedNodes.push(sourceNode);
             }

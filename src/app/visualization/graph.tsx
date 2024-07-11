@@ -22,10 +22,14 @@ export class Graph {
     static DefaultConfig: GraphConfig = {
         removeNodeModules: false,
         reverseDirections: false,
-    }
+    };
     static ConfigInputElements: VNode[] = [
-        <VSCodeCheckbox name="removeNodeModules">Hide NodeJS Packages</VSCodeCheckbox>,
-        <VSCodeCheckbox name="reverseDirections">Reverse Dependency Directions</VSCodeCheckbox>
+        <VSCodeCheckbox name="removeNodeModules">
+            Hide NodeJS Packages
+        </VSCodeCheckbox>,
+        <VSCodeCheckbox name="reverseDirections">
+            Reverse Dependency Directions
+        </VSCodeCheckbox>,
     ];
 
     nodes: VizNode[];
@@ -47,15 +51,18 @@ export class Graph {
     /**
      * Generate the underlying graph using this object's current configuration state.
      */
-    public generateFromConfig(config: Partial<GraphConfig>, force: boolean = false) {
-        if(!force) {
+    public generateFromConfig(
+        config: Partial<GraphConfig>,
+        force: boolean = false,
+    ) {
+        if (!force) {
             // Check if there's any need to update
             if (areObjectsSynced(config, this.config)) {
                 return;
             }
         }
         syncObjects(this.config, config);
-        
+
         this.nodes = [];
         this.adjacencySet = {};
         this.UriStringToNodeId = new Map();
@@ -107,7 +114,8 @@ export class Graph {
             const node = this.NodeIdToNode[nodeId];
             return node;
         }
-        const node = new VizNode(filepath);
+        const isEntryFile = this.globalTradeInfo.files[filepath].isEntryFile;
+        const node = new VizNode(filepath, isEntryFile);
         if (node.fileType === FileType.NODEJS && this.config.removeNodeModules)
             return node;
         this.nodes.push(node);

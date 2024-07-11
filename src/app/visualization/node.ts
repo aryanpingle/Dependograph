@@ -8,14 +8,17 @@ export type NodeId = string;
 
 export class VizNode {
     public readonly filepath: string;
-    
+
     /** The name of the node displayed in the visualization */
     public name: string;
     public readonly filepathWithoutWorkspace: string;
     public readonly id: NodeId;
     public readonly fileType: FileType;
 
-    constructor(filepath: string) {
+    constructor(
+        filepath: string,
+        public readonly isEntryFile: boolean,
+    ) {
         this.filepath = filepath;
 
         this.filepathWithoutWorkspace = removeWorkspaceFromFilename(

@@ -75,9 +75,7 @@ export function longestCommonPrefix(strings: string[]) {
  *   "/"
  * )
  */
-export function getMinimalFilepaths(
-    filepaths: string[],
-): string[] {
+export function getMinimalFilepaths(filepaths: string[]): string[] {
     const splitPaths = filepaths.map((filepath) => filepath.split("/"));
     const startIndices = splitPaths.map((splitPath) => splitPath.length - 1);
     // Initially, everything is just the filename + extension

@@ -27,7 +27,7 @@ export abstract class Visualization<VisualConfig> {
 
     public graph: Graph;
 
-    protected constructor(globalTradeInfo: GlobalTradeInfo) {
+    protected constructor(public readonly globalTradeInfo: GlobalTradeInfo) {
         this.graph = new Graph(globalTradeInfo);
     }
 
@@ -107,7 +107,7 @@ export abstract class Visualization<VisualConfig> {
     /**
      * Visually select the given node, and pass it to onSelectNode.
      */
-    protected abstract selectNode(node?: VizNode): void;
+    protected abstract selectNode(node?: any): void;
 
     /**
      * A function that will be overwritten and used by the preview panel.

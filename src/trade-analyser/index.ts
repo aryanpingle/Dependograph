@@ -17,6 +17,7 @@ export type FileImportInfo = Record<string, ImportedVariableInfo[]>;
 export interface FileTradeInfo {
     imports: FileImportInfo;
     dependencies: Record<string, boolean>;
+    isEntryFile: boolean;
 }
 
 export interface GlobalTradeInfo {
@@ -27,6 +28,7 @@ function createEmptyFileTradeInfo(): FileTradeInfo {
     return {
         imports: {},
         dependencies: {},
+        isEntryFile: false,
     };
 }
 
@@ -110,14 +112,17 @@ async function vscodeResolve(
 
 export async function getGlobalTradeInfo(uris: vscode.Uri[]) {
     const globalTradeInfo: GlobalTradeInfo = { files: {} };
+    const uriSet = new Set<vscode.Uri>(uris);
     const queue = Array.from(uris);
     while (queue.length !== 0) {
         const uriToBeChecked = queue.pop();
 
         await addFileTradeInfo(uriToBeChecked, globalTradeInfo);
-
-        // Add its dependencies to queue
         const fti = globalTradeInfo.files[uriToBeChecked.toString()];
+
+        // Maybe set it as an entry file
+        fti.isEntryFile = uriSet.has(uriToBeChecked);
+        // Add its dependencies to queue
         for (const dependencyUriString in fti.dependencies) {
             if (dependencyUriString in globalTradeInfo.files) continue;
             queue.push(vscode.Uri.parse(dependencyUriString));

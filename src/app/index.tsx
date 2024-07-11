@@ -6,6 +6,7 @@ import { SettingsPanel } from "./SettingsPanel";
 import { PreviewPanel } from "./PreviewPanel";
 import { GlobalTradeInfo } from "../trade-analyser";
 import { ForceVisualization, Visualization } from "./visualization";
+import { TreeVisualization } from "./visualization/tree";
 
 /**
  * Definition of the parameters object passed to the webview
@@ -53,7 +54,7 @@ render(
         globalTradeInfo={globalTradeInfo}
         acquireVsCodeApi={acquireVsCodeApi}
         webviewMetadata={webviewMetadata}
-        visualization={new ForceVisualization(globalTradeInfo)}
+        visualization={new TreeVisualization(globalTradeInfo)}
     />,
     document.body,
 );

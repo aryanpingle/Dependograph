@@ -20,7 +20,7 @@ export class VisualizationSVG extends Component<Props, State> {
     componentDidMount(): void {
         this.props.visualization.setupSVGOnMount("svg");
         this.props.visualization.onComponentDidMount();
-    
+
         // Add resize listener
         window.addEventListener("resize", this.debouncedResizeSVG);
         // Resize
