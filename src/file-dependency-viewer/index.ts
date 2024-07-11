@@ -70,6 +70,11 @@ export class FileDependencyViewerProvider
         this.onDidChangeEmitter.fire(customUri);
     }
 
+    async getFileContent(resourceUri: vscode.Uri): Promise<string> {
+        const bytes = await vscode.workspace.fs.readFile(resourceUri);
+        return new TextDecoder().decode(bytes);
+    }
+
     /**
      * Called automatically whenever the document needs to be updated/initialized with text.
      */
@@ -79,8 +84,7 @@ export class FileDependencyViewerProvider
 
         this.watch(customUri, resourceUri);
 
-        const bytes = await vscode.workspace.fs.readFile(resourceUri);
-        return bytes.toString();
+        return this.getFileContent(resourceUri);
     }
 
     /**

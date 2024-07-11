@@ -188,7 +188,8 @@ async function getFileContent(uri: vscode.Uri): Promise<string> {
         return cachedFileContent[uriString];
     }
 
-    const fileContent = (await vscodeFS.readFile(uri)).toString();
+    const bytes = await vscodeFS.readFile(uri);
+    const fileContent = new TextDecoder().decode(bytes);
     cachedFileContent[uriString] = fileContent;
     return cachedFileContent[uriString];
 }
