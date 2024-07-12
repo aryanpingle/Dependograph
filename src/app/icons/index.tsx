@@ -33,3 +33,138 @@ export const PreviewEyeIcon = (props: preact.JSX.HTMLAttributes) => (
         />
     </svg>
 );
+
+// TODO: Flatten
+export const ForceVizIcon = (props: preact.JSX.HTMLAttributes) => (
+    <svg
+        width="384"
+        height="384"
+        viewBox="0 0 384 384"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <rect
+            x="110.951"
+            y="308.548"
+            width="254"
+            height="8"
+            transform="rotate(-72 110.951 308.548)"
+            fill="currentColor"
+        />
+        <rect
+            x="110.951"
+            y="308.548"
+            width="254"
+            height="8"
+            transform="rotate(-72 110.951 308.548)"
+            fill="currentColor"
+        />
+        <rect
+            x="110.951"
+            y="308.548"
+            width="254"
+            height="8"
+            transform="rotate(-72 110.951 308.548)"
+            fill="currentColor"
+        />
+        <rect
+            x="273.394"
+            y="317.885"
+            width="254"
+            height="8"
+            transform="rotate(-144 273.394 317.885)"
+            fill="currentColor"
+        />
+        <rect
+            x="273.394"
+            y="317.885"
+            width="254"
+            height="8"
+            transform="rotate(-144 273.394 317.885)"
+            fill="currentColor"
+        />
+        <rect
+            x="273.394"
+            y="317.885"
+            width="254"
+            height="8"
+            transform="rotate(-144 273.394 317.885)"
+            fill="currentColor"
+        />
+        <rect
+            width="254"
+            height="8"
+            transform="matrix(0.809017 -0.587785 -0.587785 -0.809017 114.606 314.885)"
+            fill="currentColor"
+        />
+        <rect
+            width="254"
+            height="8"
+            transform="matrix(0.809017 -0.587785 -0.587785 -0.809017 114.606 314.885)"
+            fill="currentColor"
+        />
+        <rect
+            width="254"
+            height="8"
+            transform="matrix(0.809017 -0.587785 -0.587785 -0.809017 114.606 314.885)"
+            fill="currentColor"
+        />
+        <rect x="63.0001" y="160" width="254" height="8" fill="currentColor" />
+        <rect x="63.0001" y="160" width="254" height="8" fill="currentColor" />
+        <rect x="63.0001" y="160" width="254" height="8" fill="currentColor" />
+        <rect
+            width="254"
+            height="8"
+            transform="matrix(-0.309017 -0.951057 -0.951057 0.309017 272.049 308.548)"
+            fill="currentColor"
+        />
+        <rect
+            width="254"
+            height="8"
+            transform="matrix(-0.309017 -0.951057 -0.951057 0.309017 272.049 308.548)"
+            fill="currentColor"
+        />
+        <rect
+            width="254"
+            height="8"
+            transform="matrix(-0.309017 -0.951057 -0.951057 0.309017 272.049 308.548)"
+            fill="currentColor"
+        />
+        <circle cx="66" cy="163" r="32" fill="currentColor" />
+        <circle cx="114" cy="310" r="32" fill="currentColor" />
+        <circle cx="269" cy="310" r="32" fill="currentColor" />
+        <circle cx="316" cy="163" r="32" fill="currentColor" />
+        <circle cx="192" cy="74" r="32" fill="currentColor" />
+    </svg>
+);
+
+// TODO: Flatten
+export const TreeVizIcon = (props: preact.JSX.HTMLAttributes) => (
+    <svg
+        width="384"
+        height="384"
+        viewBox="0 0 384 384"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+    >
+        <circle cx="192" cy="74" r="32" fill="currentColor" />
+        <circle cx="128" cy="192" r="32" fill="currentColor" />
+        <circle cx="64" cy="310" r="32" fill="currentColor" />
+        <circle cx="320" cy="310" r="32" fill="currentColor" />
+        <circle cx="256" cy="192" r="32" fill="currentColor" />
+        <rect
+            x="196.466"
+            y="59"
+            width="8"
+            height="300"
+            transform="rotate(28.7869 196.466 59)"
+            fill="currentColor"
+        />
+        <rect
+            width="8"
+            height="300"
+            transform="matrix(-0.876417 0.481553 0.481553 0.876417 187.011 59)"
+            fill="currentColor"
+        />
+    </svg>
+);

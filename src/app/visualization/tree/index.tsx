@@ -75,7 +75,10 @@ export class TreeVisualization extends Visualization<VisualConfig> {
         this.visualConfig = this.DefaultConfig;
     }
 
-    public onComponentDidMount(): void {
+    public onComponentRendered(): void {
+        // Clear the svg
+        this.zoomContainer.html("");
+
         // Setup a click listener on the svg element (for unselecting)
         this.svgSelection.on("click", this.onClickBackground);
 
@@ -95,7 +98,6 @@ export class TreeVisualization extends Visualization<VisualConfig> {
         this.root = d3.hierarchy(
             this.graph.nodes.find((node) => node.isEntryFile),
             (node) => {
-                if (!node) console.log("undefined node?!?!");
                 // Find all children of this node
                 const nodeId = node.id;
                 const dependencyNodeIds = Array.from(
@@ -118,7 +120,6 @@ export class TreeVisualization extends Visualization<VisualConfig> {
     protected override createVisuals() {
         this.initializeDrawing();
 
-        console.log("create vis");
         if (this.visualConfig.minimalFilepaths) {
             const shortPaths = getMinimalFilepaths(
                 this.nodes.map((node) => node.filepathWithoutWorkspace),

@@ -44,15 +44,14 @@ export abstract class Visualization<VisualConfig> {
 
         // Create the zoom container
         this.zoomContainer = this.svgSelection
-            .append("g")
-            .classed("zoom_container", true);
+            .select("g.zoom_container")
     }
 
     private onZoom = (event: any) => {
         this.zoomContainer.attr("transform", event.transform);
     };
 
-    abstract onComponentDidMount(): void;
+    abstract onComponentRendered(): void;
 
     /**
      * Resize the visualization's svg element to the given parameters.

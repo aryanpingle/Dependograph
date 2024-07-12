@@ -79,7 +79,10 @@ export class ForceVisualization extends Visualization<VisualConfig> {
         this.visualConfig = this.DefaultConfig;
     }
 
-    public onComponentDidMount(): void {
+    public onComponentRendered(): void {
+        // Clear the svg
+        this.zoomContainer.html("");
+
         // Setup a click listener on the svg element (for unselecting)
         this.svgSelection.on("click", this.onClickBackground);
 

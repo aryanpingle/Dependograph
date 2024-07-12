@@ -7,6 +7,7 @@ import { PreviewPanel } from "./PreviewPanel";
 import { GlobalTradeInfo } from "../trade-analyser";
 import { ForceVisualization, Visualization } from "./visualization";
 import { TreeVisualization } from "./visualization/tree";
+import { VizType, VizTypeBar } from "./VisualizationTypeBar";
 
 /**
  * Definition of the parameters object passed to the webview
@@ -22,28 +23,49 @@ declare const globalTradeInfo: GlobalTradeInfo;
 declare const webviewMetadata: WebviewEmbeddedMetadata;
 declare function acquireVsCodeApi(): AcquiredVsCodeApi;
 
-interface State {}
+interface State {
+    visualization: Visualization<any>;
+}
 
 interface Props {
     globalTradeInfo: GlobalTradeInfo;
     webviewMetadata: WebviewEmbeddedMetadata;
     acquireVsCodeApi(): AcquiredVsCodeApi;
-    visualization: Visualization<any>;
 }
 
 class Webview extends Component<Props, State> {
+    state: State = {
+        visualization: new ForceVisualization(globalTradeInfo),
+    }
+
+    onVisualizationChange(vizType: VizType) {
+        switch(vizType) {
+            case "force":
+                this.setState({
+                    visualization: new ForceVisualization(globalTradeInfo),
+                })
+                break;
+            case "tree":
+                this.setState({
+                    visualization: new TreeVisualization(globalTradeInfo),
+                })
+                break;
+        }
+    }
+
     render(props: Props, state: State) {
         return (
             <Fragment>
                 <VisualizationSVG
-                    visualization={props.visualization}
+                    visualization={state.visualization}
                     globalTradeInfo={props.globalTradeInfo}
                 />
-                <SettingsPanel visualization={props.visualization} />
+                <SettingsPanel visualization={state.visualization} />
                 <PreviewPanel
-                    visualization={props.visualization}
+                    visualization={state.visualization}
                     globalTradeInfo={props.globalTradeInfo}
                 />
+                <VizTypeBar onVisualizationChange={(vizType) => this.onVisualizationChange(vizType)}/>
             </Fragment>
         );
     }
@@ -54,7 +76,6 @@ render(
         globalTradeInfo={globalTradeInfo}
         acquireVsCodeApi={acquireVsCodeApi}
         webviewMetadata={webviewMetadata}
-        visualization={new TreeVisualization(globalTradeInfo)}
     />,
     document.body,
 );

@@ -17,14 +17,22 @@ export class VisualizationSVG extends Component<Props, State> {
         super(props);
     }
 
-    componentDidMount(): void {
+    setupSVG(): void {
         this.props.visualization.setupSVGOnMount("svg");
-        this.props.visualization.onComponentDidMount();
+        this.props.visualization.onComponentRendered();
 
         // Add resize listener
         window.addEventListener("resize", this.debouncedResizeSVG);
         // Resize
         this.debouncedResizeSVG();
+    }
+
+    componentDidMount(): void {
+        this.setupSVG();
+    }
+
+    componentDidUpdate(): void {
+        this.setupSVG();
     }
 
     private fitSVGToContainer = () => {
@@ -40,7 +48,9 @@ export class VisualizationSVG extends Component<Props, State> {
     render(props: Props, state: State) {
         return (
             <div className="svg-container">
-                <svg></svg>
+                <svg>
+                    <g className="zoom_container"></g>
+                </svg>
             </div>
         );
     }

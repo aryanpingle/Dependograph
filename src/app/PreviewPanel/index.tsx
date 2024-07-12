@@ -23,6 +23,21 @@ export class PreviewPanel extends Component<Props, State> {
         };
     }
 
+    componentDidUpdate(): void {
+        this.props.visualization.onSelectNode = (node) => {
+            this.setState({ selectedNode: node });
+        };
+    }
+
+    componentWillReceiveProps(
+        nextProps: Readonly<Props>,
+        nextContext: any,
+    ): void {
+        this.setState({
+            selectedNode: undefined,
+        });
+    }
+
     getImportNodes(): VizNode[] {
         const visualization = this.props.visualization;
         const graph = visualization.graph;

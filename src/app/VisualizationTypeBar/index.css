@@ -1,0 +1,63 @@
+.viz_type_bar {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: auto;
+    height: auto;
+    
+    padding: 0.5em;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    --background-color: var(--vscode-editor-background);
+}
+
+.viz_type_bar > * {
+    flex: 0 0 auto;
+}
+
+.viz_type_button {
+    cursor: pointer;
+    padding: 0.5em;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    background-color: var(--background-color);
+    outline: 1px solid var(--vscode-editorWidget-border);
+}
+
+.viz_type_button:first-child {
+    border-radius: 3px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.viz_type_button:last-child {
+    border-radius: 3px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.viz_type_button:focus {
+    background-color: var(--vscode-editorWidget-border);
+}
+
+.viz_type_button > svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    opacity: 0.5;
+}
+
+.viz_type_button:focus > svg,
+.viz_type_button:hover > svg{
+    opacity: 0.75;
+}
+
+.viz_type_button--selected > svg {
+    opacity: 1;
+}
