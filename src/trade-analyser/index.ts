@@ -1,8 +1,8 @@
-import { parse as babelParse } from "@babel/parser";
+import { parse as babelParse, ParseResult } from "@babel/parser";
 import * as vscode from "vscode";
 import { astParserPlugins, astOtherSettings } from "./ast-plugins";
 import traverse, { NodePath } from "@babel/traverse";
-import { CallExpression, StringLiteral, TemplateLiteral } from "@babel/types";
+import { CallExpression, File, StringLiteral, TemplateLiteral } from "@babel/types";
 
 const vscodeFS = vscode.workspace.fs;
 
@@ -208,10 +208,16 @@ export async function addFileTradeInfo(
     }
 
     const fileContent = await getFileContent(uri);
-    const astRoot = babelParse(fileContent, {
-        plugins: astParserPlugins,
-        ...astOtherSettings,
-    });
+    let astRoot: ParseResult<File>;
+    try {
+        astRoot = babelParse(fileContent, {
+            plugins: astParserPlugins,
+            ...astOtherSettings,
+        });
+    } catch {
+        // Unparsable, ignore and continue
+        return;
+    }
     const promisedFunctions: (() => Promise<void>)[] = [];
     traverse(astRoot, {
         ImportDeclaration(path) {

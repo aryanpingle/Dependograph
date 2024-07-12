@@ -107,7 +107,7 @@ export class VisualizationEditorProvider {
         };
         params["globalTradeInfo"] = await getGlobalTradeInfo(fileUris);
 
-        this.currentEditor.webview.html = /* html */ `
+        this.currentEditor.webview.html = /* html */ `<!DOCTYPE html>
             <html>
                 <head>
                     <meta name="viewport" content="width=device-width, initial-scale=1.0" />

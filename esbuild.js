@@ -39,12 +39,6 @@ async function main() {
             external: [
                 "vscode",
                 "fs",
-                "assert",
-                "console",
-                "constants",
-                "module",
-                "url",
-                "stream",
             ],
             logLevel: "silent",
             // Node.js global to browser globalThis
