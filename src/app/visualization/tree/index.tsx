@@ -159,7 +159,6 @@ export class TreeVisualization extends Visualization<VisualConfig> {
                 const targetId = link.target.data.id;
                 return `link-${sourceId}-${targetId}`;
             })
-            // .style("opacity", 0.5)
             .classed("link", true);
 
         this.d3Links.append("path").attr("d", (link) => this.getLinkArc(link));
@@ -315,11 +314,22 @@ export class TreeVisualization extends Visualization<VisualConfig> {
         }
     }
 
+    private unHighlightPaths() {
+        d3.selectAll(".node").style("opacity", 1);
+        d3.selectAll(".link").style("opacity", 1);
+    }
+
     /**
      * Select the given node, and highlight all direct dependencies from it.
      */
     protected selectNode(node?: TreeNode) {
         this.selectedNode = node;
+
+        if(node === undefined) {
+            this.unHighlightPaths();
+        } else {
+            this.highlightPaths([[node.data.id]])
+        }
 
         const selectedVizNode = node?.data;
         this.onSelectNode(selectedVizNode);

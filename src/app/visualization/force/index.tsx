@@ -395,6 +395,8 @@ export class ForceVisualization extends Visualization<VisualConfig> {
 
         if (node === undefined) {
             this.unHighlightPaths();
+        } else {
+            this.highlightPaths([[node.id]])
         }
 
         this.onSelectNode(node);

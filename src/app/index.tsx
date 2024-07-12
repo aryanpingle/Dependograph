@@ -5,7 +5,7 @@ import { VisualizationSVG } from "./VisualizationSVG";
 import { SettingsPanel } from "./SettingsPanel";
 import { PreviewPanel } from "./PreviewPanel";
 import { GlobalTradeInfo } from "../trade-analyser";
-import { ForceVisualization, Visualization } from "./visualization";
+import { ForceVisualization, Graph, Visualization } from "./visualization";
 import { TreeVisualization } from "./visualization/tree";
 import { VizType, VizTypeBar } from "./VisualizationTypeBar";
 
@@ -41,11 +41,15 @@ class Webview extends Component<Props, State> {
     onVisualizationChange(vizType: VizType) {
         switch(vizType) {
             case "force":
+                // TODO: refactor
+                Graph.DefaultConfig.separateCyclicDependencies = false;
                 this.setState({
                     visualization: new ForceVisualization(globalTradeInfo),
                 })
                 break;
             case "tree":
+                // TODO: refactor
+                Graph.DefaultConfig.separateCyclicDependencies = true;
                 this.setState({
                     visualization: new TreeVisualization(globalTradeInfo),
                 })
