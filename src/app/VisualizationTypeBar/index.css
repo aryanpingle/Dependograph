@@ -50,7 +50,7 @@
 .viz_type_button > svg {
     width: 1.5rem;
     height: 1.5rem;
-    opacity: 0.5;
+    opacity: 0.33;
 }
 
 .viz_type_button:focus > svg,
