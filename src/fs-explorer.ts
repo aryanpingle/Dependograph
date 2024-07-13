@@ -61,6 +61,18 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
                 },
             ),
         );
+        // Add this to entry files from the command palette
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(
+                "dependograph.chooseEntryFileCommandPalette",
+                () => {
+                    const activeEditor = vscode.window.activeTextEditor;
+                    const resourceUri = activeEditor.document.uri;
+                    this.chosenFileUriSet.add(resourceUri);
+                    this.debouncedRefresh();
+                },
+            ),
+        );
         // TreeItem button that removes this from entry files
         this.context.subscriptions.push(
             vscode.commands.registerCommand(

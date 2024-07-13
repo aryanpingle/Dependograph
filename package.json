@@ -38,6 +38,12 @@
       ]
     },
     "menus": {
+      "commandPalette": [
+        {
+          "command": "dependograph.chooseEntryFileCommandPalette",
+          "when": "resourceExtname =~ /\\.[mc]?[jt]sx?$/"
+        }
+      ],
       "view/title": [
         {
           "command": "dependograph.openVisualization",
@@ -83,6 +89,12 @@
         "command": "dependograph.openFile",
         "icon": "$(go-to-file)",
         "title": "Open File"
+      },
+      {
+        "command": "dependograph.chooseEntryFileCommandPalette",
+        "category": "Dependograph",
+        "icon": "$(add)",
+        "title": "Add to entry files"
       }
     ]
   },
