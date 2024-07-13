@@ -1,5 +1,5 @@
 import { VNode } from "preact";
-import { GlobalTradeInfo } from "../../trade-analyser";
+import { GlobalTradeInfo } from "trade-analyser";
 import { NodeId, VizNode } from "./node";
 import { areObjectsSynced, FileType, getFileType, syncObjects } from "../utils";
 // @ts-ignore

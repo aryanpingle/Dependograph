@@ -3,7 +3,7 @@ import { h, VNode } from "preact";
 import * as d3 from "d3";
 
 import { areObjectsSynced, FileType, syncObjects } from "../utils";
-import { GlobalTradeInfo } from "../../trade-analyser";
+import { GlobalTradeInfo } from "trade-analyser";
 import { NodeId, VizNode } from "./node";
 import { Graph, GraphConfig } from "./graph";
 

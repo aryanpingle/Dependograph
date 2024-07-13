@@ -1,7 +1,7 @@
 import { h, Component, Fragment, VNode } from "preact";
 import { Panel } from "../Panel";
 import { PreviewEyeIcon } from "../icons";
-import { GlobalTradeInfo } from "../../trade-analyser";
+import { GlobalTradeInfo } from "trade-analyser";
 import { ClickableNodeLink } from "./ClickableNodeLink";
 
 import "./index.css";

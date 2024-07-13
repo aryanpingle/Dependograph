@@ -1,6 +1,6 @@
 import debounce from "debounce";
 import { h, Component } from "preact";
-import { GlobalTradeInfo } from "../../trade-analyser";
+import { GlobalTradeInfo } from "trade-analyser";
 import { Visualization } from "../visualization";
 
 import "./index.css";

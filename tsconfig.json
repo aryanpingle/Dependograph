@@ -19,8 +19,8 @@
 			"react/jsx-runtime": ["./node_modules/preact/jsx-runtime"],
 			"react-dom": ["./node_modules/preact/compat/"],
 			"react-dom/*": ["./node_modules/preact/compat/*"],
-			"trade": ["./src/trade-analyser"],
-			"trade/*": ["./src/trade-analyser/*"],
+			"trade-analyser": ["./src/trade-analyser"],
+			"trade-analyser/*": ["./src/trade-analyser/*"],
 			"webview-utils": ["./src/app/utils"]
 		}
 	},

@@ -9,7 +9,7 @@ import {
     getMinimalFilepaths,
     FileType,
 } from "webview-utils";
-import { GlobalTradeInfo } from "trade";
+import { GlobalTradeInfo } from "trade-analyser";
 import { VscodeColors, createCSSVariable } from "vscode-webview-variables";
 import { Visualization, SVGGSelection } from "../visualization";
 import { Graph, GraphConfig } from "../graph";
