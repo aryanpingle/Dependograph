@@ -10,11 +10,11 @@ export class VisualizationEditorProvider {
             vscode.commands.registerCommand(
                 "dependograph.sendEntryFiles",
                 (stringifiedEntryFiles: string) => {
-                    const entryFileUriJSONs = JSON.parse(
+                    const entryFileUriStrings = JSON.parse(
                         stringifiedEntryFiles,
                     ) as Array<Object>;
-                    const entryFileUris = entryFileUriJSONs.map((UriJSON) =>
-                        vscode.Uri.from(UriJSON as any),
+                    const entryFileUris = entryFileUriStrings.map((UriJSON) =>
+                        vscode.Uri.parse(UriJSON as any),
                     );
                     this.createOrShowEditor(entryFileUris);
                 },
