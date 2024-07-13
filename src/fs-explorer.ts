@@ -7,7 +7,7 @@ import { createFileDependencyViewer } from "./file-dependency-viewer";
 import debounce from "debounce";
 
 export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
-    private chosenFileUriSet: Set<vscode.Uri> = new Set<vscode.Uri>();
+    private chosenFileUriSet: Set<string> = new Set<string>();
     private chosenFilesTreeItem: TreeItem;
 
     // File system watcher
@@ -56,7 +56,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
             vscode.commands.registerCommand(
                 "dependograph.chooseEntryFile",
                 (element: TreeItem) => {
-                    this.chosenFileUriSet.add(element.resourceUri);
+                    this.chosenFileUriSet.add(element.resourceUri.toString());
                     this.debouncedRefresh();
                 },
             ),
@@ -68,7 +68,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
                 () => {
                     const activeEditor = vscode.window.activeTextEditor;
                     const resourceUri = activeEditor.document.uri;
-                    this.chosenFileUriSet.add(resourceUri);
+                    this.chosenFileUriSet.add(resourceUri.toString());
                     this.debouncedRefresh();
                 },
             ),
@@ -78,7 +78,9 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
             vscode.commands.registerCommand(
                 "dependograph.dropEntryFile",
                 (element: TreeItem) => {
-                    this.chosenFileUriSet.delete(element.resourceUri);
+                    this.chosenFileUriSet.delete(
+                        element.resourceUri.toString(),
+                    );
                     this.debouncedRefresh();
                 },
             ),
@@ -143,7 +145,7 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
             // Get all chosen entry files
             const chosenTreeItems = Array.from(this.chosenFileUriSet).map(
                 (fileUri) =>
-                    new TreeItem(fileUri, element, {
+                    new TreeItem(vscode.Uri.parse(fileUri), element, {
                         isFile: true,
                         isEntryFile: true,
                         isPossibleEntryFile: true,
@@ -178,7 +180,8 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
                     ),
             )
             .filter(
-                (element) => !this.chosenFileUriSet.has(element.resourceUri),
+                (element) =>
+                    !this.chosenFileUriSet.has(element.resourceUri.toString()),
             );
 
         // Sort alphabetically
