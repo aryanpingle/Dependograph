@@ -8,8 +8,8 @@ import {
     WebviewEmbeddedMetadata,
     getMinimalFilepaths,
     FileType,
-} from "../../utils";
-import { GlobalTradeInfo } from "../../../trade-analyser";
+} from "webview-utils";
+import { GlobalTradeInfo } from "trade";
 import { VscodeColors, createCSSVariable } from "vscode-webview-variables";
 import { Visualization, SVGGSelection } from "../visualization";
 import { Graph, GraphConfig } from "../graph";
@@ -33,7 +33,7 @@ const colors = {
         "red",
     ),
     acyclic: createCSSVariable(
-        VscodeColors["editorWarning-foreground"].cssName,
+        VscodeColors["editorWidget-border"].cssName,
         "orange",
     ),
     node_modules: createCSSVariable(
@@ -52,7 +52,7 @@ export type GraphAndVisualConfig = GraphConfig & VisualConfig;
 
 export class ForceVisualization extends Visualization<VisualConfig> {
     DefaultConfig: VisualConfig = {
-        minimalFilepaths: false,
+        minimalFilepaths: true,
         hideFilepaths: false,
     };
     ConfigInputElements: VNode[] = [
@@ -357,36 +357,6 @@ export class ForceVisualization extends Visualization<VisualConfig> {
         }
     }
 
-    private highlightPaths(allPaths: string[][]) {
-        d3.selectAll(".node").style("opacity", 0.1);
-        d3.selectAll(".link").style("opacity", 0.1);
-        for (const path of allPaths) {
-            // Highlight nodes
-            path.forEach((nodeId) => {
-                d3.select(`#node-${nodeId}`).style("opacity", 1);
-            });
-
-            // Highlight links
-            for (let i = 0; i < path.length - 1; ++i) {
-                let fromNodeId = path[i];
-                let toNodeId = path[i + 1];
-                d3.select(`#link-${fromNodeId}-${toNodeId}`).style(
-                    "opacity",
-                    1,
-                );
-                d3.select(`#link-${toNodeId}-${fromNodeId}`).style(
-                    "opacity",
-                    1,
-                );
-            }
-        }
-    }
-
-    private unHighlightPaths() {
-        d3.selectAll(".node").style("opacity", 1);
-        d3.selectAll(".link").style("opacity", 1);
-    }
-
     /**
      * Select the given node, and highlight all direct dependencies from it.
      */
@@ -396,7 +366,7 @@ export class ForceVisualization extends Visualization<VisualConfig> {
         if (node === undefined) {
             this.unHighlightPaths();
         } else {
-            this.highlightPaths([[node.id]])
+            this.highlightPaths([[node.id]]);
         }
 
         this.onSelectNode(node);

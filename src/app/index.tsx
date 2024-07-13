@@ -36,23 +36,23 @@ interface Props {
 class Webview extends Component<Props, State> {
     state: State = {
         visualization: new ForceVisualization(globalTradeInfo),
-    }
+    };
 
     onVisualizationChange(vizType: VizType) {
-        switch(vizType) {
+        switch (vizType) {
             case "force":
                 // TODO: refactor
                 Graph.DefaultConfig.separateCyclicDependencies = false;
                 this.setState({
                     visualization: new ForceVisualization(globalTradeInfo),
-                })
+                });
                 break;
             case "tree":
                 // TODO: refactor
                 Graph.DefaultConfig.separateCyclicDependencies = true;
                 this.setState({
                     visualization: new TreeVisualization(globalTradeInfo),
-                })
+                });
                 break;
         }
     }
@@ -69,7 +69,11 @@ class Webview extends Component<Props, State> {
                     visualization={state.visualization}
                     globalTradeInfo={props.globalTradeInfo}
                 />
-                <VizTypeBar onVisualizationChange={(vizType) => this.onVisualizationChange(vizType)}/>
+                <VizTypeBar
+                    onVisualizationChange={(vizType) =>
+                        this.onVisualizationChange(vizType)
+                    }
+                />
             </Fragment>
         );
     }

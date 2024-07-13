@@ -2,7 +2,12 @@ import { parse as babelParse, ParseResult } from "@babel/parser";
 import * as vscode from "vscode";
 import { astParserPlugins, astOtherSettings } from "./ast-plugins";
 import traverse, { NodePath } from "@babel/traverse";
-import { CallExpression, File, StringLiteral, TemplateLiteral } from "@babel/types";
+import {
+    CallExpression,
+    File,
+    StringLiteral,
+    TemplateLiteral,
+} from "@babel/types";
 
 const vscodeFS = vscode.workspace.fs;
 

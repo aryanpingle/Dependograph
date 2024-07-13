@@ -8,12 +8,12 @@ import {
     WebviewEmbeddedMetadata,
     getMinimalFilepaths,
     FileType,
-} from "../../utils";
-import { GlobalTradeInfo } from "../../../trade-analyser";
+} from "webview-utils";
+import { GlobalTradeInfo } from "trade";
 import { VscodeColors, createCSSVariable } from "vscode-webview-variables";
-import { Visualization, SVGSelection, SVGGSelection } from "../visualization";
+import { Visualization, SVGGSelection } from "../visualization";
 import { Graph, GraphConfig } from "../graph";
-import { NodeId, VizNode } from "../node";
+import { VizNode } from "../node";
 import { VNode } from "preact";
 // @ts-ignore
 import { VSCodeCheckbox } from "@vscode/webview-ui-toolkit/react";
@@ -45,8 +45,8 @@ export type GraphAndVisualConfig = GraphConfig & VisualConfig;
 
 export class TreeVisualization extends Visualization<VisualConfig> {
     DefaultConfig: VisualConfig = {
-        minimalFilepaths: true,
         hideFilepaths: false,
+        minimalFilepaths: true,
     };
     ConfigInputElements: VNode[] = [
         <VSCodeCheckbox name="minimalFilepaths">
@@ -169,23 +169,17 @@ export class TreeVisualization extends Visualization<VisualConfig> {
             .style("marker-end", `url(#arrow)`);
     }
 
-    private getLinkArc = (link: TreeLink) => {
+    /**
+     * Get a link's string representation that can be used in a path's `d` attribute.
+     */
+    private getLinkArc = (link: TreeLink): string => {
         const source = link.source;
         const target = link.target;
         const path = d3.path();
         path.moveTo(source.x, source.y);
-        path.bezierCurveTo(
-            // Control point 1
-            source.x,
-            source.y + this.TREE_NODE_HEIGHT / 2,
-            // Control point 2
-            target.x,
-            target.y - this.TREE_NODE_HEIGHT / 2,
-            // End
-            target.x,
-            target.y,
-        );
-        // Draws an arc from the source to the target in a clockwise manner
+        path.lineTo(source.x, (source.y + target.y) / 2);
+        path.lineTo(target.x, (source.y + target.y) / 2);
+        path.lineTo(target.x, target.y);
         return path.toString();
     };
 
@@ -289,46 +283,16 @@ export class TreeVisualization extends Visualization<VisualConfig> {
         }
     }
 
-    private highlightPaths(allPaths: string[][]) {
-        d3.selectAll(".node").style("opacity", 0.1);
-        d3.selectAll(".link").style("opacity", 0.1);
-        for (const path of allPaths) {
-            // Highlight nodes
-            path.forEach((nodeId) => {
-                d3.select(`#node-${nodeId}`).style("opacity", 1);
-            });
-
-            // Highlight links
-            for (let i = 0; i < path.length - 1; ++i) {
-                let fromNodeId = path[i];
-                let toNodeId = path[i + 1];
-                d3.select(`#link-${fromNodeId}-${toNodeId}`).style(
-                    "opacity",
-                    1,
-                );
-                d3.select(`#link-${toNodeId}-${fromNodeId}`).style(
-                    "opacity",
-                    1,
-                );
-            }
-        }
-    }
-
-    private unHighlightPaths() {
-        d3.selectAll(".node").style("opacity", 1);
-        d3.selectAll(".link").style("opacity", 1);
-    }
-
     /**
      * Select the given node, and highlight all direct dependencies from it.
      */
     protected selectNode(node?: TreeNode) {
         this.selectedNode = node;
 
-        if(node === undefined) {
+        if (node === undefined) {
             this.unHighlightPaths();
         } else {
-            this.highlightPaths([[node.data.id]])
+            this.highlightPaths([[node.data.id]]);
         }
 
         const selectedVizNode = node?.data;

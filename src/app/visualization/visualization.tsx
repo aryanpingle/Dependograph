@@ -43,8 +43,7 @@ export abstract class Visualization<VisualConfig> {
             .call(d3.zoom<SVGElement, unknown>().on("zoom", this.onZoom));
 
         // Create the zoom container
-        this.zoomContainer = this.svgSelection
-            .select("g.zoom_container")
+        this.zoomContainer = this.svgSelection.select("g.zoom_container");
     }
 
     private onZoom = (event: any) => {
@@ -68,6 +67,36 @@ export abstract class Visualization<VisualConfig> {
             `-${width / 2} -${height / 2} ${width} ${height}`,
         );
     };
+
+    protected highlightPaths(nodeIdPaths: NodeId[][]) {
+        d3.selectAll(".node").style("opacity", 0.1);
+        d3.selectAll(".link").style("opacity", 0.1);
+        for (const path of nodeIdPaths) {
+            // Highlight nodes
+            path.forEach((nodeId) => {
+                d3.select(`#node-${nodeId}`).style("opacity", 1);
+            });
+
+            // Highlight links
+            for (let i = 0; i < path.length - 1; ++i) {
+                let fromNodeId = path[i];
+                let toNodeId = path[i + 1];
+                d3.select(`#link-${fromNodeId}-${toNodeId}`).style(
+                    "opacity",
+                    1,
+                );
+                d3.select(`#link-${toNodeId}-${fromNodeId}`).style(
+                    "opacity",
+                    1,
+                );
+            }
+        }
+    }
+
+    public unHighlightPaths() {
+        d3.selectAll(".node").style("opacity", 1);
+        d3.selectAll(".link").style("opacity", 1);
+    }
 
     /**
      * Apply new configuration parameters to the visualization.
