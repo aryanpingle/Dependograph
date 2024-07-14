@@ -14,9 +14,13 @@ export enum FileType {
     CSS = "css",
     FILE = "file",
     JAVASCRIPT = "javascript",
+    JAVASCRIPT_MAP = "javascript-map",
+    JSON = "JSON",
     NODEJS = "nodejs",
     REACT = "react",
+    REACT_TS = "react-ts",
     SASS = "sass",
+    SVG = "svg",
     TYPESCRIPT = "typescript",
 }
 
@@ -28,16 +32,24 @@ export function getFileType(filepath: string): FileType {
     /** NodeJS */
     if (filepath.startsWith("node_modules:")) return FileType.NODEJS;
 
+    /** CSS */
+    if (/\.css$/.test(filepath)) return FileType.CSS;
     /** Javascript */
     if (/\.[mc]?js$/.test(filepath)) return FileType.JAVASCRIPT;
+    /** Javascript Source Map */
+    if (/\.[mc]?js\.map$/.test(filepath)) return FileType.JAVASCRIPT_MAP;
+    /** JSON */
+    if (/\.json$/.test(filepath)) return FileType.JSON;
+    /** Sass */
+    if (/\.scss$/.test(filepath)) return FileType.SASS;
+    /** SVG */
+    if (/\.svg$/.test(filepath)) return FileType.SVG;
     /** Typescript */
     if (/\.[mc]?ts$/.test(filepath)) return FileType.TYPESCRIPT;
     /** React */
-    if (/\.[mc]?[jt]sx$/.test(filepath)) return FileType.REACT;
-    /** CSS */
-    if (/\.css$/.test(filepath)) return FileType.CSS;
-    /** Sass */
-    if (/\.scss$/.test(filepath)) return FileType.SASS;
+    if (/\.[mc]?jsx$/.test(filepath)) return FileType.REACT;
+    /** React-Typescript */
+    if (/\.[mc]?tsx$/.test(filepath)) return FileType.REACT_TS;
 
     return FileType.FILE;
 }
