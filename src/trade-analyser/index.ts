@@ -49,10 +49,17 @@ export async function getGlobalTradeInfo(
 
     const globalTradeInfo: GlobalTradeInfo = { files: {} };
     if (entryUris === undefined) {
-        entryUris = await vscode.workspace.findFiles(
-            "**/*.{js,jsx,ts,tsx}",
-            "**/node_modules/**",
-        );
+        let globInput = await vscode.window.showInputBox({
+            placeHolder: 'Enter a glob pattern, eg: "**/*.{js,jsx,ts,tsx}"',
+            title: "Include Folder",
+        });
+        if (globInput === undefined) {
+            globInput = "**/*.{js,jsx,ts,tsx}";
+        }
+        entryUris = await vscode.workspace.findFiles(globInput, {
+            baseUri: null,
+            pattern: "",
+        } as vscode.GlobPattern);
     }
     const uriSet = new Set<vscode.Uri>(entryUris);
     const queue = Array.from(entryUris);
