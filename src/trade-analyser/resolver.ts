@@ -84,7 +84,9 @@ async function bruteForceFile(
 ): Promise<vscode.Uri | undefined> {
     const attemptExtensions = [".tsx", ".ts", ".jsx", ".js", ".d.ts"];
     for (const extension of attemptExtensions) {
-        const fileUri = vscode.Uri.parse(uri.toString() + extension);
+        const fileUri = uri.with({
+            path: uri.fsPath + extension,
+        });
         if (await doesUriExist(fileUri)) {
             return fileUri;
         }
@@ -133,10 +135,12 @@ export async function vscodeResolve(
         // TODO: Absolute paths are rarely used, but should still be supported.
         // Maybe check if it's a local fs, and then allow vscodeFS to access it?
 
+        const workspaceURI = vscode.workspace.workspaceFolders[0].uri;
+
         const deAliasedPaths = getAllDeAliasedPaths(path, compilerOptions);
         for (const deAliasedPath of deAliasedPaths) {
             const deAliasedResolved = await vscodeResolveRelativePath(
-                vscode.workspace.workspaceFolders[0].uri,
+                workspaceURI,
                 deAliasedPath,
             );
             if (deAliasedResolved !== undefined) {
@@ -145,9 +149,13 @@ export async function vscodeResolve(
         }
 
         // Indicate that it must be a node module
-        const nodeModuleUri = vscode.Uri.from({
-            scheme: "node_modules",
-            path: path,
+        const nodeModuleUri = vscode.Uri.joinPath(
+            workspaceURI,
+            "node_modules",
+            path,
+        ).with({
+            query: baseUri.query,
+            fragment: baseUri.fragment,
         });
         return nodeModuleUri.toString();
     }

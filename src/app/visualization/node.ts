@@ -1,6 +1,10 @@
-import { FileType, WebviewEmbeddedMetadata, getFileType } from "../utils";
+import {
+    FileType,
+    WebviewEmbeddedMetadata,
+    getFileType,
+    removeWorkspaceFromFilename,
+} from "../utils";
 import { v4 as uuidv4 } from "uuid";
-import { removeWorkspaceFromFilename } from "../utils";
 
 declare const webviewMetadata: WebviewEmbeddedMetadata;
 
@@ -16,15 +20,18 @@ export class VizNode {
     public readonly fileType: FileType;
 
     constructor(
-        filepath: string,
+        public readonly resourceUriString: string,
         public readonly isEntryFile: boolean,
     ) {
-        this.filepath = filepath;
+        // Remove query and fragment from the URI
+        this.filepath = resourceUriString
+            .replace(/\?.*/, "")
+            .replace(/#.*/, "");
 
         this.filepathWithoutWorkspace = removeWorkspaceFromFilename(
-            filepath,
+            this.filepath,
             webviewMetadata.workspaceURIString,
-        ).replace(/^node_modules:/, "");
+        );
         this.name = this.filepathWithoutWorkspace;
         this.id = uuidv4();
         this.fileType = getFileType(this.filepath);

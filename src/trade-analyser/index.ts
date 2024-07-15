@@ -8,7 +8,11 @@ import {
     StringLiteral,
     TemplateLiteral,
 } from "@babel/types";
-import { findCompilerOptions, CompilerOptions, vscodeResolve } from "./resolver";
+import {
+    findCompilerOptions,
+    CompilerOptions,
+    vscodeResolve,
+} from "./resolver";
 import { doesUriExist, getFileContent } from "./utils";
 
 export interface ImportedVariableInfo {

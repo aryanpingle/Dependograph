@@ -30,7 +30,7 @@ export enum FileType {
  */
 export function getFileType(filepath: string): FileType {
     /** NodeJS */
-    if (filepath.startsWith("node_modules:")) return FileType.NODEJS;
+    if (filepath.includes("/node_modules/")) return FileType.NODEJS;
 
     /** CSS */
     if (/\.css$/.test(filepath)) return FileType.CSS;
@@ -91,6 +91,14 @@ export function getMinimalFilepaths(
     const uniqueFilepaths = Array.from(new Set(filepaths));
     const splitPaths = uniqueFilepaths.map((filepath) => filepath.split("/"));
     const startIndices = splitPaths.map((splitPath) => splitPath.length - 1);
+    // Node modules should show the entire module name, including forward slashes
+    uniqueFilepaths.forEach((filepath, i) => {
+        if (getFileType(filepath) === FileType.NODEJS) {
+            const nodeModuleName = filepath.match(/(?<=\/node_modules\/).*/)[0];
+            splitPaths[i] = [nodeModuleName];
+            startIndices[i] = 0;
+        }
+    });
     // Initially, everything is just the filename + extension
     const shortPaths = splitPaths.map(
         (splitPath, index) => splitPath[startIndices[index]],
