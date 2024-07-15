@@ -46,7 +46,12 @@
       ],
       "view/title": [
         {
-          "command": "dependograph.openVisualization",
+          "command": "dependograph.openImportVisualization",
+          "group": "navigation@1",
+          "when": "view == dependograph-fs-explorer"
+        },
+        {
+          "command": "dependograph.openExportVisualization",
           "group": "navigation@2",
           "when": "view == dependograph-fs-explorer"
         }
@@ -81,9 +86,14 @@
         "icon": "$(remove)"
       },
       {
-        "command": "dependograph.openVisualization",
-        "icon": "$(window)",
-        "title": "Create Visualization"
+        "command": "dependograph.openImportVisualization",
+        "icon": "$(arrow-down)",
+        "title": "Create Import Visualization"
+      },
+      {
+        "command": "dependograph.openExportVisualization",
+        "icon": "$(arrow-up)",
+        "title": "Create Export Visualization"
       },
       {
         "command": "dependograph.openFile",

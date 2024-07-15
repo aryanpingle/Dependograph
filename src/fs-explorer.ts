@@ -42,10 +42,21 @@ export class FileItemsProvider implements vscode.TreeDataProvider<TreeItem> {
         // to open a visualization window
         this.context.subscriptions.push(
             vscode.commands.registerCommand(
-                "dependograph.openVisualization",
+                "dependograph.openImportVisualization",
                 () => {
                     vscode.commands.executeCommand(
-                        "dependograph.sendEntryFiles",
+                        "dependograph.sendImportEntryFiles",
+                        JSON.stringify(Array.from(this.chosenFileUriSet)),
+                    );
+                },
+            ),
+        );
+        this.context.subscriptions.push(
+            vscode.commands.registerCommand(
+                "dependograph.openExportVisualization",
+                () => {
+                    vscode.commands.executeCommand(
+                        "dependograph.sendExportEntryFiles",
                         JSON.stringify(Array.from(this.chosenFileUriSet)),
                     );
                 },

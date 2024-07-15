@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { WebviewParams } from "./app";
-import { getGlobalTradeInfo } from "./trade-analyser";
+import { getGlobalTradeInfo, GlobalTradeInfo } from "./trade-analyser";
 
 export class VisualizationEditorProvider {
     private currentEditor: vscode.WebviewPanel | null = null;
@@ -8,15 +8,31 @@ export class VisualizationEditorProvider {
     public constructor(private readonly context: vscode.ExtensionContext) {
         context.subscriptions.push(
             vscode.commands.registerCommand(
-                "dependograph.sendEntryFiles",
-                (stringifiedEntryFiles: string) => {
+                "dependograph.sendImportEntryFiles",
+                async (stringifiedEntryFiles: string) => {
                     const entryFileUriStrings = JSON.parse(
                         stringifiedEntryFiles,
                     ) as Array<Object>;
                     const entryFileUris = entryFileUriStrings.map((UriJSON) =>
                         vscode.Uri.parse(UriJSON as any),
                     );
-                    this.createOrShowEditor(entryFileUris);
+                    const globalTradeInfo = await getGlobalTradeInfo(entryFileUris, undefined);
+                    this.createOrShowEditor(globalTradeInfo);
+                },
+            ),
+        );
+        context.subscriptions.push(
+            vscode.commands.registerCommand(
+                "dependograph.sendExportEntryFiles",
+                async (stringifiedEntryFiles: string) => {
+                    const entryFileUriStrings = JSON.parse(
+                        stringifiedEntryFiles,
+                    ) as Array<Object>;
+                    const entryFileUris = entryFileUriStrings.map((UriJSON) =>
+                        vscode.Uri.parse(UriJSON as any),
+                    );
+                    const globalTradeInfo = await getGlobalTradeInfo(undefined, entryFileUris);
+                    this.createOrShowEditor(globalTradeInfo);
                 },
             ),
         );
@@ -31,7 +47,7 @@ export class VisualizationEditorProvider {
         );
     }
 
-    public async createOrShowEditor(fileUris: vscode.Uri[]) {
+    public async createOrShowEditor(globalTradeInfo: GlobalTradeInfo) {
         // Check if the editor already exists
         if (this.currentEditor !== null) {
             this.currentEditor.reveal(undefined);
@@ -39,7 +55,7 @@ export class VisualizationEditorProvider {
             this.createEditor();
         }
 
-        await this.setEditorWebview(fileUris);
+        await this.setEditorWebview(globalTradeInfo);
     }
 
     /**
@@ -88,7 +104,7 @@ export class VisualizationEditorProvider {
      * Set the webview of the editor after getting the dependency graph
      * using the given files.
      */
-    private async setEditorWebview(fileUris: vscode.Uri[]) {
+    private async setEditorWebview(globalTradeInfo: GlobalTradeInfo) {
         const workspaceUri = vscode.workspace.workspaceFolders![0].uri;
         const workspacePath = workspaceUri.fsPath;
 
@@ -105,7 +121,7 @@ export class VisualizationEditorProvider {
             workspaceURIString: workspaceUri.toString(),
             extensionWebviewURI: extensionWebviewUri.toString(),
         };
-        params["globalTradeInfo"] = await getGlobalTradeInfo(fileUris);
+        params["globalTradeInfo"] = globalTradeInfo;
 
         this.currentEditor.webview.html = /* html */ `<!DOCTYPE html>
             <html>

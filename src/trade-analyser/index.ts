@@ -41,12 +41,21 @@ function createEmptyFileTradeInfo(): FileTradeInfo {
     };
 }
 
-export async function getGlobalTradeInfo(uris: vscode.Uri[]) {
+export async function getGlobalTradeInfo(
+    entryUris?: vscode.Uri[],
+    exitUris?: vscode.Uri[],
+) {
     const compilerOptions = await findCompilerOptions();
 
     const globalTradeInfo: GlobalTradeInfo = { files: {} };
-    const uriSet = new Set<vscode.Uri>(uris);
-    const queue = Array.from(uris);
+    if (entryUris === undefined) {
+        entryUris = await vscode.workspace.findFiles(
+            "**/*.{js,jsx,ts,tsx}",
+            "**/node_modules/**",
+        );
+    }
+    const uriSet = new Set<vscode.Uri>(entryUris);
+    const queue = Array.from(entryUris);
     while (queue.length !== 0) {
         const uriToBeChecked = queue.pop();
         await addFileTradeInfo(
@@ -74,6 +83,21 @@ export async function getGlobalTradeInfo(uris: vscode.Uri[]) {
             ),
         );
     }
+
+    // If there are some exit files, make sure to remove files from the trade
+    // info which do not depend on any of the exit files
+    if (exitUris !== undefined) {
+        const exitUriStrings = exitUris.map((uri) => uri.toString());
+        Object.entries(globalTradeInfo.files).forEach(
+            ([fileUriString, fti]) => {
+                // If no exit file is part of the dependencies, banish this file
+                if (exitUriStrings.every((uri) => !(uri in fti.dependencies))) {
+                    delete globalTradeInfo.files[fileUriString];
+                }
+            },
+        );
+    }
+
     return globalTradeInfo;
 }
 
