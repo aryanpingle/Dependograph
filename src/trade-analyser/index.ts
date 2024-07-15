@@ -97,7 +97,9 @@ export async function getGlobalTradeInfo(
         const exitUriStrings = exitUris.map((uri) => uri.toString());
         Object.entries(globalTradeInfo.files).forEach(
             ([fileUriString, fti]) => {
-                // If no exit file is part of the dependencies, banish this file
+                // If this is an exit file, keep it
+                if(exitUriStrings.includes(fileUriString)) return;
+                // If no exit file is part of its dependencies, banish this file
                 if (exitUriStrings.every((uri) => !(uri in fti.dependencies))) {
                     delete globalTradeInfo.files[fileUriString];
                 }
