@@ -24,9 +24,9 @@ export class VizNode {
         public readonly isEntryFile: boolean,
     ) {
         // Remove query and fragment from the URI
-        this.filepath = resourceUriString
-            .replace(/\?.*/, "")
-            .replace(/#.*/, "");
+        this.filepath = decodeURIComponent(
+            resourceUriString.replace(/\?.*/, "").replace(/#.*/, ""),
+        );
 
         this.filepathWithoutWorkspace = removeWorkspaceFromFilename(
             this.filepath,
