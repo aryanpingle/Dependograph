@@ -366,7 +366,20 @@ export class ForceVisualization extends Visualization<VisualConfig> {
         if (node === undefined) {
             this.unHighlightPaths();
         } else {
-            this.highlightPaths([[node.id]]);
+            // Files this is importing
+            const importIds: string[] = Array.from(
+                this.graph.adjacencySet[this.selectedNode.id],
+            );
+            // Files this is exporting to
+            const exportIds: string[] = Object.keys(
+                this.graph.adjacencySet,
+            ).filter((nodeId) => this.graph.adjacencySet[nodeId].has(node.id));
+
+            this.highlightPaths([
+                [node.id],
+                ...importIds.map((importId) => [node.id, importId]),
+                ...exportIds.map((exportId) => [exportId, node.id]),
+            ]);
         }
 
         this.onSelectNode(node);

@@ -16,7 +16,10 @@ export class VisualizationEditorProvider {
                     const entryFileUris = entryFileUriStrings.map((UriJSON) =>
                         vscode.Uri.parse(UriJSON as any),
                     );
-                    const globalTradeInfo = await getGlobalTradeInfo(entryFileUris, undefined);
+                    const globalTradeInfo = await getGlobalTradeInfo(
+                        entryFileUris,
+                        undefined,
+                    );
                     this.createOrShowEditor(globalTradeInfo);
                 },
             ),
@@ -31,7 +34,10 @@ export class VisualizationEditorProvider {
                     const entryFileUris = entryFileUriStrings.map((UriJSON) =>
                         vscode.Uri.parse(UriJSON as any),
                     );
-                    const globalTradeInfo = await getGlobalTradeInfo(undefined, entryFileUris);
+                    const globalTradeInfo = await getGlobalTradeInfo(
+                        undefined,
+                        entryFileUris,
+                    );
                     this.createOrShowEditor(globalTradeInfo);
                 },
             ),
@@ -122,6 +128,17 @@ export class VisualizationEditorProvider {
             extensionWebviewURI: extensionWebviewUri.toString(),
         };
         params["globalTradeInfo"] = globalTradeInfo;
+
+        this.currentEditor.webview.onDidReceiveMessage((message: Object) => {
+            if ("open" in message) {
+                vscode.commands.executeCommand(
+                    "dependograph.showFileDependencies",
+                    {
+                        resourceUri: vscode.Uri.parse(message.open as string),
+                    },
+                );
+            }
+        });
 
         this.currentEditor.webview.html = /* html */ `<!DOCTYPE html>
             <html>

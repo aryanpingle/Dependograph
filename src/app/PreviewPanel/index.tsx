@@ -102,7 +102,6 @@ export class PreviewPanel extends Component<Props, State> {
                 {...this.getImportNodes().map((node) => {
                     return (
                         <Fragment>
-                            <code>somevariable</code> from{" "}
                             <ClickableNodeLink node={node} />
                             <br />
                         </Fragment>
@@ -115,7 +114,6 @@ export class PreviewPanel extends Component<Props, State> {
                 {...this.getExportNodes().map((node) => {
                     return (
                         <Fragment>
-                            <code>somevariable</code> to{" "}
                             <ClickableNodeLink node={node} />
                             <br />
                         </Fragment>

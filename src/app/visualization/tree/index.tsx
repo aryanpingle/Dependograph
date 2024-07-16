@@ -292,7 +292,20 @@ export class TreeVisualization extends Visualization<VisualConfig> {
         if (node === undefined) {
             this.unHighlightPaths();
         } else {
-            this.highlightPaths([[node.data.id]]);
+            // Files this is importing
+            const importIds: string[] = Array.from(
+                this.graph.adjacencySet[node.data.id],
+            );
+            // Files this is exporting to
+            const exportIds: string[] = Object.keys(
+                this.graph.adjacencySet,
+            ).filter((nodeId) => this.graph.adjacencySet[nodeId].has(node.data.id));
+
+            this.highlightPaths([
+                [node.id],
+                ...importIds.map((importId) => [node.data.id, importId]),
+                ...exportIds.map((exportId) => [exportId, node.data.id]),
+            ]);
         }
 
         const selectedVizNode = node?.data;
