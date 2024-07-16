@@ -42,11 +42,6 @@ function getDeAliasedPaths(
     const starredValue = path.substring(half1Length, path.length - half2Length);
 
     const deAliasedPaths = aliasPaths?.map((aliasPath) => {
-        if(aliasPath.startsWith("./")) {
-            console.log("WRONG")
-            aliasPath = aliasPath.substring(2)
-        }
-
         return baseUrl + "/" + aliasPath.replace("*", starredValue);
     });
     return deAliasedPaths;
@@ -152,8 +147,6 @@ export async function vscodeResolve(
                 return deAliasedResolved.toString();
             }
         }
-
-        console.log("Aliases for", path, deAliasedPaths)
 
         // Indicate that it must be a node module
         const nodeModuleUri = vscode.Uri.joinPath(

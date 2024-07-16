@@ -46,7 +46,6 @@ export async function getGlobalTradeInfo(
     exitUris?: vscode.Uri[],
 ) {
     const compilerOptions = await findCompilerOptions();
-    console.log(compilerOptions)
 
     const globalTradeInfo: GlobalTradeInfo = { files: {} };
     if (entryUris === undefined) {
@@ -57,7 +56,10 @@ export async function getGlobalTradeInfo(
         if (globInput === undefined) {
             globInput = "**/*.{js,jsx,ts,tsx}";
         }
-        entryUris = await vscode.workspace.findFiles(globInput, "**/node_modules/**");
+        entryUris = await vscode.workspace.findFiles(
+            globInput,
+            "**/node_modules/**",
+        );
     }
     const uriSet = new Set<vscode.Uri>(entryUris);
     const queue = Array.from(entryUris);
@@ -96,7 +98,7 @@ export async function getGlobalTradeInfo(
         Object.entries(globalTradeInfo.files).forEach(
             ([fileUriString, fti]) => {
                 // If this is an exit file, keep it
-                if(exitUriStrings.includes(fileUriString)) return;
+                if (exitUriStrings.includes(fileUriString)) return;
                 // If no exit file is part of its dependencies, banish this file
                 if (exitUriStrings.every((uri) => !(uri in fti.dependencies))) {
                     delete globalTradeInfo.files[fileUriString];
