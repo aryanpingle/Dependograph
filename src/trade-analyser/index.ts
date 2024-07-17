@@ -54,6 +54,10 @@ export async function getGlobalTradeInfo(
             title: "Include Folder",
         });
         if (globInput === undefined) {
+            // User cancelled the export visualization
+            // TODO: Cancel the export visualization LOL
+        }
+        if(globInput === "") {
             globInput = "**/*.{js,jsx,ts,tsx}";
         }
         entryUris = await vscode.workspace.findFiles(
