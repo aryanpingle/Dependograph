@@ -163,6 +163,11 @@ export async function addFileTradeInfo(
         return;
     }
 
+    // If it's not a web-dev file, ignore
+    if(!(/\.[mc]?[jt]sx?$/.test(uriString))) {
+        return;
+    }
+
     // TODO: NEEDS HEAVY REFACTORING
     let fileContent: string;
     try {
