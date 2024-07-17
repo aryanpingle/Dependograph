@@ -163,76 +163,37 @@ export async function addFileTradeInfo(
         return;
     }
 
-    const fileContent = await getFileContent(uri);
+    // TODO: NEEDS HEAVY REFACTORING
+    let fileContent: string;
+    try {
+        fileContent = await getFileContent(uri);
+    } catch {
+        // Unreadable, ignore and continue
+        console.log(`Uri '${uriString}' could not be read`)
+        return;
+    }
+
     let astRoot: ParseResult<File>;
     try {
         astRoot = babelParse(fileContent, {
             plugins: astParserPlugins,
             ...astOtherSettings,
         });
-    } catch {
+    } catch(err) {
         // Unparsable, ignore and continue
+        console.log(`Uri '${uriString}' could not be parsed`)
         return;
     }
-    const promisedFunctions: (() => Promise<void>)[] = [];
-    traverse(astRoot, {
-        ImportDeclaration(path) {
-            promisedFunctions.push(async () => {
-                const node = path.node;
 
-                // Add the import source to the set of dependencies
-                const importSource = node.source.value;
-                const importSourceUriString = await vscodeResolve(
-                    uri,
-                    importSource,
-                    compilerOptions,
-                );
-                // true is meaningless
-                fileTradeInfo.dependencies[importSourceUriString] = true;
+    try {
+        const promisedFunctions: (() => Promise<void>)[] = [];
+        traverse(astRoot, {
+            ImportDeclaration(path) {
+                promisedFunctions.push(async () => {
+                    const node = path.node;
 
-                // TODO: There may be two import declarations importing from the same source.
-                // This statement will overwrite the previous statements.
-                const importedVariablesArray = [];
-                fileTradeInfo.imports[importSourceUriString] =
-                    importedVariablesArray;
-
-                // Extract the imported variables
-                for (const specifier of node.specifiers) {
-                    let variableInfo = {} as ImportedVariableInfo;
-                    switch (specifier.type) {
-                        // import { abc [as xyz] } from ""
-                        case "ImportSpecifier":
-                            if (specifier.imported.type === "Identifier") {
-                                variableInfo.name = specifier.imported.name;
-                            } else {
-                                variableInfo.name = specifier.imported.value;
-                            }
-                            variableInfo.importedAs = specifier.local.name;
-                            break;
-                        // import abc from ""
-                        case "ImportDefaultSpecifier":
-                            variableInfo.name = specifier.local.name;
-                            variableInfo.importedAs = specifier.local.name;
-                            break;
-                        // import * as abc from ""
-                        case "ImportNamespaceSpecifier":
-                            variableInfo.name = "*";
-                            variableInfo.importedAs = specifier.local.name;
-                    }
-                    importedVariablesArray.push(variableInfo);
-                }
-            });
-        },
-        CallExpression(path) {
-            promisedFunctions.push(async () => {
-                const node = path.node;
-                // Check for import("...") or require("...")
-                const isImport = isStaticImport(path);
-                const isRequire = isStaticRequire(path);
-                if (isImport || isRequire) {
-                    const importSource = getValueFromStringOrTemplateLiteral(
-                        node.arguments[0] as StringLiteral | TemplateLiteral,
-                    );
+                    // Add the import source to the set of dependencies
+                    const importSource = node.source.value;
                     const importSourceUriString = await vscodeResolve(
                         uri,
                         importSource,
@@ -247,12 +208,73 @@ export async function addFileTradeInfo(
                     fileTradeInfo.imports[importSourceUriString] =
                         importedVariablesArray;
 
-                    // TODO: Handle imported variables separately.
-                }
-            });
-        },
-    });
-    await Promise.all(promisedFunctions.map((func) => func()));
+                    // Extract the imported variables
+                    for (const specifier of node.specifiers) {
+                        let variableInfo = {} as ImportedVariableInfo;
+                        switch (specifier.type) {
+                            // import { abc [as xyz] } from ""
+                            case "ImportSpecifier":
+                                if (specifier.imported.type === "Identifier") {
+                                    variableInfo.name = specifier.imported.name;
+                                } else {
+                                    variableInfo.name =
+                                        specifier.imported.value;
+                                }
+                                variableInfo.importedAs = specifier.local.name;
+                                break;
+                            // import abc from ""
+                            case "ImportDefaultSpecifier":
+                                variableInfo.name = specifier.local.name;
+                                variableInfo.importedAs = specifier.local.name;
+                                break;
+                            // import * as abc from ""
+                            case "ImportNamespaceSpecifier":
+                                variableInfo.name = "*";
+                                variableInfo.importedAs = specifier.local.name;
+                        }
+                        importedVariablesArray.push(variableInfo);
+                    }
+                });
+            },
+            CallExpression(path) {
+                promisedFunctions.push(async () => {
+                    const node = path.node;
+                    // Check for import("...") or require("...")
+                    const isImport = isStaticImport(path);
+                    const isRequire = isStaticRequire(path);
+                    if (isImport || isRequire) {
+                        const importSource =
+                            getValueFromStringOrTemplateLiteral(
+                                node.arguments[0] as
+                                    | StringLiteral
+                                    | TemplateLiteral,
+                            );
+                        const importSourceUriString = await vscodeResolve(
+                            uri,
+                            importSource,
+                            compilerOptions,
+                        );
+                        // true is meaningless
+                        fileTradeInfo.dependencies[importSourceUriString] =
+                            true;
+
+                        // TODO: There may be two import declarations importing from the same source.
+                        // This statement will overwrite the previous statements.
+                        const importedVariablesArray = [];
+                        fileTradeInfo.imports[importSourceUriString] =
+                            importedVariablesArray;
+
+                        // TODO: Handle imported variables separately.
+                    }
+                });
+            },
+        });
+        await Promise.all(promisedFunctions.map((func) => func()));
+    } catch(err) {
+        // Untraversable, ignore and continue
+        console.log(`Uri '${uriString}' could not be traversed`)
+        return;
+    }
 
     return;
 }
