@@ -106,7 +106,7 @@ export async function ensureConfigsOfPath(
     const workspaceUri = getCurrentWorkspaceUri();
 
     const fsPath = fileUri.fsPath;
-    console.log("fspath", fsPath);
+    // console.log("fspath", fsPath);
     for (let i = fsPath.length - 1; i > workspaceUri.fsPath.length - 1; --i) {
         const ch = fsPath.charAt(i);
 
@@ -123,8 +123,8 @@ export async function ensureConfigsOfPath(
 
         const directoryPaths = await getDirectoryConfigPaths(directoryUri);
 
-        if (Object.keys(directoryPaths).length !== 0)
-            console.log("added new config paths", directoryPaths);
+        // if (Object.keys(directoryPaths).length !== 0)
+        //     console.log("added new config paths", directoryPaths);
 
         projectConfigPaths[directoryUriString] = directoryPaths;
     }

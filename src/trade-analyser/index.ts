@@ -96,7 +96,7 @@ export async function getGlobalTradeInfo(
         );
     }
 
-    console.log("Compiler options >>>", compilerOptions);
+    // console.log("Compiler options >>>", compilerOptions);
     return globalTradeInfo;
 }
 
@@ -160,7 +160,7 @@ export async function addFileTradeInfo(
         fileContent = await getFileContent(uri);
     } catch {
         // Unreadable, ignore and continue
-        console.log(`Uri '${uriString}' could not be read`);
+        // console.log(`Uri '${uriString}' could not be read`);
         return;
     }
 
@@ -172,7 +172,7 @@ export async function addFileTradeInfo(
         });
     } catch (err) {
         // Unparsable, ignore and continue
-        console.log(`Uri '${uriString}' could not be parsed`);
+        // console.log(`Uri '${uriString}' could not be parsed`);
         return;
     }
 
@@ -263,7 +263,7 @@ export async function addFileTradeInfo(
         await Promise.all(promisedFunctions.map((func) => func()));
     } catch (err) {
         // Untraversable, ignore and continue
-        console.log(`Uri '${uriString}' could not be traversed`);
+        // console.log(`Uri '${uriString}' could not be traversed`);
         return;
     }
 

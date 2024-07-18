@@ -142,10 +142,10 @@ export async function vscodeResolve(
             projectConfigPaths,
         );
         if (deAliasedPaths.length > 0) {
-            console.log(
-                `Dealiased '${baseUri}' + '${path}' >>>`,
-                deAliasedPaths,
-            );
+            // console.log(
+            //     `Dealiased '${baseUri}' + '${path}' >>>`,
+            //     deAliasedPaths,
+            // );
         }
         for (const deAliasedPath of deAliasedPaths) {
             const deAliasedResolved = await vscodeResolveRelativePath(
