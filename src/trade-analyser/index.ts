@@ -8,10 +8,12 @@ import {
     StringLiteral,
     TemplateLiteral,
 } from "@babel/types";
+import { vscodeResolve } from "./resolver";
 import {
-    vscodeResolve,
-} from "./resolver";
-import { findCompilerOptions, CompilerOptions } from "./compiler-options";
+    ensureConfigsOfPath,
+    PathAliasConfig,
+    ProjectConfigPaths,
+} from "./compiler-options";
 import { doesUriExist, getFileContent } from "./utils";
 import { isWebFile } from "vscode-utils";
 
@@ -45,7 +47,7 @@ export async function getGlobalTradeInfo(
     entryUris?: vscode.Uri[],
     exitUris?: vscode.Uri[],
 ) {
-    const compilerOptions = await findCompilerOptions();
+    const compilerOptions = {};
     console.log("Compiler options >>>", compilerOptions);
 
     const globalTradeInfo: GlobalTradeInfo = { files: {} };
@@ -136,7 +138,7 @@ function isStaticImport(path: NodePath<CallExpression>) {
 export async function addFileTradeInfo(
     uri: vscode.Uri,
     globalTradeInfo: GlobalTradeInfo,
-    compilerOptions: CompilerOptions,
+    projectConfigPaths: ProjectConfigPaths,
 ) {
     const uriString = uri.toString();
 
@@ -186,7 +188,7 @@ export async function addFileTradeInfo(
                     const importSourceUriString = await vscodeResolve(
                         uri,
                         importSource,
-                        compilerOptions,
+                        projectConfigPaths,
                     );
                     // true is meaningless
                     fileTradeInfo.dependencies[importSourceUriString] = true;
@@ -241,7 +243,7 @@ export async function addFileTradeInfo(
                         const importSourceUriString = await vscodeResolve(
                             uri,
                             importSource,
-                            compilerOptions,
+                            projectConfigPaths,
                         );
                         // true is meaningless
                         fileTradeInfo.dependencies[importSourceUriString] =

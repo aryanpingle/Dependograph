@@ -1,4 +1,4 @@
-import * as vscode from "vscode"
+import * as vscode from "vscode";
 import { doesUriExist, getFileContent } from "./utils";
 import json5 from "json5";
 import { getCurrentWorkspaceUri } from "vscode-utils";
@@ -7,60 +7,125 @@ export type AliasPaths = Array<string | null> | null;
 
 export type PathAliasConfig = Record<string, AliasPaths>;
 
-export interface CompilerOptions {
-    baseUrl?: string;
-    paths?: PathAliasConfig;
+export interface JSONConfiguration {
+    extends?: string;
+    compilerOptions?: {
+        baseUrl?: string;
+        paths?: PathAliasConfig;
+    };
 }
 
 /**
- * Recursively read the ts/jsconfig file (along with its parents) and return the final object.
- *
- * TODO: If a config file "extends" another in a subdirectory, paths should be made
- * relative to the extended config file.
+ * Maps a directory URI string to the js/tsconfig file object within it.
  */
-async function recursivelyGetConfig(configUri: vscode.Uri): Promise<any> {
-    let config: any = {};
+export type ProjectConfigPaths = Record<string, PathAliasConfig>;
+
+async function createPathsFromConfigFile(
+    configFileUri: vscode.Uri,
+): Promise<PathAliasConfig> {
+    let config: JSONConfiguration = {};
     try {
-        const fileContent = await getFileContent(configUri);
+        const fileContent = await getFileContent(configFileUri);
         config = json5.parse(fileContent);
     } catch {
         // Something went wrong while reading / parsing the config
         return {};
     }
 
+    const pathAliasConfig: PathAliasConfig = {};
+
+    // 1. If it extends some other config file, parse those first
     if ("extends" in config) {
         const baseConfigUri = vscode.Uri.joinPath(
-            configUri,
+            configFileUri,
             "..",
             config.extends,
         );
-        const baseConfig = await recursivelyGetConfig(baseConfigUri);
-        Object.assign(config, baseConfig);
+        const basePathAliasConfig =
+            await createPathsFromConfigFile(baseConfigUri);
+        Object.assign(pathAliasConfig, basePathAliasConfig);
     }
 
-    return config;
+    // 2. Use this file's path alias config
+    if (config.compilerOptions) {
+        const baseUrl = config.compilerOptions.baseUrl ?? ".";
+        const paths = config.compilerOptions.paths ?? {};
+        // Add the baseURL to each of the aliaspaths for each alias
+        for (const alias in paths) {
+            if (paths[alias]) {
+                paths[alias] = paths[alias].map(
+                    (aliasPath) => baseUrl + "/" + aliasPath,
+                );
+            }
+        }
+        Object.assign(pathAliasConfig, paths);
+    }
+
+    // 3. Make all paths relative to the workspace URI
+    const workspaceUriString = getCurrentWorkspaceUri().toString();
+    const configFileDirectoryUri = vscode.Uri.joinPath(configFileUri, "..");
+    const pathFromWorkspace =
+        "." + configFileDirectoryUri.toString().replace(workspaceUriString, "");
+
+    for (const alias in pathAliasConfig) {
+        pathAliasConfig[alias] = pathAliasConfig[alias].map(
+            (aliasPath) => pathFromWorkspace + "/" + aliasPath,
+        );
+    }
+
+    return pathAliasConfig;
 }
 
-// TODO: Ideally, the user should be able to add one or more config files of their choice
-export async function findCompilerOptions(): Promise<CompilerOptions> {
-    const workspaceUri = getCurrentWorkspaceUri();
-
+export async function getDirectoryConfigPaths(
+    directoryUri: vscode.Uri,
+): Promise<PathAliasConfig> {
     // Try jsconfig.json
-    const jsConfigUri = vscode.Uri.joinPath(workspaceUri, "jsconfig.json");
+    const jsConfigUri = vscode.Uri.joinPath(directoryUri, "jsconfig.json");
     const jsConfigExists = await doesUriExist(jsConfigUri);
     if (jsConfigExists) {
-        const config = await recursivelyGetConfig(jsConfigUri);
-        return config.compilerOptions ?? {};
+        return await createPathsFromConfigFile(jsConfigUri);
     }
 
     // Try tsconfig.json
-    const tsConfigUri = vscode.Uri.joinPath(workspaceUri, "tsconfig.json");
+    const tsConfigUri = vscode.Uri.joinPath(directoryUri, "tsconfig.json");
     const tsConfigExists = await doesUriExist(tsConfigUri);
     if (tsConfigExists) {
-        const config = await recursivelyGetConfig(tsConfigUri);
-        return config.compilerOptions ?? {};
+        return await createPathsFromConfigFile(tsConfigUri);
     }
 
-    // Blank compiler options
     return {};
+}
+
+/**
+ * Read all directories in the given file's path and add their configurations to `projectConfigPaths`.
+ */
+export async function ensureConfigsOfPath(
+    fileUri: vscode.Uri,
+    projectConfigPaths: ProjectConfigPaths,
+) {
+    const workspaceUri = getCurrentWorkspaceUri();
+
+    const fsPath = fileUri.fsPath;
+    console.log("fspath", fsPath);
+    for (let i = fsPath.length - 1; i > workspaceUri.fsPath.length - 1; --i) {
+        const ch = fsPath.charAt(i);
+
+        if (ch !== "/") continue;
+
+        const fsPathTillSlash = fsPath.substring(0, i);
+        const directoryUri = fileUri.with({
+            path: fsPathTillSlash,
+        });
+        const directoryUriString = directoryUri.toString();
+
+        // If this directory has already been checked, break out of the loop
+        if (directoryUriString in projectConfigPaths) break;
+
+        const directoryPaths = await getDirectoryConfigPaths(directoryUri);
+
+        if (Object.keys(directoryPaths).length !== 0)
+            console.log("added new config paths", directoryPaths);
+
+        projectConfigPaths[directoryUriString] = directoryPaths;
+    }
 }

@@ -1,7 +1,11 @@
 import * as vscode from "vscode";
 import { doesUriExist, getFileContent } from "./utils";
 import { getCurrentWorkspaceUri } from "vscode-utils";
-import { AliasPaths, CompilerOptions } from "./compiler-options";
+import {
+    AliasPaths,
+    ProjectConfigPaths,
+    ensureConfigsOfPath,
+} from "./compiler-options";
 
 const vscodeFS = vscode.workspace.fs;
 
@@ -21,7 +25,6 @@ function aliasMatchesPath(path: string, alias: string): boolean {
 
 function getDeAliasedPaths(
     path: string,
-    baseUrl: string,
     alias: string,
     aliasPaths: AliasPaths,
 ): string[] {
@@ -34,38 +37,40 @@ function getDeAliasedPaths(
     const starredValue = path.substring(half1Length, path.length - half2Length);
 
     const deAliasedPaths = aliasPaths?.map((aliasPath) => {
-        return baseUrl + "/" + aliasPath.replace("*", starredValue);
+        return aliasPath.replace("*", starredValue);
     });
     return deAliasedPaths;
 }
 
 /**
  * Get all modifications of the path after using the given pathAliasConfig
- * @param path
- * @param pathAliasConfig
- * @returns
  */
 function getAllDeAliasedPaths(
+    baseUri: vscode.Uri,
     path: string,
-    compilerOptions: CompilerOptions,
+    projectConfigPaths: ProjectConfigPaths,
 ): string[] {
-    const baseUrl = compilerOptions.baseUrl?.replace(/\/+$/g, "") ?? ".";
-    const pathAliasConfig = compilerOptions.paths ?? {};
-
+    const baseUriString = baseUri.toString();
     const allPossibleDeAliasedPaths = [];
-    for (const alias in pathAliasConfig) {
-        // If the path doesn't match the alias
-        if (!aliasMatchesPath(path, alias)) continue;
-        // If it's an exact alias but the path doesn't match exactly
-        if (!alias.includes("*") && path !== alias) continue;
+    for (const directoryUriString in projectConfigPaths) {
+        // Ensure the base uri is part of the config's directory
+        if (!baseUriString.startsWith(directoryUriString)) continue;
 
-        const deAliasedPaths = getDeAliasedPaths(
-            path,
-            baseUrl,
-            alias,
-            pathAliasConfig[alias],
-        );
-        allPossibleDeAliasedPaths.push(...deAliasedPaths);
+        const pathAliasConfig = projectConfigPaths[directoryUriString];
+
+        for (const alias in pathAliasConfig) {
+            // If the path doesn't match the alias
+            if (!aliasMatchesPath(path, alias)) continue;
+            // If it's an exact alias but the path doesn't match exactly
+            if (!alias.includes("*") && path !== alias) continue;
+
+            const deAliasedPaths = getDeAliasedPaths(
+                path,
+                alias,
+                pathAliasConfig[alias],
+            );
+            allPossibleDeAliasedPaths.push(...deAliasedPaths);
+        }
     }
 
     return allPossibleDeAliasedPaths;
@@ -119,8 +124,10 @@ async function vscodeResolveRelativePath(
 export async function vscodeResolve(
     baseUri: vscode.Uri,
     path: string,
-    compilerOptions: CompilerOptions,
+    projectConfigPaths: ProjectConfigPaths,
 ): Promise<string> {
+    await ensureConfigsOfPath(baseUri, projectConfigPaths);
+
     if (!path.startsWith(".")) {
         // Not a relative path - it's either a node module or an aliased path
 
@@ -129,7 +136,11 @@ export async function vscodeResolve(
 
         const workspaceURI = getCurrentWorkspaceUri();
 
-        const deAliasedPaths = getAllDeAliasedPaths(path, compilerOptions);
+        const deAliasedPaths = getAllDeAliasedPaths(
+            baseUri,
+            path,
+            projectConfigPaths,
+        );
         if (deAliasedPaths.length > 0) {
             console.log(
                 `Dealiased '${baseUri}' + '${path}' >>>`,
