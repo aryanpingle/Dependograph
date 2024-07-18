@@ -46,6 +46,7 @@ export async function getGlobalTradeInfo(
     exitUris?: vscode.Uri[],
 ) {
     const compilerOptions = await findCompilerOptions();
+    console.log("Compiler options >>>", compilerOptions)
 
     const globalTradeInfo: GlobalTradeInfo = { files: {} };
     if (entryUris === undefined) {
@@ -56,6 +57,7 @@ export async function getGlobalTradeInfo(
         if (globInput === undefined) {
             // User cancelled the export visualization
             // TODO: Cancel the export visualization LOL
+            globInput = "*.{doesnotexistatall}";
         }
         if(globInput === "") {
             globInput = "**/*.{js,jsx,ts,tsx}";

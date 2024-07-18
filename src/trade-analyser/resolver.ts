@@ -138,6 +138,9 @@ export async function vscodeResolve(
         const workspaceURI = vscode.workspace.workspaceFolders[0].uri;
 
         const deAliasedPaths = getAllDeAliasedPaths(path, compilerOptions);
+        if(deAliasedPaths.length > 0) {
+            console.log(`Dealiased '${baseUri}' + '${path}' >>>`, deAliasedPaths)
+        }
         for (const deAliasedPath of deAliasedPaths) {
             const deAliasedResolved = await vscodeResolveRelativePath(
                 workspaceURI,
