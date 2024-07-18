@@ -21,7 +21,8 @@
 			"react-dom/*": ["./node_modules/preact/compat/*"],
 			"trade-analyser": ["./src/trade-analyser"],
 			"trade-analyser/*": ["./src/trade-analyser/*"],
-			"webview-utils": ["./src/app/utils"]
+			"webview-utils": ["./src/app/utils"],
+			"vscode-utils": ["./src/vscode-utils.ts"]
 		}
 	},
 }

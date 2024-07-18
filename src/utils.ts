@@ -1,5 +1,3 @@
-import * as vscode from "vscode";
-
 export function getNonce() {
     let text = "";
     const possible =

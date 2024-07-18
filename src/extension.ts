@@ -7,11 +7,12 @@ import {
     FileDependencyViewerProvider,
     FileDependencyViewerScheme,
 } from "./file-dependency-viewer";
+import { getCurrentWorkspaceUri } from "vscode-utils";
 
 export function activate(context: vscode.ExtensionContext) {
     new VisualizationEditorProvider(context);
 
-    const workspaceUri = vscode.workspace.workspaceFolders?.[0]?.uri;
+    const workspaceUri = getCurrentWorkspaceUri();
     context.subscriptions.push(
         vscode.window.registerTreeDataProvider(
             "dependograph-fs-explorer",

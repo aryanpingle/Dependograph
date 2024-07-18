@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { doesUriExist, getFileContent } from "./utils";
 import json5 from "json5";
+import { getCurrentWorkspaceUri } from "vscode-utils";
 
 const vscodeFS = vscode.workspace.fs;
 
@@ -135,11 +136,14 @@ export async function vscodeResolve(
         // TODO: Absolute paths are rarely used, but should still be supported.
         // Maybe check if it's a local fs, and then allow vscodeFS to access it?
 
-        const workspaceURI = vscode.workspace.workspaceFolders[0].uri;
+        const workspaceURI = getCurrentWorkspaceUri();
 
         const deAliasedPaths = getAllDeAliasedPaths(path, compilerOptions);
-        if(deAliasedPaths.length > 0) {
-            console.log(`Dealiased '${baseUri}' + '${path}' >>>`, deAliasedPaths)
+        if (deAliasedPaths.length > 0) {
+            console.log(
+                `Dealiased '${baseUri}' + '${path}' >>>`,
+                deAliasedPaths,
+            );
         }
         for (const deAliasedPath of deAliasedPaths) {
             const deAliasedResolved = await vscodeResolveRelativePath(
@@ -202,7 +206,7 @@ async function recursivelyGetConfig(configUri: vscode.Uri): Promise<any> {
 
 // TODO: Ideally, the user should be able to add one or more config files of their choice
 export async function findCompilerOptions(): Promise<CompilerOptions> {
-    const workspaceUri = vscode.workspace.workspaceFolders[0].uri;
+    const workspaceUri = getCurrentWorkspaceUri();
 
     // Try jsconfig.json
     const jsConfigUri = vscode.Uri.joinPath(workspaceUri, "jsconfig.json");

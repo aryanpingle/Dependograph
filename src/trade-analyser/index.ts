@@ -14,6 +14,7 @@ import {
     vscodeResolve,
 } from "./resolver";
 import { doesUriExist, getFileContent } from "./utils";
+import { isWebFile } from "vscode-utils";
 
 export interface ImportedVariableInfo {
     name: string;
@@ -46,27 +47,9 @@ export async function getGlobalTradeInfo(
     exitUris?: vscode.Uri[],
 ) {
     const compilerOptions = await findCompilerOptions();
-    console.log("Compiler options >>>", compilerOptions)
+    console.log("Compiler options >>>", compilerOptions);
 
     const globalTradeInfo: GlobalTradeInfo = { files: {} };
-    if (entryUris === undefined) {
-        let globInput = await vscode.window.showInputBox({
-            placeHolder: 'Enter a glob pattern, eg: "**/*.{js,jsx,ts,tsx}"',
-            title: "Include Folder",
-        });
-        if (globInput === undefined) {
-            // User cancelled the export visualization
-            // TODO: Cancel the export visualization LOL
-            globInput = "*.{doesnotexistatall}";
-        }
-        if(globInput === "") {
-            globInput = "**/*.{js,jsx,ts,tsx}";
-        }
-        entryUris = await vscode.workspace.findFiles(
-            globInput,
-            "**/node_modules/**",
-        );
-    }
     const uriSet = new Set<vscode.Uri>(entryUris);
     const queue = Array.from(entryUris);
     while (queue.length !== 0) {
@@ -165,8 +148,8 @@ export async function addFileTradeInfo(
         return;
     }
 
-    // If it's not a web-dev file, ignore
-    if(!(/\.[mc]?[jt]sx?$/.test(uriString))) {
+    // If it's not a web file, ignore
+    if (!isWebFile(uri)) {
         return;
     }
 
@@ -176,7 +159,7 @@ export async function addFileTradeInfo(
         fileContent = await getFileContent(uri);
     } catch {
         // Unreadable, ignore and continue
-        console.log(`Uri '${uriString}' could not be read`)
+        console.log(`Uri '${uriString}' could not be read`);
         return;
     }
 
@@ -186,9 +169,9 @@ export async function addFileTradeInfo(
             plugins: astParserPlugins,
             ...astOtherSettings,
         });
-    } catch(err) {
+    } catch (err) {
         // Unparsable, ignore and continue
-        console.log(`Uri '${uriString}' could not be parsed`)
+        console.log(`Uri '${uriString}' could not be parsed`);
         return;
     }
 
@@ -277,9 +260,9 @@ export async function addFileTradeInfo(
             },
         });
         await Promise.all(promisedFunctions.map((func) => func()));
-    } catch(err) {
+    } catch (err) {
         // Untraversable, ignore and continue
-        console.log(`Uri '${uriString}' could not be traversed`)
+        console.log(`Uri '${uriString}' could not be traversed`);
         return;
     }
 

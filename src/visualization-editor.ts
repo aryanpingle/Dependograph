@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { WebviewParams } from "./app";
 import { getGlobalTradeInfo, GlobalTradeInfo } from "./trade-analyser";
+import { getCurrentWorkspaceUri } from "vscode-utils";
 
 export class VisualizationEditorProvider {
     private currentEditor: vscode.WebviewPanel | null = null;
@@ -9,15 +10,15 @@ export class VisualizationEditorProvider {
         context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.sendImportEntryFiles",
-                async (stringifiedEntryFiles: string) => {
-                    const entryFileUriStrings = JSON.parse(
-                        stringifiedEntryFiles,
+                async (stringifiedSelectedFiles: string) => {
+                    const selectedUriStrings = JSON.parse(
+                        stringifiedSelectedFiles,
                     ) as Array<Object>;
-                    const entryFileUris = entryFileUriStrings.map((UriJSON) =>
+                    const entryUris = selectedUriStrings.map((UriJSON) =>
                         vscode.Uri.parse(UriJSON as any),
                     );
                     const globalTradeInfo = await getGlobalTradeInfo(
-                        entryFileUris,
+                        entryUris,
                         undefined,
                     );
                     this.createOrShowEditor(globalTradeInfo);
@@ -27,16 +28,45 @@ export class VisualizationEditorProvider {
         context.subscriptions.push(
             vscode.commands.registerCommand(
                 "dependograph.sendExportEntryFiles",
-                async (stringifiedEntryFiles: string) => {
-                    const entryFileUriStrings = JSON.parse(
-                        stringifiedEntryFiles,
+                async (stringifiedSelectedFiles: string) => {
+                    const selectedUriStrings = JSON.parse(
+                        stringifiedSelectedFiles,
                     ) as Array<Object>;
-                    const entryFileUris = entryFileUriStrings.map((UriJSON) =>
+                    const exitUris = selectedUriStrings.map((UriJSON) =>
                         vscode.Uri.parse(UriJSON as any),
                     );
+
+                    // Prompt the user to enter the folder to be scanned
+
+                    let includePathInput = await vscode.window.showInputBox({
+                        placeHolder:
+                            'Path to a directory, eg: "path/to/directory"',
+                        title: "Directory to be scanned",
+                    });
+                    // If user cancelled the export visualization
+                    if (includePathInput === undefined) {
+                        return;
+                    }
+                    // If user did not enter anything
+                    if (includePathInput === "") {
+                        includePathInput = ".";
+                    }
+                    const workspaceUri = getCurrentWorkspaceUri();
+                    const includeUri = vscode.Uri.joinPath(
+                        workspaceUri,
+                        includePathInput,
+                    );
+                    const entryUris = await vscode.workspace.findFiles(
+                        {
+                            baseUri: includeUri,
+                            pattern: "**/*.{js,jsx,ts,tsx}",
+                        } as vscode.GlobPattern,
+                        "**/node_modules/**",
+                    );
+
                     const globalTradeInfo = await getGlobalTradeInfo(
-                        undefined,
-                        entryFileUris,
+                        entryUris,
+                        exitUris,
                     );
                     this.createOrShowEditor(globalTradeInfo);
                 },
@@ -111,8 +141,7 @@ export class VisualizationEditorProvider {
      * using the given files.
      */
     private async setEditorWebview(globalTradeInfo: GlobalTradeInfo) {
-        const workspaceUri = vscode.workspace.workspaceFolders![0].uri;
-        const workspacePath = workspaceUri.fsPath;
+        const workspaceUri = getCurrentWorkspaceUri();
 
         let params: WebviewParams = {} as WebviewParams;
         params["cssURIs"] = [
