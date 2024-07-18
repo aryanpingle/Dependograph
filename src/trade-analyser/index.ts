@@ -9,10 +9,9 @@ import {
     TemplateLiteral,
 } from "@babel/types";
 import {
-    findCompilerOptions,
-    CompilerOptions,
     vscodeResolve,
 } from "./resolver";
+import { findCompilerOptions, CompilerOptions } from "./compiler-options";
 import { doesUriExist, getFileContent } from "./utils";
 import { isWebFile } from "vscode-utils";
 
