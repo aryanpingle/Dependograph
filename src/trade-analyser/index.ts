@@ -48,7 +48,6 @@ export async function getGlobalTradeInfo(
     exitUris?: vscode.Uri[],
 ) {
     const compilerOptions = {};
-    console.log("Compiler options >>>", compilerOptions);
 
     const globalTradeInfo: GlobalTradeInfo = { files: {} };
     const uriSet = new Set<vscode.Uri>(entryUris);
@@ -97,6 +96,7 @@ export async function getGlobalTradeInfo(
         );
     }
 
+    console.log("Compiler options >>>", compilerOptions);
     return globalTradeInfo;
 }
 
