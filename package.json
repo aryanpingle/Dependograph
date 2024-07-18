@@ -3,7 +3,7 @@
   "name": "dependograph",
   "displayName": "Dependograph",
   "description": "Get interactive visualizations of your project dependencies.",
-  "version": "0.1.10",
+  "version": "0.1.11",
   "icon": "./assets/images/extension-logo.png",
   "repository": {
     "type": "git",
