@@ -19,8 +19,14 @@ export interface CompilerOptions {
  * relative to the extended config file.
  */
 async function recursivelyGetConfig(configUri: vscode.Uri): Promise<any> {
-    const fileContent = await getFileContent(configUri);
-    const config = json5.parse(fileContent);
+    let config: any = {};
+    try {
+        const fileContent = await getFileContent(configUri);
+        config = json5.parse(fileContent);
+    } catch {
+        // Something went wrong while reading / parsing the config
+        return {};
+    }
 
     if ("extends" in config) {
         const baseConfigUri = vscode.Uri.joinPath(
