@@ -36,8 +36,6 @@ const colors = {
 };
 
 export interface VisualConfig {
-    /** Shorten filenames as much as possible without having any duplicates */
-    minimalFilepaths: boolean;
     hideFilepaths: boolean;
 }
 
@@ -46,12 +44,8 @@ export type GraphAndVisualConfig = GraphConfig & VisualConfig;
 export class TreeVisualization extends Visualization<VisualConfig> {
     DefaultConfig: VisualConfig = {
         hideFilepaths: false,
-        minimalFilepaths: true,
     };
     ConfigInputElements: VNode[] = [
-        <VSCodeCheckbox name="minimalFilepaths">
-            Shorten Filepaths
-        </VSCodeCheckbox>,
         <VSCodeCheckbox name="hideFilepaths">Hide Filepaths</VSCodeCheckbox>,
     ];
 
@@ -120,20 +114,18 @@ export class TreeVisualization extends Visualization<VisualConfig> {
     protected override createVisuals() {
         this.initializeDrawing();
 
-        if (this.visualConfig.minimalFilepaths) {
-            const shortPaths = getMinimalFilepaths(
-                this.nodes.map((node) => node.filepathWithoutWorkspace),
-            );
+        const shortPaths = getMinimalFilepaths(
+            this.nodes.map((node) => node.filepathWithoutWorkspace),
+        );
 
-            // TODO: Writing the select for each setting is painful
-            // Store each component (text, icon, etc) as an instance variable
-            this.d3Nodes
-                .selectAll("text")
-                .text(
-                    (node: TreeNode) =>
-                        shortPaths[node.data.filepathWithoutWorkspace],
-                );
-        }
+        // TODO: Writing the select for each setting is painful
+        // Store each component (text, icon, etc) as an instance variable
+        this.d3Nodes
+            .selectAll("text")
+            .text(
+                (node: TreeNode) =>
+                    shortPaths[node.data.filepathWithoutWorkspace],
+            );
     }
 
     protected initializeDrawing() {

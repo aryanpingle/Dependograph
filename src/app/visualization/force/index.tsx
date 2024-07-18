@@ -43,8 +43,6 @@ const colors = {
 };
 
 export interface VisualConfig {
-    /** Shorten filenames as much as possible without having any duplicates */
-    minimalFilepaths: boolean;
     hideFilepaths: boolean;
 }
 
@@ -52,13 +50,9 @@ export type GraphAndVisualConfig = GraphConfig & VisualConfig;
 
 export class ForceVisualization extends Visualization<VisualConfig> {
     DefaultConfig: VisualConfig = {
-        minimalFilepaths: true,
         hideFilepaths: false,
     };
     ConfigInputElements: VNode[] = [
-        <VSCodeCheckbox name="minimalFilepaths">
-            Shorten Filepaths
-        </VSCodeCheckbox>,
         <VSCodeCheckbox name="hideFilepaths">Hide Filepaths</VSCodeCheckbox>,
     ];
 
@@ -138,20 +132,18 @@ export class ForceVisualization extends Visualization<VisualConfig> {
 
         // Any additional post-processing effects
 
-        if (this.visualConfig.minimalFilepaths) {
-            const shortPaths = getMinimalFilepaths(
-                this.nodes.map((node) => node.filepathWithoutWorkspace),
-            );
+        const shortPaths = getMinimalFilepaths(
+            this.nodes.map((node) => node.filepathWithoutWorkspace),
+        );
 
-            // TODO: Writing the select for each setting is painful
-            // Store each component (text, icon, etc) as an instance variable
-            this.d3Nodes
-                .selectAll("text")
-                .text(
-                    (node: SimNode) =>
-                        shortPaths[node.filepathWithoutWorkspace],
-                );
-        }
+        // TODO: Writing the select for each setting is painful
+        // Store each component (text, icon, etc) as an instance variable
+        this.d3Nodes
+            .selectAll("text")
+            .text(
+                (node: SimNode) =>
+                    shortPaths[node.filepathWithoutWorkspace],
+            );
 
         // Start the simulation
         this.simulation.restart();
