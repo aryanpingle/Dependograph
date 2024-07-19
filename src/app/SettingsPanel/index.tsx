@@ -17,11 +17,7 @@ export class SettingsPanel extends Component<Props, State> {
 
     componentDidMount(): void {
         const { visualization } = this.props;
-        this.defaultConfig = Object.assign(
-            {},
-            Graph.DefaultConfig,
-            visualization.DefaultConfig,
-        );
+        this.defaultConfig = visualization.DefaultConfig;
     }
 
     onFormChange = () => {

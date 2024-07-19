@@ -42,8 +42,14 @@ export interface VisualConfig {
 export type GraphAndVisualConfig = GraphConfig & VisualConfig;
 
 export class TreeVisualization extends Visualization<VisualConfig> {
-    DefaultConfig: VisualConfig = {
+    DefaultVisualConfig: VisualConfig = {
         hideFilepaths: false,
+    }
+    DefaultConfig: GraphConfig & VisualConfig = {
+        ...Graph.DefaultConfig,
+        ...this.DefaultVisualConfig,
+        // To ensure tree structure
+        separateCyclicDependencies: true,
     };
     ConfigInputElements: VNode[] = [
         <VSCodeCheckbox name="hideFilepaths">Hide Filepaths</VSCodeCheckbox>,
@@ -76,11 +82,12 @@ export class TreeVisualization extends Visualization<VisualConfig> {
         // Setup a click listener on the svg element (for unselecting)
         this.svgSelection.on("click", this.onClickBackground);
 
-        const defaultConfig = Object.assign(
-            {},
-            Graph.DefaultConfig,
-            this.DefaultConfig,
-        );
+        const defaultConfig: GraphConfig & VisualConfig = {
+            ...Graph.DefaultConfig,
+            ...this.DefaultConfig,
+            // Ensure the tree structure
+            separateCyclicDependencies: true,
+        }
         this.applyConfiguration(defaultConfig, true);
     }
 
@@ -284,6 +291,17 @@ export class TreeVisualization extends Visualization<VisualConfig> {
         if (node === undefined) {
             this.unHighlightPaths();
         } else {
+            // Zoom into it
+            const scale = 2;
+            this.zoomTo(
+                d3.zoomIdentity
+                    .translate(
+                        -scale * this.selectedNode.x,
+                        -scale * this.selectedNode.y,
+                    )
+                    .scale(scale),
+            );
+
             // Files this is importing
             const importIds: string[] = Array.from(
                 this.graph.adjacencySet[node.data.id],

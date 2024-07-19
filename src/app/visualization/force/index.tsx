@@ -49,8 +49,14 @@ export interface VisualConfig {
 export type GraphAndVisualConfig = GraphConfig & VisualConfig;
 
 export class ForceVisualization extends Visualization<VisualConfig> {
-    DefaultConfig: VisualConfig = {
+    DefaultVisualConfig: VisualConfig = {
         hideFilepaths: false,
+    }
+    DefaultConfig: GraphConfig & VisualConfig = {
+        ...Graph.DefaultConfig,
+        ...this.DefaultVisualConfig,
+        // To reduce the number of nodes
+        separateCyclicDependencies: false,
     };
     ConfigInputElements: VNode[] = [
         <VSCodeCheckbox name="hideFilepaths">Hide Filepaths</VSCodeCheckbox>,
@@ -140,10 +146,7 @@ export class ForceVisualization extends Visualization<VisualConfig> {
         // Store each component (text, icon, etc) as an instance variable
         this.d3Nodes
             .selectAll("text")
-            .text(
-                (node: SimNode) =>
-                    shortPaths[node.filepathWithoutWorkspace],
-            );
+            .text((node: SimNode) => shortPaths[node.filepathWithoutWorkspace]);
 
         // Start the simulation
         this.simulation.restart();
@@ -358,6 +361,17 @@ export class ForceVisualization extends Visualization<VisualConfig> {
         if (node === undefined) {
             this.unHighlightPaths();
         } else {
+            // Zoom into it
+            const scale = 2;
+            this.zoomTo(
+                d3.zoomIdentity
+                    .translate(
+                        -scale * this.selectedNode.x,
+                        -scale * this.selectedNode.y,
+                    )
+                    .scale(scale),
+            );
+
             // Files this is importing
             const importIds: string[] = Array.from(
                 this.graph.adjacencySet[this.selectedNode.id],

@@ -14,7 +14,7 @@ export type SVGGSelection<T> = d3.Selection<SVGGElement, T, Element, any>;
  * Zoom, Pan, selectNode, applyGraphConfig, applyVisualConfig, resizeSVG
  */
 export abstract class Visualization<VisualConfig> {
-    abstract DefaultConfig: Object;
+    abstract DefaultConfig: VisualConfig & GraphConfig;
     abstract ConfigInputElements: VNode[];
 
     protected abstract visualConfig: VisualConfig;
@@ -24,6 +24,8 @@ export abstract class Visualization<VisualConfig> {
     /** A D3 selection of the container within the SVG on which
      * all zoom and pan operations are applied */
     protected zoomContainer: SVGGSelection<any>;
+
+    protected zoom: d3.ZoomBehavior<any, any>;
 
     public graph: Graph;
 
@@ -35,15 +37,20 @@ export abstract class Visualization<VisualConfig> {
         this.svgSelection = d3.select(svgSelector);
 
         // Set some properies on the svg
+        this.zoom = d3.zoom<SVGElement, unknown>();
         this.svgSelection
             .attr(
                 "style",
                 "max-width: 100%; height: auto; font: 12px sans-serif;",
             )
-            .call(d3.zoom<SVGElement, unknown>().on("zoom", this.onZoom));
+            .call(this.zoom.on("zoom", this.onZoom));
 
         // Create the zoom container
         this.zoomContainer = this.svgSelection.select("g.zoom_container");
+    }
+
+    protected zoomTo(zoomTransform: d3.ZoomTransform) {
+        this.svgSelection.transition().duration(250).call(this.zoom.transform, zoomTransform)
     }
 
     private onZoom = (event: any) => {
