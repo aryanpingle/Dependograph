@@ -1,7 +1,8 @@
 import * as vscode from "vscode";
 import { WebviewParams } from "./app";
 import { getGlobalTradeInfo, GlobalTradeInfo } from "./trade-analyser";
-import { getCurrentWorkspaceUri } from "vscode-utils";
+import { getCurrentWorkspaceUri, getFileContent, getUriStat } from "vscode-utils";
+import ignore from "ignore";
 
 export class VisualizationEditorProvider {
     private currentEditor: vscode.WebviewPanel | null = null;
@@ -56,13 +57,30 @@ export class VisualizationEditorProvider {
                         workspaceUri,
                         includePathInput,
                     );
-                    const entryUris = await vscode.workspace.findFiles(
+
+                    let stime = +new Date();
+                    let entryUris = await vscode.workspace.findFiles(
                         {
                             baseUri: includeUri,
                             pattern: "**/*.{js,jsx,ts,tsx}",
                         } as vscode.GlobPattern,
                         "**/node_modules/**",
                     );
+                    console.log(`Files found in ${+new Date() - stime}ms`)
+
+                    const gitignoreUri = vscode.Uri.joinPath(workspaceUri, ".gitignore");
+                    const gitignoreStat = await getUriStat(gitignoreUri);
+                    if(gitignoreStat !== null) {
+                        // TODO: Handle query and fragment
+                        const gitignoreContent = await getFileContent(gitignoreUri);
+                        const ignoreHelper = ignore().add(gitignoreContent);
+                        const workspaceUriString = workspaceUri.toString()
+                        function uriToRelativePath(uri: vscode.Uri): string {
+                            return uri.toString().substring(workspaceUriString.length + 1).replace(/\?.*/, "").replace(/#.*/, "");
+                        }
+                        const filteredEntryUris = entryUris.filter(uri => !ignoreHelper.ignores(uriToRelativePath(uri)))
+                        entryUris = filteredEntryUris;
+                    }
 
                     const globalTradeInfo = await getGlobalTradeInfo(
                         entryUris,

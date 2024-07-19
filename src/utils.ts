@@ -20,3 +20,17 @@ export function getNonce() {
 export function binarySort<T>(array: T[], key: (element: T) => 0 | 1) {
     array.sort((a, b) => key(a) - key(b));
 }
+
+const timeitObject: Record<string, number> = {};
+export function timeit(label: string) {
+    if(!(label in timeitObject)) {
+        timeitObject[label] = -new Date();
+        return;
+    }
+
+    if(timeitObject[label] > 0) {
+        timeitObject[label] -= +new Date();
+    } else {
+        timeitObject[label] += +new Date();
+    }
+}
