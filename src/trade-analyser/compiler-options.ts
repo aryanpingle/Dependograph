@@ -105,14 +105,14 @@ export async function ensureConfigsOfPath(
 ) {
     const workspaceUri = getCurrentWorkspaceUri();
 
-    const fsPath = fileUri.fsPath;
-    // console.log("fspath", fsPath);
-    for (let i = fsPath.length - 1; i > workspaceUri.fsPath.length - 1; --i) {
-        const ch = fsPath.charAt(i);
+    const filepath = fileUri.path;
+    for (let i = filepath.length - 1; i > workspaceUri.fsPath.length - 1; --i) {
+        const ch = filepath.charAt(i);
 
+        // Okay since we're using the uri format
         if (ch !== "/") continue;
 
-        const fsPathTillSlash = fsPath.substring(0, i);
+        const fsPathTillSlash = filepath.substring(0, i);
         const directoryUri = fileUri.with({
             path: fsPathTillSlash,
         });

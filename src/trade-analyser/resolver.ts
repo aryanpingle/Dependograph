@@ -82,7 +82,7 @@ async function bruteForceFile(
     const attemptExtensions = [".tsx", ".ts", ".jsx", ".js", ".d.ts"];
     for (const extension of attemptExtensions) {
         const fileUri = uri.with({
-            path: uri.fsPath + extension,
+            path: uri.path + extension,
         });
         if (await doesUriExist(fileUri)) {
             return fileUri;
@@ -116,7 +116,7 @@ async function vscodeResolveRelativePath(
     }
 
     // URI does not exist, could be the uri + some extension
-    const bruted = bruteForceFile(simpleJoinedUri);
+    const bruted = await bruteForceFile(simpleJoinedUri);
     return bruted;
 }
 
